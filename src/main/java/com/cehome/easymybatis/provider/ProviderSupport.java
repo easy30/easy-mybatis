@@ -7,6 +7,7 @@ import com.cehome.easymybatis.utils.Const;
 import com.cehome.easymybatis.utils.LineBuilder;
 import com.cehome.easymybatis.utils.RegularReplace;
 import com.cehome.easymybatis.utils.Utils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
 
 import java.util.List;
@@ -51,9 +52,12 @@ public class ProviderSupport {
             }
 
         }
-        return s1.toString();
+        String result= s1.toString();
+        if(StringUtils.isEmpty(result)) throw new RuntimeException("entity for update is empty");
+        return  result;
     }
 
+    @Deprecated
     public static String sqlSetValues(Class entityClass, Map<String, ColumnAnnotation> propertyColumnMap, String prefix) {
         LineBuilder s1 = new LineBuilder();
         if (prefix == null) prefix = "";
@@ -82,13 +86,15 @@ public class ProviderSupport {
 
         }
         return s1.toString();
+
     }
 
-    public static String genWhereById(Object entity,EntityAnnotation entityAnnotation) {
+    public static String sqlWhereById(Object entity, EntityAnnotation entityAnnotation) {
 
         String where="";
         List<String> props=entityAnnotation.getIdPropertyNames();
         List<String> columns=entityAnnotation.getIdColumnNames();
+        if(props.size()==0) throw new RuntimeException("no primary keys found");
         for(int i=0;i<props.size();i++){
             if(i>0) where+=",";
             String prop=props.get(i);
@@ -211,7 +217,7 @@ public class ProviderSupport {
     }
 
 
-    public static String sqlByEntity(Object params, String sqlTemplate, String columns, String orderBy, String prefix){
+    public static String sqlByEntity(Object params, String sqlFormat, boolean select,String columns, String orderBy, String prefix){
 
         Class entityClass=params.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
@@ -238,11 +244,13 @@ public class ProviderSupport {
 
         }
 
+        if(!select && where.length()==0) throw new RuntimeException(" WHERE condition can not be null( Safety!!! )");
+
         String order= propertiesToColumns(orderBy,propertyColumnMap);
         if(order.length()>0) where.append( " order by "+order);
 
         //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
-        return Utils.format(sqlTemplate,columns,entityAnnotation.getTable(),where);
+        return Utils.format(sqlFormat,columns,entityAnnotation.getTable(),where);
 
     }
 
@@ -258,8 +266,8 @@ public class ProviderSupport {
 
         List<String> props=entityAnnotation.getIdPropertyNames();
         List<String> columns=entityAnnotation.getIdColumnNames();
-
-        if(props.size()>1) throw new RuntimeException("multi primary keys can not call GetById");
+        if(props.size()==0) throw new RuntimeException("primary key not found");
+        if(props.size()>1) throw new RuntimeException("multi primary keys not supported for GetById");
 
         String where= columns.get(0)+" = #{"+props.get(0)+"}";
 

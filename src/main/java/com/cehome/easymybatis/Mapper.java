@@ -16,6 +16,11 @@ public interface Mapper<E> {
     int insert(E entity);
 
 
+    /**
+     * update entity
+     * @param entity
+     * @return
+     */
     @UpdateProvider(type = Provider.class, method = "update")
     int update(E entity);
 
