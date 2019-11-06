@@ -1,7 +1,7 @@
 package com.cehome.easymybatis.builder;
 
-import com.cehome.easymybatis.ColumnAnnotation;
-import com.cehome.easymybatis.EntityAnnotation;
+import com.cehome.easymybatis.core.ColumnAnnotation;
+import com.cehome.easymybatis.core.EntityAnnotation;
 import com.cehome.easymybatis.utils.LineBuilder;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.mapping.MappedStatement;

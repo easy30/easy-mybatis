@@ -1,8 +1,6 @@
-package com.cehome.easymybatis.provider;
+package com.cehome.easymybatis.core;
 
-import com.cehome.easymybatis.ColumnAnnotation;
 import com.cehome.easymybatis.DialectEntity;
-import com.cehome.easymybatis.EntityAnnotation;
 import com.cehome.easymybatis.utils.Const;
 import com.cehome.easymybatis.utils.LineBuilder;
 import com.cehome.easymybatis.utils.RegularReplace;
@@ -109,13 +107,11 @@ public class ProviderSupport {
 
 
         }
-
         return where;
-
 
     }
 
-    public static String sqlPropertiesToColumns(String sql, Map<String, ColumnAnnotation> propertyColumnMap) {
+    public static String convertSqlColumns(String sql, Map<String, ColumnAnnotation> propertyColumnMap) {
         //  regex= ([^#\$]\{|^\{)(\w+)\} .  "{id}" or  "  {id}" ,but not #{id} ${id}
         RegularReplace rr = new RegularReplace(sql, "([^#\\$]\\{|^\\{)(\\w+)\\}");
         //  [^#\$]\{\w+\}|^\{(\w+)\}
@@ -133,9 +129,7 @@ public class ProviderSupport {
             rr.replace(column);
 
         }
-
         return rr.getResult();
-
 
     }
 
@@ -145,7 +139,7 @@ public class ProviderSupport {
      * @param propertyColumnMap
      * @return
      */
-    public static String propertiesToColumns(String properties, Map<String, ColumnAnnotation> propertyColumnMap){
+    public static String convertColumns(String properties, Map<String, ColumnAnnotation> propertyColumnMap){
         String order = "";
         if (properties != null && properties.length() > 0) {
             String[] orders = properties.split(",");
@@ -170,14 +164,14 @@ public class ProviderSupport {
         return order;
     }
 
-    public static String propertyToColumn(String propertyOrColumn, Map<String, ColumnAnnotation> propertyColumnMap){
+    public static String convertColumn(String propertyOrColumn, Map<String, ColumnAnnotation> propertyColumnMap){
         propertyOrColumn= trimBrace(propertyOrColumn);
         ColumnAnnotation ca=propertyColumnMap.get(propertyOrColumn);
         return (ca!=null)?ca.getName():propertyOrColumn;
     }
 
 
-    public static  String sqlAddPrefix(String sql, EntityAnnotation entityAnnotation) {
+    public static  String sqlComplete(String sql, EntityAnnotation entityAnnotation) {
         if(sql==null) sql="";
         String sql2 =sql.length()==0?"":sql.trim().toLowerCase();
         if (sql2.startsWith("select ")) {
@@ -197,7 +191,7 @@ public class ProviderSupport {
         }
     }
 
-    public static String sqlParamPrefix(String sql, String prefix){
+    public static String sqlAddParamPrefix(String sql, String prefix){
         return Utils.regularReplace(sql, "[#\\$]\\{(\\w+)\\}", "#'{'"+ prefix+".{1}'}'");
     }
 
@@ -224,7 +218,6 @@ public class ProviderSupport {
 
         Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
 
-
         LineBuilder where = new LineBuilder();
         for (Map.Entry<String, ColumnAnnotation> e : entityAnnotation.getPropertyColumnMap().entrySet()) {
             String prop=e.getKey();
@@ -239,14 +232,13 @@ public class ProviderSupport {
                 if(value!=null){
                     where.append(Utils.format(Const.SQL_AND_DIALECT,   columnAnnotation.getName(),value));
                 }
-
             }
 
         }
 
         if(!select && where.length()==0) throw new RuntimeException(" WHERE condition can not be null( Safety!!! )");
 
-        String order= propertiesToColumns(orderBy,propertyColumnMap);
+        String order= convertColumns(orderBy,propertyColumnMap);
         if(order.length()>0) where.append( " order by "+order);
 
         //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
@@ -254,10 +246,10 @@ public class ProviderSupport {
 
     }
 
-    public static String sqlFixColumnsAndParams(String sql, Map<String, ColumnAnnotation> propertyColumnMap){
-        sql= sqlPropertiesToColumns(sql,propertyColumnMap);
+    public static String convertSql(String sql, Map<String, ColumnAnnotation> propertyColumnMap){
+        sql= convertSqlColumns(sql,propertyColumnMap);
         //convert  #{id}==> #{params.id}
-        sql = sqlParamPrefix(sql, Const.PARAMS);
+        sql = sqlAddParamPrefix(sql, Const.PARAMS);
         return sql;
     }
 
@@ -272,7 +264,6 @@ public class ProviderSupport {
         String where= columns.get(0)+" = #{"+props.get(0)+"}";
 
         return Utils.format(sql,select,entityAnnotation.getTable(),where);
-
 
     }
 }

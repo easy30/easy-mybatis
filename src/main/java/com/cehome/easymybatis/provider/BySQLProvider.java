@@ -1,8 +1,9 @@
 package com.cehome.easymybatis.provider;
 
-import com.cehome.easymybatis.ColumnAnnotation;
+import com.cehome.easymybatis.core.ColumnAnnotation;
 import com.cehome.easymybatis.utils.Const;
-import com.cehome.easymybatis.EntityAnnotation;
+import com.cehome.easymybatis.core.EntityAnnotation;
+import com.cehome.easymybatis.core.ProviderSupport;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.builder.annotation.ProviderContext;
@@ -19,7 +20,7 @@ public class BySQLProvider<E> {
                                   @Param(Const.WHERE) String where, @Param(Const.PARAMS) Object params){
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
-        String sql=ProviderSupport.SQL_DELETE;
+        String sql= ProviderSupport.SQL_DELETE;
 
         if(where!=null &&where.length()>0) {
             where=fixSql(where,propertyColumnMap);
@@ -36,7 +37,7 @@ public class BySQLProvider<E> {
         Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
         String sql=ProviderSupport.SQL_SELECT;
 
-        column=ProviderSupport.propertyToColumn(column,propertyColumnMap);
+        column=ProviderSupport.convertColumn(column,propertyColumnMap);
         if(where!=null &&where.length()>0) {
             where=fixSql(where,propertyColumnMap);
 
@@ -57,7 +58,7 @@ public class BySQLProvider<E> {
         if(sql!=null &&sql.length()>0) {
 
             sql=fixSql(sql,propertyColumnMap);
-            sql=ProviderSupport.sqlAddPrefix(sql,entityAnnotation);
+            sql=ProviderSupport.sqlComplete(sql,entityAnnotation);
         }
 
         return sql;
@@ -66,9 +67,9 @@ public class BySQLProvider<E> {
     }
 
     protected String fixSql(String sql,  Map<String, ColumnAnnotation> propertyColumnMap){
-        sql=ProviderSupport.sqlPropertiesToColumns(sql,propertyColumnMap);
+        sql=ProviderSupport.convertSqlColumns(sql,propertyColumnMap);
         //convert  #{id}==> #{params.id}
-        sql =ProviderSupport.sqlParamPrefix(sql, Const.PARAMS);
+        sql =ProviderSupport.sqlAddParamPrefix(sql, Const.PARAMS);
         return sql;
     }
 }

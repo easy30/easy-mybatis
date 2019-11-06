@@ -1,10 +1,11 @@
-package com.cehome.easymybatis;
+package com.cehome.easymybatis.core;
 
 
+import com.cehome.easymybatis.DialectEntity;
 import com.cehome.easymybatis.annotation.ColumnInsertDefault;
 import com.cehome.easymybatis.annotation.ColumnUpdateDefault;
+import com.cehome.easymybatis.utils.ObjectSupport;
 import com.cehome.easymybatis.utils.Const;
-import com.cehome.easymybatis.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
  
@@ -16,12 +17,11 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * 获取实体类的注解信息
+ * Entity Annotation Helper
  * 
  * @author ma
  * 
@@ -34,48 +34,47 @@ import java.util.*;
 public class EntityAnnotation
 {
 	private  static Logger logger= LoggerFactory.getLogger(EntityAnnotation.class);
-	private static Map<Class, EntityAnnotation> beanAnns=new  HashMap<Class, EntityAnnotation> ();;
-	public static EntityAnnotation getInstance(Class entityClass)
-	{
-		//如果是通过cblib 代理实现的子类，需要回到父类
-		//if(Enhancer.isEnhanced(entityClass)) entityClass=entityClass.getSuperclass();
-		EntityAnnotation ba=beanAnns.get(entityClass);
-		if(ba==null)
-		{
-			synchronized(beanAnns)
-			{
-				ba=beanAnns.get(entityClass);
-				if(ba==null)
-				{
-					ba=new EntityAnnotation(entityClass);
-					beanAnns.put(entityClass, ba);
-				}
-			}
-		}
-		
-		return ba;
-	}
+	private static Map<Class, EntityAnnotation> beanMap =new  HashMap<Class, EntityAnnotation> ();;
 
-	public static EntityAnnotation getInstanceByMapper(Class mapperClass){
-		return getInstance(Utils.getGenericInterfaces(mapperClass,0,0));
-	}
-
-	
 
 	private String table = null;
 	private String idName=null;
-	private PropertyDescriptor idProperty=null;
+
 	private List<PropertyDescriptor>  idProperties=new ArrayList();
 	private List<String> idPropertyNames=new ArrayList();
 	private List<String> idColumnNames=new ArrayList();
 	private Map<String, ColumnAnnotation> propertyColumnMap = new HashMap<String, ColumnAnnotation> ();
 	private Set<String> transientColumnSet = new HashSet<String> ();
 	private Set<String> lobColumnSet= new HashSet<String> ();
-	private PropertyDescriptor[] properties =null;
+	//private PropertyDescriptor[] properties =null;
 	private Map<String,PropertyDescriptor> propertyMap=new HashMap<String, PropertyDescriptor> ();
 	private Class entityClass=null;
 	private boolean dialectEntity;
 
+	public static EntityAnnotation getInstance(Class entityClass)
+	{
+		// cblib child class to parent class
+		//if(Enhancer.isEnhanced(entityClass)) entityClass=entityClass.getSuperclass();
+		EntityAnnotation ba= beanMap.get(entityClass);
+		if(ba==null)
+		{
+			synchronized(beanMap)
+			{
+				ba= beanMap.get(entityClass);
+				if(ba==null)
+				{
+					ba=new EntityAnnotation(entityClass);
+					beanMap.put(entityClass, ba);
+				}
+			}
+		}
+
+		return ba;
+	}
+
+	public static EntityAnnotation getInstanceByMapper(Class mapperClass){
+		return getInstance(ObjectSupport.getGenericInterfaces(mapperClass,0,0));
+	}
 
 
 	public Set<String> getLobColumnSet() {
@@ -87,7 +86,7 @@ public class EntityAnnotation
 	}
 
 	/**
-	 * 不进行入库处理的字段
+	 *
 	 * @return
 	 */
 	public Set<String> getTransientColumnSet() {
@@ -118,22 +117,6 @@ public class EntityAnnotation
 
 
 
-
-
-
-	public PropertyDescriptor getIdProperty()
-	{
-		return idProperty;
-	}
-
-	public void setIdProperty(PropertyDescriptor idProperty)
-	{
-		this.idProperty = idProperty;
-	}
-
-
-
-
 	/**
 	 * 实体类的表名注解
 	 * @return
@@ -161,29 +144,6 @@ public class EntityAnnotation
 	{
 		this.propertyColumnMap = propertyColumnMap;
 	}
-
-
-
-   /*public void setIdValue(Object entity,Object value)throws IllegalAccessException, IllegalArgumentException,
-   InvocationTargetException
-   {
-	   if(idProperty!=null)
-
-	   	BeanUtils.setProperty(entity, idProperty.getName(), value);//  IdProperty.getWriteMethod().invoke(entity, value);
-   }*/
-
-   public Object getIdValue(Object entity)
-   { try
-   		{
-	   		if(idProperty==null) throw new IllegalArgumentException("@Id not exists");
-		   return idProperty.getReadMethod().invoke(entity);
-   		}
-   		catch(Exception e)
-   		{
-   			throw new RuntimeException(e);
-   		}
-
-   }
 
    private  <T extends Annotation> T findFieldAnnotation(Class<T> clazz, String fieldName,Class<T> annotationClass ) {
        T annotation = null;
@@ -222,7 +182,7 @@ public class EntityAnnotation
 	{
 		//if (Enhancer.isEnhanced(c)) c=c.getSuperclass();
 		this.entityClass=c;
-		dialectEntity=DialectEntity.class.isAssignableFrom(entityClass);
+		dialectEntity= DialectEntity.class.isAssignableFrom(entityClass);
 		Table t = (Table) c.getAnnotation(Table.class);
 		if (t != null && t.name()!=null && t.name().length()>0) table = t.name();
 		//ColumnUnderscore columnUnderscore=(ColumnUnderscore)c.getAnnotation(ColumnUnderscore.class);
@@ -237,7 +197,7 @@ public class EntityAnnotation
 			String name=pd.getName();
 			if (name.equals("class")) continue;
 			Method method = pd.getReadMethod();
-			Field field =BeanSupport.getField(c, name);
+			Field field = ObjectSupport.getField(c, name);
 			if(field==null) {
 				Transient trans=method.getAnnotation(Transient.class);
 				if(trans==null)
@@ -300,7 +260,6 @@ public class EntityAnnotation
 			if(id!=null)
 			{
 				ca.setIdentitied(true);
-				setIdProperty(pd);
 				setIdName(ca.getName());
 
 				idProperties.add(pd);
@@ -328,19 +287,8 @@ public class EntityAnnotation
 
 		}
 
-		properties=propertyMap.values().toArray(new PropertyDescriptor[0]);
+		//properties=propertyMap.values().toArray(new PropertyDescriptor[0]);
 
-		/*Method[] methods = c.getDeclaredMethods();
-		for (Method method : methods)
-		{
-			String methodName = method.getName();
-			// if(methodName.startsWith("get"))
-			// methodName=methodName.substring(3);
-			// else if(methodName.startsWith("is"))
-			// methodName=methodName.substring(2);
-			// else continue; reload
-
-		}*/
 
 	}
 
@@ -370,11 +318,11 @@ public class EntityAnnotation
 		return sb.toString();
 	}
 
-	
+	/*
 	public PropertyDescriptor[] getProperties()
 	{
 		return properties;
-	}
+	}*/
 	
 	public Class getEntityClass()
 	{
@@ -401,7 +349,7 @@ public class EntityAnnotation
 
 	}
 	 
-	public String getColumnNameByProperty(String name)
+	public String getColumnByProperty(String name)
 	{
 		ColumnAnnotation fa= propertyColumnMap.get(name);
 		if(fa!=null) return fa.getName();
@@ -427,30 +375,13 @@ public class EntityAnnotation
    		return dialectEntity;
 	}
 
-	public Object  getDialectProperty(Object entity,String property){
+	public Object getDialectProperty(Object entity,String property){
    		if(!isDialectEntity()) return null;
    		 Class c=entity.getClass();
    		 while(c!=DialectEntity.class) c=c.getSuperclass();
-		Map<String, String> dialectMap=(Map<String, String>)Utils.getFieldValue(c,entity, Const.DIALECT_MAP);
+		Map<String, String> dialectMap=(Map<String, String>) ObjectSupport.getFieldValue(c,entity, Const.DIALECT_MAP);
 		return dialectMap==null?null:dialectMap.get(property);
 	}
 
-
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-		//BeanAnn ba = new BeanAnn(Bean.class);
-		
-		/*BeanInfo beanInfo = Introspector.getBeanInfo(Bean.class);
-		
-		PropertyDescriptor  p=beanInfo.getPropertyDescriptors()[0];
-		System.out.println( p.getName());
-		*/
-	}
 
 }

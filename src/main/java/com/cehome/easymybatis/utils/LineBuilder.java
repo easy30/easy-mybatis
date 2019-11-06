@@ -21,9 +21,11 @@ public class LineBuilder {
         sb.append(obj).append(LINE);
         return this;
     }
+
     public int length(){
         return sb.length();
     }
+
     @Override
     public String toString(){
         return sb.toString();

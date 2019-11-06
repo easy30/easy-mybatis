@@ -35,8 +35,9 @@ public class DialectEntity implements Serializable {
     }
 
     /**
-     * 利用sql语句值（函数等）给实体类的属性赋值，如 setSqlValue("myTime","sysdate")
-     * 调用此方法后，则实体类属性本身的set方法将不起作用。
+     * set value by sql.
+     * put("myTime","now()")
+     *
      *
      * @param property
      * @param dialectValue
@@ -46,21 +47,6 @@ public class DialectEntity implements Serializable {
         dialectMap.put(property, dialectValue);
 
     }
-
-/*
-
-    @Transient
-    public String findSqlValue(String property) {
-        if (sqlValueMap != null) return sqlValueMap.get(property);
-        return null;
-    }
-
-
-    public boolean hasSqlValue() {
-
-        return sqlValueMap != null && sqlValueMap.size() > 0;
-    }*/
-
 
 
 }

@@ -1,9 +1,10 @@
 package com.cehome.easymybatis.provider;
 
-import com.cehome.easymybatis.ColumnAnnotation;
+import com.cehome.easymybatis.core.ColumnAnnotation;
 import com.cehome.easymybatis.utils.Const;
-import com.cehome.easymybatis.EntityAnnotation;
+import com.cehome.easymybatis.core.EntityAnnotation;
 import com.cehome.easymybatis.utils.LineBuilder;
+import com.cehome.easymybatis.core.ProviderSupport;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 public class ByEntityProvider<E> {
 
     public String getByEntity(@Param(Const.PARAMS) E params){
-        return doBuild(params,ProviderSupport.SQL_SELECT,"*",null);
+        return doBuild(params, ProviderSupport.SQL_SELECT,"*",null);
 
     }
     public String getValueByEntity(String column,@Param(Const.PARAMS) E params){
@@ -23,7 +24,7 @@ public class ByEntityProvider<E> {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
 
-        return doBuild(params,ProviderSupport.SQL_SELECT,ProviderSupport.propertyToColumn(column,propertyColumnMap),null);
+        return doBuild(params,ProviderSupport.SQL_SELECT,ProviderSupport.convertColumn(column,propertyColumnMap),null);
 
     }
     public String listByEntity(@Param(Const.PARAMS) E params, String orderBy){
@@ -64,7 +65,7 @@ public class ByEntityProvider<E> {
             }
         }
 
-        String order=ProviderSupport.propertiesToColumns(orderBy,propertyColumnMap);
+        String order=ProviderSupport.convertColumns(orderBy,propertyColumnMap);
         if(order.length()>0) where.append( " order by "+order);
 
         //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";

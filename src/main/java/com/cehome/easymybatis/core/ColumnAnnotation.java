@@ -1,4 +1,4 @@
-package com.cehome.easymybatis;
+package com.cehome.easymybatis.core;
 /**
  * 字段的属性信息
  * @author ma

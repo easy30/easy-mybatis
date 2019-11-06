@@ -1,6 +1,7 @@
 package com.cehome.easymybatis.provider;
 
-import com.cehome.easymybatis.EntityAnnotation;
+import com.cehome.easymybatis.core.EntityAnnotation;
+import com.cehome.easymybatis.core.ProviderSupport;
 import com.cehome.easymybatis.utils.Utils;
 
 /**

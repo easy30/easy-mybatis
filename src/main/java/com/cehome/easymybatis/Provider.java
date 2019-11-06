@@ -1,10 +1,10 @@
-package com.cehome.easymybatis.provider;
+package com.cehome.easymybatis;
 
-import com.cehome.easymybatis.ColumnAnnotation;
-import com.cehome.easymybatis.EntityAnnotation;
-import com.cehome.easymybatis.Page;
+import com.cehome.easymybatis.core.ColumnAnnotation;
+import com.cehome.easymybatis.core.EntityAnnotation;
 import com.cehome.easymybatis.utils.Const;
 import com.cehome.easymybatis.utils.LineBuilder;
+import com.cehome.easymybatis.core.ProviderSupport;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
@@ -126,7 +126,7 @@ public class Provider<E> {
 
         }
         if (where.length() > 0) {
-            where = ProviderSupport.sqlFixColumnsAndParams(where, propertyColumnMap);
+            where = ProviderSupport.convertSql(where, propertyColumnMap);
         }
 
         return Utils.format(sql, entityAnnotation.getTable(), set, where);
@@ -140,7 +140,7 @@ public class Provider<E> {
             selectColumns = "*";
         } else {
             EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-            selectColumns = ProviderSupport.propertiesToColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
+            selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
 
         }
         return ProviderSupport.sqlById(context, id, ProviderSupport.SQL_SELECT, selectColumns);
@@ -156,7 +156,7 @@ public class Provider<E> {
             selectColumns = "*";
         } else {
             EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(params.getClass());
-            selectColumns = ProviderSupport.propertiesToColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
+            selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
 
         }
         return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_SELECT, true,selectColumns, null, Const.PARAMS);
@@ -168,7 +168,7 @@ public class Provider<E> {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
 
-        return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_SELECT, true, ProviderSupport.propertyToColumn(column, propertyColumnMap), null, Const.PARAMS);
+        return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_SELECT, true, ProviderSupport.convertColumn(column, propertyColumnMap), null, Const.PARAMS);
 
     }
 
@@ -180,7 +180,7 @@ public class Provider<E> {
         if (StringUtils.isBlank(selectColumns)) {
             selectColumns = "*";
         } else {
-            selectColumns = ProviderSupport.propertiesToColumns(selectColumns, propertyColumnMap);
+            selectColumns = ProviderSupport.convertColumns(selectColumns, propertyColumnMap);
         }
 
         return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_SELECT,true, selectColumns, orderBy, Const.PARAMS);
@@ -209,7 +209,7 @@ public class Provider<E> {
         if (StringUtils.isBlank(where)) throw new RuntimeException("because of safety, WHERE condition can not be blank. (set where to * for deleting all records)");
         if(where.equals("*")) where="";
         if (where != null && where.length() > 0) {
-            where = ProviderSupport.sqlFixColumnsAndParams(where, propertyColumnMap);
+            where = ProviderSupport.convertSql(where, propertyColumnMap);
         }
 
         return Utils.format(sql, "", entityAnnotation.getTable(), where);
@@ -222,9 +222,9 @@ public class Provider<E> {
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         String sql = ProviderSupport.SQL_SELECT;
 
-        column = ProviderSupport.propertyToColumn(column, propertyColumnMap);
+        column = ProviderSupport.convertColumn(column, propertyColumnMap);
         if (where != null && where.length() > 0) {
-            where = ProviderSupport.sqlFixColumnsAndParams(where, propertyColumnMap);
+            where = ProviderSupport.convertSql(where, propertyColumnMap);
 
         }
         //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
@@ -243,8 +243,8 @@ public class Provider<E> {
 
         if (sql != null && sql.length() > 0) {
 
-            sql = ProviderSupport.sqlFixColumnsAndParams(sql, propertyColumnMap);
-            sql = ProviderSupport.sqlAddPrefix(sql, entityAnnotation);
+            sql = ProviderSupport.convertSql(sql, propertyColumnMap);
+            sql = ProviderSupport.sqlComplete(sql, entityAnnotation);
         }
 
         return sql;

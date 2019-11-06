@@ -1,13 +1,11 @@
 package com.cehome.easymybatis.provider;
 
-import com.cehome.easymybatis.ColumnAnnotation;
-import com.cehome.easymybatis.EntityAnnotation;
+import com.cehome.easymybatis.core.ColumnAnnotation;
+import com.cehome.easymybatis.core.EntityAnnotation;
 import com.cehome.easymybatis.utils.Const;
 import com.cehome.easymybatis.utils.LineBuilder;
 import com.cehome.easymybatis.utils.Utils;
-import org.apache.ibatis.annotations.Param;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 /**

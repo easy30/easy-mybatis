@@ -1,5 +1,6 @@
+package com.cehome.easymybatis;
+
 import com.alibaba.fastjson.JSON;
-import com.cehome.easymybatis.*;
 import org.apache.ibatis.session.RowBounds;
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,11 +12,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
-public class Test1 {
+public class MapperTest {
 
     @Autowired
     DataSource dataSource;
@@ -30,6 +34,7 @@ public class Test1 {
     Integer age=25;
     String name="ma";
     String realName="coolma";
+
     @Test
     public void testSelect() throws SQLException {
         getByEntity();
@@ -39,7 +44,10 @@ public class Test1 {
         getValueByWhere();
         listByEntity();
         listBySQL();
+        pageByEntity();
+        pageBySQL();
     }
+
     @Test
     public void testUpdate() throws SQLException {
         insert();
@@ -59,11 +67,14 @@ public class Test1 {
     }
 
     @Test
+    public void inserts() throws SQLException {
+        long t=System.currentTimeMillis();
+        for(int i=0;i<10;i++)insert();
+        System.out.println("cost:"+(System.currentTimeMillis()-t));
+    }
+    @Test
     public void insert() throws SQLException {
-
-
         User user=new User();
-
         user.setName(name);
         user.setAge(age);
         user.setRealName(realName);
@@ -75,11 +86,6 @@ public class Test1 {
         System.out.println(JSON.toJSONString(user));
         Assert.assertNotNull(user.getId());
         id=user.getId();
-
-        //sql.append("insert into "+beanAnn.getTable());
-
-
-
     }
     @Test
     public void update() throws SQLException {
@@ -276,11 +282,5 @@ public class Test1 {
         Assert.assertTrue(list.size()>0);
     }
 
-
-    @Test
-    public void test2(){
-        SqlMapper sqlMapper=new SqlMapper(sqlSessionTemplate);
-        System.out.println(JSON.toJSONString(sqlMapper.selectOne("SELECT * FROM user WHERE id = #{id}",36L)));
-    }
 
 }

@@ -1,8 +1,9 @@
 package com.cehome.easymybatis.provider;
 
-import com.cehome.easymybatis.ColumnAnnotation;
+import com.cehome.easymybatis.core.ColumnAnnotation;
 import com.cehome.easymybatis.utils.Const;
-import com.cehome.easymybatis.EntityAnnotation;
+import com.cehome.easymybatis.core.EntityAnnotation;
+import com.cehome.easymybatis.core.ProviderSupport;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,7 +19,7 @@ public class UpdateByWhereProvider<E> {
                 Class entityClass=entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
 
-        String sql=ProviderSupport.SQL_UPDATE;
+        String sql= ProviderSupport.SQL_UPDATE;
         Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
         String set = ProviderSupport.sqlSetValues(entityClass,propertyColumnMap, Const.ENTITY);
 
@@ -29,9 +30,9 @@ public class UpdateByWhereProvider<E> {
 
         }
         if(where.length()>0) {
-            where=ProviderSupport.sqlPropertiesToColumns(where,propertyColumnMap);
+            where=ProviderSupport.convertSqlColumns(where,propertyColumnMap);
             //convert  #{id}==> #{params.id}
-            where =ProviderSupport.sqlParamPrefix(where, Const.PARAMS);
+            where =ProviderSupport.sqlAddParamPrefix(where, Const.PARAMS);
         }
 
 

@@ -1,10 +1,10 @@
 package com.cehome.easymybatis.provider;
 
-import com.cehome.easymybatis.EntityAnnotation;
+import com.cehome.easymybatis.core.EntityAnnotation;
+import com.cehome.easymybatis.core.ProviderSupport;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -12,7 +12,7 @@ import java.util.List;
  **/
 public class ByIdProvider<E> {
     public String getById(ProviderContext context, Object id) {
-       return doBuild(context,id,ProviderSupport.SQL_SELECT,"*");
+       return doBuild(context,id, ProviderSupport.SQL_SELECT,"*");
     }
     public String deleteById(ProviderContext context, Object id) {
         return doBuild(context,id,ProviderSupport.SQL_DELETE,"");

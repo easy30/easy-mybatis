@@ -5,10 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
- * 通过正则表达式来实现字符串替换（2008-08-21）
- * 可以实现动态地赋值替换、可以实现对匹配值的部分替换。
- * 例子查看main()函数
+
  * @version 1.0
  * @author coolma
  *
@@ -64,10 +61,6 @@ public class RegularReplace
 		}
 		return getResult();
 	}
-
-
-
-
 
 
 	public boolean find()
@@ -152,7 +145,6 @@ public class RegularReplace
 			}
 		}
 
-
 		for(int i=0;i< values.length;i++)
 		{
 			if(values[i]==null) continue;
@@ -165,9 +157,7 @@ public class RegularReplace
 
 		}
 
-
 	}
-
 
 	public String getResult()
 	{
@@ -218,6 +208,5 @@ public class RegularReplace
 
 
 	}
-
 
 }

@@ -1,5 +1,6 @@
-package com.cehome.easymybatis;
+package com.cehome.easymybatis.core;
 
+import com.cehome.easymybatis.Page;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.cache.CacheKey;
@@ -36,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
                 args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
 })
 
-public class SimpleInterceptor implements Interceptor {
+public class DefaultInterceptor implements Interceptor {
 
     private Map<String, MappedStatement> countMap = new ConcurrentHashMap();
 

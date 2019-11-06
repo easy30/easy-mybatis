@@ -1,6 +1,6 @@
 package com.cehome.easymybatis.builder;
 
-import com.cehome.easymybatis.EntityAnnotation;
+import com.cehome.easymybatis.core.EntityAnnotation;
 import org.apache.ibatis.annotations.Lang;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
