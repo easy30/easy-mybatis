@@ -28,6 +28,10 @@
         <property name="mapperInterface" value="com.cehome.easymybatis.UserMapper" />
         <property name="sqlSessionFactory" ref="sqlSessionFactory" />
     </bean>
-    <bean   class="com.cehome.easymybatis.MapperFactory" />
+    <bean   class="com.cehome.easymybatis.MapperFactory" >
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+    </bean>
+
+    <bean class="com.cehome.easymybatis.generation.OracleSQLGeneration" ></bean>
 
 </beans>

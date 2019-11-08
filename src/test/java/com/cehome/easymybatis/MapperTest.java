@@ -36,6 +36,12 @@ public class MapperTest {
     String realName="coolma";
 
     @Test
+    public void testAll() throws SQLException {
+        testDelete();
+        testUpdate();
+        testSelect();
+    }
+    @Test
     public void testSelect() throws SQLException {
         getByEntity();
         getUser();
@@ -78,7 +84,7 @@ public class MapperTest {
         user.setName(name);
         user.setAge(age);
         user.setRealName(realName);
-        user.put("email", "'a@a.com'");
+        user.setValue("email", "'a@a.com'");
 
         //user.setCreateTime(new Date(System.currentTimeMillis()+1000*3600));
         userMapper.insert(user);
@@ -92,7 +98,7 @@ public class MapperTest {
         User user=new User();
         user.setName("updateById");
         user.setId(id);
-        user.put("createTime","now()");
+        user.setValue("createTime","now()");
         Assert.assertEquals(1, userMapper.update(user));
     }
     @Test

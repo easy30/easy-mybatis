@@ -5,14 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * coolma 2019/10/25
- **/
-
-@Target({ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ColumnInsertDefault {
+public @interface IdGeneration {
+    String name()default "";
 
-    String value() ;
+    String arg() default "";
 
 }

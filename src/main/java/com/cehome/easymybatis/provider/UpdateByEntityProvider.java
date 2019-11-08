@@ -36,8 +36,8 @@ public class UpdateByEntityProvider<E> {
 
             if(entityAnnotation.isDialectEntity()){
                 where.append(Utils.format(Const.SQL_IF_AND_DIALECT,
-                        Const.DIALECT_MAP, Const.DIALECT_MAP+"."+prop,
-                        columnAnnotation.getName(),Const.DIALECT_MAP+"."+prop));
+                        Const.PARAM_MAP, Const.PARAM_MAP+"."+prop,
+                        columnAnnotation.getName(),Const.PARAM_MAP+"."+prop));
 
             }
 

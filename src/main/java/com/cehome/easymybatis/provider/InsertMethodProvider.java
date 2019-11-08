@@ -49,9 +49,9 @@ public class InsertMethodProvider<E> {
 
             if(entityAnnotation.isDialectEntity()){
                 s1.append(Utils.format("<if test='{} != null and {} != null'> {},</if>",
-                        Const.DIALECT_MAP, Const.DIALECT_MAP+"."+prop, columnAnnotation.getName()));
+                        Const.VALUE_MAP, Const.VALUE_MAP+"."+prop, columnAnnotation.getName()));
                 s2.append(Utils.format("<if test='{} != null and {} != null'> ${{}},</if>",
-                        Const.DIALECT_MAP, Const.DIALECT_MAP+"."+prop, Const.DIALECT_MAP+"."+prop));
+                        Const.VALUE_MAP, Const.VALUE_MAP+"."+prop, Const.VALUE_MAP+"."+prop));
 
             }
 

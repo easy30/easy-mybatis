@@ -18,6 +18,7 @@ public class ProviderSupport {
     public static String SQL_UPDATE = "<script>\r\n update {} <set>{}</set> \r\n <where>{}</where> \r\n </script> ";
     public static String SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
     public static String SQL_DELETE="<script>\r\n delete {} from {} <where>{}</where>\r\n</script>";
+    public static String SQL_SELECT_KEY="<selectKey keyProperty='{}' resultType='{}' order='{}'>{}</selectKey>";
 
 
     public static String sqlSetValues(Object entity,String prefix) {
@@ -38,7 +39,7 @@ public class ProviderSupport {
                 s1.append(Utils.format(" {}=#{{}}, ",  columnAnnotation.getName(), prefix + prop));
             }else{
                 //-- dialect value
-                value=entityAnnotation.getDialectProperty(entity,prop);
+                value=entityAnnotation.getDialectValue(entity,prop);
                 //-- default value
                 if(value==null && columnAnnotation.getColumnUpdateDefault()!=null){
                     value=columnAnnotation.getColumnUpdateDefault();
@@ -77,8 +78,8 @@ public class ProviderSupport {
             s1.append(Utils.format("<if test='{} != null'> {}=#{{}}, </if>", prop, columnAnnotation.getName(), prop));
 
             if(isDialect){
-                String mapProp= Const.DIALECT_MAP+"."+prop;
-                s1.append(Utils.format("<if test='{} != null and {} != null'> {}=${{}}, </if>", Const.DIALECT_MAP,mapProp, columnAnnotation.getName(), mapProp));
+                String mapProp= Const.VALUE_MAP+"."+prop;
+                s1.append(Utils.format("<if test='{} != null and {} != null'> {}=${{}}, </if>", Const.VALUE_MAP,mapProp, columnAnnotation.getName(), mapProp));
 
             }
 
@@ -100,7 +101,7 @@ public class ProviderSupport {
             if(value!=null){
                 where+= columns.get(i)+" = #{"+props.get(i)+"}";
             }else{
-                value=entityAnnotation.getDialectProperty(entity,prop);
+                value=entityAnnotation.getDialectParam(entity,prop);
                 if(value==null) throw new RuntimeException("property "+prop+" can not be null");
                  where+= columns.get(i)+" = "+value;
             }
@@ -228,7 +229,7 @@ public class ProviderSupport {
                 String fullProp= prefix==null||prefix.length()==0?prop:prefix+"."+prop;
                 where.append(Utils.format(Const.SQL_AND,  columnAnnotation.getName(),fullProp));
             }else {
-                value= entityAnnotation.getDialectProperty(params,prop);
+                value= entityAnnotation.getDialectParam(params,prop);
                 if(value!=null){
                     where.append(Utils.format(Const.SQL_AND_DIALECT,   columnAnnotation.getName(),value));
                 }

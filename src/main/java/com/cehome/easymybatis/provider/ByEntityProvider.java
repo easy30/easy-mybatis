@@ -57,7 +57,7 @@ public class ByEntityProvider<E> {
                     fullProp, columnAnnotation.getName(),fullProp));
 
             if(entityAnnotation.isDialectEntity()){
-                String fullDialectMap= Const.PARAMS+"."+Const.DIALECT_MAP;
+                String fullDialectMap= Const.PARAMS+"."+Const.PARAM_MAP;
                 where.append(Utils.format(Const.SQL_IF_AND_DIALECT,
                         fullDialectMap, fullDialectMap+"."+prop,
                         columnAnnotation.getName(),fullDialectMap+"."+prop));

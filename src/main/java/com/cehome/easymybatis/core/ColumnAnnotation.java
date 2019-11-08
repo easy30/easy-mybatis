@@ -1,4 +1,7 @@
 package com.cehome.easymybatis.core;
+
+import com.cehome.easymybatis.Generation;
+
 /**
  * 字段的属性信息
  * @author ma
@@ -21,6 +24,10 @@ public class ColumnAnnotation
 	private String columnDefinition=null;
 	private String columnInsertDefault;
 	private String columnUpdateDefault;
+
+	private Generation generation;
+	private String generatorArg;
+
 
 	
 	
@@ -163,5 +170,21 @@ public class ColumnAnnotation
 
 	public void setColumnUpdateDefault(String columnUpdateDefault) {
 		this.columnUpdateDefault = columnUpdateDefault;
+	}
+
+	public Generation getGeneration() {
+		return generation;
+	}
+
+	public void setGeneration(Generation generation) {
+		this.generation = generation;
+	}
+
+	public String getGeneratorArg() {
+		return generatorArg;
+	}
+
+	public void setGeneratorArg(String generatorArg) {
+		this.generatorArg = generatorArg;
 	}
 }

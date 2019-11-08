@@ -128,7 +128,7 @@ public class DefaultInterceptor implements Interceptor {
     }
 
     private MappedStatement createMappedStatement(final MappedStatement statement, final Class resultTypeClass) {
-        String id = statement.getId() + "_count";
+        String id = statement.getId() + "!count";
         MappedStatement result = countMap.get(id);
         if (result != null) return result;
         MappedStatement.Builder statementBuilder = new MappedStatement.Builder(statement.getConfiguration(),

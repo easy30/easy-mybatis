@@ -2,13 +2,16 @@ package com.cehome.easymybatis.core;
 
 
 import com.cehome.easymybatis.DialectEntity;
-import com.cehome.easymybatis.annotation.ColumnInsertDefault;
-import com.cehome.easymybatis.annotation.ColumnUpdateDefault;
+import com.cehome.easymybatis.Generation;
+import com.cehome.easymybatis.annotation.ColumnDefault;
+import com.cehome.easymybatis.annotation.ColumnGeneration;
+import com.cehome.easymybatis.annotation.IdGeneration;
 import com.cehome.easymybatis.utils.ObjectSupport;
 import com.cehome.easymybatis.utils.Const;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
- 
+
 
 import javax.persistence.*;
 import java.beans.BeanInfo;
@@ -26,30 +29,28 @@ import java.util.*;
  * @author ma
  * 
  */
-
-/**
- * @author ma
- *
- */
 public class EntityAnnotation
 {
 	private  static Logger logger= LoggerFactory.getLogger(EntityAnnotation.class);
 	private static Map<Class, EntityAnnotation> beanMap =new  HashMap<Class, EntityAnnotation> ();;
 
+	private Set<String> transientColumnSet = new HashSet<String> ();
+	private Set<String> lobColumnSet= new HashSet<String> ();
 
 	private String table = null;
-	private String idName=null;
 
-	private List<PropertyDescriptor>  idProperties=new ArrayList();
+
+	//private List<PropertyDescriptor>  idProperties=new ArrayList();
 	private List<String> idPropertyNames=new ArrayList();
 	private List<String> idColumnNames=new ArrayList();
 	private Map<String, ColumnAnnotation> propertyColumnMap = new HashMap<String, ColumnAnnotation> ();
-	private Set<String> transientColumnSet = new HashSet<String> ();
-	private Set<String> lobColumnSet= new HashSet<String> ();
+
 	//private PropertyDescriptor[] properties =null;
-	private Map<String,PropertyDescriptor> propertyMap=new HashMap<String, PropertyDescriptor> ();
+	private Map<String,PropertyDescriptor> propertyDescriptorMap =new HashMap<String, PropertyDescriptor> ();
 	private Class entityClass=null;
 	private boolean dialectEntity;
+	private Generation idGeneration;
+	private String idGeneratorArg;
 
 	public static EntityAnnotation getInstance(Class entityClass)
 	{
@@ -97,24 +98,6 @@ public class EntityAnnotation
 		this.transientColumnSet = transientColumnSet;
 	}
 
-	/**
-	 *  db field name for id
-	 * @return
-     */
-	public String getIdName()
-	{
-		return idName;
-	}
-
-	/**
-	 * 设置ID字段名称
-	 * @param idName
-	 */
-	public void setIdName(String idName)
-	{
-		this.idName = idName;
-	}
-
 
 
 	/**
@@ -131,21 +114,17 @@ public class EntityAnnotation
 		this.table = table;
 	}
 
-	/**
-	 * readMethod名跟数据库字段名映射表
-	 * @return
-	 */
+
 	public Map<String, ColumnAnnotation> getPropertyColumnMap()
 	{
 		return propertyColumnMap;
 	}
 
-	public void setPropertyColumnMap(Map<String, ColumnAnnotation> propertyColumnMap)
-	{
-		this.propertyColumnMap = propertyColumnMap;
+	public Map<String, PropertyDescriptor> getPropertyDescriptorMap() {
+		return propertyDescriptorMap;
 	}
 
-   private  <T extends Annotation> T findFieldAnnotation(Class<T> clazz, String fieldName,Class<T> annotationClass ) {
+	private  <T extends Annotation> T findFieldAnnotation(Class<T> clazz, String fieldName, Class<T> annotationClass ) {
        T annotation = null;
        try {
            Field field = clazz.getDeclaredField(fieldName);
@@ -160,15 +139,8 @@ public class EntityAnnotation
        return annotation;
    }
 
-   /**
-    * 获取字段或方法上面的指定类型的注解；如果两者都有则报错。
-    * @param <T>
-    * @param c
-    * @param method
-    * @param fieldName
-    * @param annotationClass
-    * @return
-    */
+
+/*
    private  <T extends Annotation> T getMethodorFieldAnn(Class<T> c,  Method method, String fieldName,Class<T> annotationClass )
    {
 
@@ -177,105 +149,54 @@ public class EntityAnnotation
 	    if(t1!=null && t2!=null) throw new RuntimeException("Can not define Annotation both on filed and method!");
 		return t1==null?t2:t1;
    }
+*/
 
-	public EntityAnnotation(Class c)
+	public EntityAnnotation(Class clazz)
 	{
 		//if (Enhancer.isEnhanced(c)) c=c.getSuperclass();
-		this.entityClass=c;
+		this.entityClass=clazz;
 		dialectEntity= DialectEntity.class.isAssignableFrom(entityClass);
-		Table t = (Table) c.getAnnotation(Table.class);
-		if (t != null && t.name()!=null && t.name().length()>0) table = t.name();
+
 		//ColumnUnderscore columnUnderscore=(ColumnUnderscore)c.getAnnotation(ColumnUnderscore.class);
 		boolean columnUnderscoreSupport=true;//(t!=null && t.columnUnderscoreSupport()) || (columnUnderscore!=null ) ;
 		//System.out.println(table);
+		doWithTable();
+		doWithIdGenerator();
 
-		//Field[] fields=c.getDeclaredFields();
 
-		PropertyDescriptor[] pds= propertyDescriptors(c);
+		PropertyDescriptor[] pds= propertyDescriptors(clazz);
 		for (PropertyDescriptor pd : pds)
 		{
-			String name=pd.getName();
-			if (name.equals("class")) continue;
+			String prop=pd.getName();
+			if (prop.equals("class")) continue;
 			Method method = pd.getReadMethod();
-			Field field = ObjectSupport.getField(c, name);
+			Field field = ObjectSupport.getField(clazz, prop);
 			if(field==null) {
 				Transient trans=method.getAnnotation(Transient.class);
 				if(trans==null)
-				throw  new RuntimeException("can not find field: "+name);
+				throw  new RuntimeException("can not find field: "+prop);
 				else continue;
 			}
-			propertyMap.put(name, pd);
-			//String methodName = method.getName();
+
+			propertyDescriptorMap.put(prop, pd);
+
 			//--@Column
-			//Column column1 = method.getAnnotation(Column.class);
-			//Column column2=findFieldAnnotation(c,pd.getName(),Column.class);
-			//if(column1!=null && column2!=null) throw new RuntimeException("Can not define Annotation both on filed and method!");
 			ColumnAnnotation ca=new ColumnAnnotation();
 			propertyColumnMap.put(pd.getName(), ca);
 
-			if(getMethodorFieldAnn(c,method, name  ,javax.persistence.Column.class)!=null)
-			{
-				throw new RuntimeException("please use 'websharp.persistence.Column' instead of 'javax.persistence.Column' for "+c);
-			}
-
-			Column column=getMethodorFieldAnn(c,method, name  ,Column.class);
-			if (column != null)
-			{
-
-				//columnMap.put(methodName, name);
-				ca.setName(column.name()==null||column.name().isEmpty()?
-						(columnUnderscoreSupport?this.camelCaseToUnderscore(name): name):column.name());
-				ca.setInsertable(column.insertable());
-				ca.setUpdatable(column.updatable());
-				ca.setNullable(column.nullable());
-				ca.setLength(column.length());
-				ca.setPrecision(column.precision());
-				ca.setScale(column.scale());
-			//	fa.setDefaultValue(column.defaultValue());
-				ca.setColumnDefinition(column.columnDefinition());
 
 
-				//System.out.println(name);
-			}
-			else ca.setName(columnUnderscoreSupport?this.camelCaseToUnderscore(name): name);
-
-			ColumnInsertDefault columnInsertDefault=getMethodorFieldAnn(c,method, name  ,ColumnInsertDefault.class);
-			if(columnInsertDefault!=null){
-
-				ca.setColumnInsertDefault(columnInsertDefault.value());
-
-			}
-
-			ColumnUpdateDefault columnUpdateDefault=getMethodorFieldAnn(c,method, name  ,ColumnUpdateDefault.class);
-			if(columnUpdateDefault!=null){
-
-				ca.setColumnUpdateDefault(columnUpdateDefault.value());
-
-			}
-
-
-			//-- @Id注解
-			Id id=field.getAnnotation(Id.class);
-			if(id==null && method!=null) id= method.getAnnotation(Id.class);
-			if(id!=null)
-			{
-				ca.setIdentitied(true);
-				setIdName(ca.getName());
-
-				idProperties.add(pd);
-				idPropertyNames.add(pd.getName());
-				idColumnNames.add(ca.getName());
-
-			}
+			doWithColumn(  field,method, ca,  prop,  columnUnderscoreSupport);
+			doWithId(pd,field,method,ca);
+			doWithColumnGenerator(field,method,ca);
+			doWithColumnDefault(  field,  method,  ca);
 
 			//--@Transient
-			Transient  trans=field.getAnnotation(Transient.class);
-			if(trans==null)  trans=method.getAnnotation(Transient.class);
+			Transient  trans=getAnnotation(Transient.class,field,method);
 			if(trans!=null) ca.setTransient(true);        //transientColumnSet.add(methodName);
 
 			//--@Lob
-			Lob lob=field.getAnnotation(Lob.class);
-			if(lob==null) lob=method.getAnnotation(Lob.class);
+			Lob lob=getAnnotation(Lob.class,field,method);
 			if(lob!=null)
 				{
 					ca.setLob(true);//  this.lobColumnSet.add(methodName);
@@ -287,16 +208,135 @@ public class EntityAnnotation
 
 		}
 
-		//properties=propertyMap.values().toArray(new PropertyDescriptor[0]);
+
 
 
 	}
+	private void doWithColumn(	Field field,Method method,ColumnAnnotation ca,String prop,boolean columnUnderscoreSupport){
+		Column column=getAnnotation(Column.class,field,method);
+		if (column != null)
+		{
+
+			ca.setName(column.name()==null||column.name().isEmpty()?
+					(columnUnderscoreSupport?this.camelCaseToUnderscore(prop): prop):column.name());
+			ca.setInsertable(column.insertable());
+			ca.setUpdatable(column.updatable());
+			ca.setNullable(column.nullable());
+			ca.setLength(column.length());
+			ca.setPrecision(column.precision());
+			ca.setScale(column.scale());
+			//	fa.setDefaultValue(column.defaultValue());
+			ca.setColumnDefinition(column.columnDefinition());
+
+
+		}
+		else ca.setName(columnUnderscoreSupport?this.camelCaseToUnderscore(prop): prop);
+
+
+	}
+	private void doWithColumnDefault(Field field,Method method,ColumnAnnotation ca){
+		ColumnDefault columnDefault=getAnnotation(ColumnDefault.class,field,method);
+		if(columnDefault!=null){
+			String value= StringUtils.isBlank(columnDefault.insertValue())?columnDefault.value():columnDefault.insertValue();
+			if(StringUtils.isNotBlank(value)) ca.setColumnInsertDefault(value);
+			value=StringUtils.isBlank(columnDefault.updateValue())?columnDefault.value():columnDefault.updateValue();
+			if(StringUtils.isNotBlank(value)) ca.setColumnUpdateDefault(value);
+
+		}
+	}
+	private void doWithTable(){
+		Table t = (Table) entityClass.getAnnotation(Table.class);
+		if (t != null && t.name()!=null && t.name().length()>0) table = t.name();
+	}
+	private void doWithId(PropertyDescriptor pd ,Field field,Method method,ColumnAnnotation ca){
+		//-- @Id注解
+		Id id=getAnnotation(Id.class,field,method);
+		if(id!=null)
+		{
+			ca.setIdentitied(true);
+			//setIdName(ca.getName());
+
+			//idProperties.add(pd);
+			idPropertyNames.add(pd.getName());
+			idColumnNames.add(ca.getName());
+
+		}
+	}
+
+	private void doWithIdGenerator(){
+		IdGeneration idGeneration =(IdGeneration)entityClass.getAnnotation(IdGeneration.class);
+		if(idGeneration !=null){
+			String generatorName= idGeneration.name();
+			String generatorArg= idGeneration.arg();
+			Generators generators=Generators.getInstance();
+
+			if(StringUtils.isBlank(generatorName)){
+				if(generators.getPrimary()==null){
+					throw new RuntimeException("no default Generator found for class "+entityClass
+							+". Please set generator name or keep only one primary Generator bean");
+
+				}
+				setIdGeneration(generators.getPrimary());
+
+			}else{
+				Generation generation =generators.get(generatorName);
+				if(generation ==null){
+					throw new RuntimeException("Generator bean '"+ generatorName+"' not found for class "+entityClass);
+				}
+				setIdGeneration(generation);
+			}
+			 setIdGeneratorArg(generatorArg);
+
+		}
+	}
+	private void doWithColumnGenerator(Field field, Method method, ColumnAnnotation ca){
+		ColumnGeneration columnGeneration =getAnnotation(ColumnGeneration.class,field,method);
+		if(columnGeneration !=null){
+			String generatorName= columnGeneration.name();
+			String generatorArg= columnGeneration.arg();
+			Generators generators=Generators.getInstance();
+
+			if(StringUtils.isBlank(generatorName)){
+				if(generators.getPrimary()==null){
+					throw new RuntimeException("no default Generator found for class "+entityClass
+							+". Please set generator name or keep only one primary Generator bean");
+
+				}
+				ca.setGeneration(generators.getPrimary());
+
+			}else{
+				Generation generation =generators.get(generatorName);
+				if(generation ==null){
+					throw new RuntimeException("Generator bean '"+ generatorName+"' not found for class "+entityClass);
+				}
+				ca.setGeneration(generation);
+			}
+			ca.setGeneratorArg(generatorArg);
+
+		}
+	}
+
+	private <T extends Annotation> T getAnnotation(Class<T> annotationClass,Field field,Method method){
+		T  t=field.getAnnotation(annotationClass);
+		if(t==null)  t=method.getAnnotation(annotationClass);
+		return t;
+	}
 
 	public Object getProperty(Object object,String property){
-		PropertyDescriptor pd=propertyMap.get(property);
+		PropertyDescriptor pd= propertyDescriptorMap.get(property);
 		if(pd==null) throw new RuntimeException("property '"+property+"' not found");
 		try {
 			return pd.getReadMethod().invoke(object);
+		} catch ( Exception e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+	public void setProperty(Object object,String property,Object value){
+		PropertyDescriptor pd= propertyDescriptorMap.get(property);
+		if(pd==null) throw new RuntimeException("property '"+property+"' not found");
+		try {
+			 pd.getWriteMethod().invoke(object,value);
 		} catch ( Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -349,7 +389,7 @@ public class EntityAnnotation
 
 	}
 	 
-	public String getColumnByProperty(String name)
+	/*public String getColumnByProperty(String name)
 	{
 		ColumnAnnotation fa= propertyColumnMap.get(name);
 		if(fa!=null) return fa.getName();
@@ -357,11 +397,11 @@ public class EntityAnnotation
 		return name;
 		 
 		
-	}
+	}*/
 
-	public List<PropertyDescriptor> getIdProperties() {
+/*	public List<PropertyDescriptor> getIdProperties() {
 		return idProperties;
-	}
+	}*/
 
 	public List<String> getIdPropertyNames() {
 		return idPropertyNames;
@@ -375,13 +415,42 @@ public class EntityAnnotation
    		return dialectEntity;
 	}
 
-	public Object getDialectProperty(Object entity,String property){
+	public Object getDialectValue(Object entity,String property){
    		if(!isDialectEntity()) return null;
    		 Class c=entity.getClass();
    		 while(c!=DialectEntity.class) c=c.getSuperclass();
-		Map<String, String> dialectMap=(Map<String, String>) ObjectSupport.getFieldValue(c,entity, Const.DIALECT_MAP);
+		Map<String, String> dialectMap=(Map<String, String>) ObjectSupport.getFieldValue(c,entity, Const.VALUE_MAP);
+		return dialectMap==null?null:dialectMap.get(property);
+	}
+	public Object getDialectParam(Object entity,String property){
+		if(!isDialectEntity()) return null;
+		Class c=entity.getClass();
+		while(c!=DialectEntity.class) c=c.getSuperclass();
+		Map<String, String> dialectMap=(Map<String, String>) ObjectSupport.getFieldValue(c,entity, Const.PARAM_MAP);
 		return dialectMap==null?null:dialectMap.get(property);
 	}
 
+	public static Logger getLogger() {
+		return logger;
+	}
 
+	public static void setLogger(Logger logger) {
+		EntityAnnotation.logger = logger;
+	}
+
+	public Generation getIdGeneration() {
+		return idGeneration;
+	}
+
+	public void setIdGeneration(Generation idGeneration) {
+		this.idGeneration = idGeneration;
+	}
+
+	public String getIdGeneratorArg() {
+		return idGeneratorArg;
+	}
+
+	public void setIdGeneratorArg(String idGeneratorArg) {
+		this.idGeneratorArg = idGeneratorArg;
+	}
 }

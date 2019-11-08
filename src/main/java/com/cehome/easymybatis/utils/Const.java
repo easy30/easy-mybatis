@@ -13,7 +13,8 @@ public interface Const {
     String SQL = "s";
     String ID = "id";
     String ORDER="order";
-    String DIALECT_MAP="dialectMap";
+    String VALUE_MAP="valueMap";
+    String PARAM_MAP="paramMap";
     String SQL_IF_AND = "<if test='{} != null'> and {}=#{{}} </if>";
     String SQL_IF_AND_DIALECT = "<if test='{} != null and {} != null'> and {} = ${{}}</if>";
 

@@ -18,16 +18,10 @@ public class DialectEntity implements Serializable {
 
 
     @Transient
-    private Map<String, String> dialectMap = null;
+    private Map<String, String> valueMap = null;
+    @Transient
+    private Map<String, String> paramMap = null;
 
-
-   /* public Map<String, String> getDialectMap() {
-        return dialectMap;
-    }
-
-    public void setDialectMap(Map<String, String> dialectMap) {
-        this.dialectMap = dialectMap;
-    }*/
 
     public DialectEntity(){
 
@@ -35,16 +29,27 @@ public class DialectEntity implements Serializable {
     }
 
     /**
-     * set value by sql.
-     * put("myTime","now()")
+     * set sql value for insert or update
+     * put("updateTime","now()")
      *
      *
      * @param property
      * @param dialectValue
      */
-    public void put(String property, String dialectValue) {
-        if (dialectMap == null) dialectMap = new HashMap<String, String>();
-        dialectMap.put(property, dialectValue);
+    public void setValue(String property, String dialectValue) {
+        if (valueMap == null) valueMap = new HashMap<String, String>();
+        valueMap.put(property, dialectValue);
+
+    }
+
+    /**
+     * set sql param for select
+     * @param property
+     * @param dialectValue
+     */
+    public void setParam(String property, String dialectValue) {
+        if (paramMap == null) paramMap = new HashMap<String, String>();
+        paramMap.put(property, dialectValue);
 
     }
 

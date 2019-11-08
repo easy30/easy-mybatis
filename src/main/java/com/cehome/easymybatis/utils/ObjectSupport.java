@@ -9,6 +9,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
@@ -118,5 +119,12 @@ public class ObjectSupport {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static Method getMethod(Class clazz,String methodName){
+		for (Method m : clazz.getMethods()) {
+			if (m.getName().equals(methodName)) return m;
+		}
+		return null;
 	}
 }

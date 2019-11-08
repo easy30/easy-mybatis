@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.builder.annotation.ProviderContext;
 
+import java.beans.PropertyDescriptor;
 import java.util.Map;
 
 /**
@@ -22,43 +23,95 @@ public class Provider<E> {
 
         LineBuilder sql = new LineBuilder();
         sql.append("<script>")
+                .append("{}")
                 .append("insert into {} ")
                 .append("<trim prefix=\"(\" suffix=\")\" suffixOverrides=\",\">{} </trim>")
                 .append("<trim prefix=\"values (\" suffix=\")\" suffixOverrides=\",\">{}</trim>")
                 .append("</script>");
 
-        LineBuilder s1 = new LineBuilder();
-        LineBuilder s2 = new LineBuilder();
+        LineBuilder selectKeys= new LineBuilder();
+        StringBuilder columnBuilder = new StringBuilder();
+        StringBuilder valueBuilder = new StringBuilder();
         Map<String, ColumnAnnotation> columnMap = entityAnnotation.getPropertyColumnMap();
 
 
         for (Map.Entry<String, ColumnAnnotation> e : columnMap.entrySet()) {
-            String prop = e.getKey();
+
             ColumnAnnotation columnAnnotation = e.getValue();
+
             if (!columnAnnotation.isInsertable()) continue;
+            String prop = e.getKey();
+            int valueType=0;//1 value 2:dialect 3:sql
+
+            // entity value
             Object value = entityAnnotation.getProperty(entity, prop);
             if (value != null) {
-                s1.append(columnAnnotation.getName() + ",");
-                s2.append(Utils.format("#{{}},", prop));
-            } else {
-                value = entityAnnotation.getDialectProperty(entity, prop);
-                if (value == null && columnAnnotation.getColumnInsertDefault() != null) {
-                    value = columnAnnotation.getColumnInsertDefault();
-                }
+                valueType=1;
+
+            }
+            // dialect value
+            else{
+
+                value = entityAnnotation.getDialectValue(entity, prop);
                 if (value != null) {
-                    s1.append(Utils.format("{},", columnAnnotation.getName()));
-                    s2.append(Utils.format("{},", value));
+                    valueType=2;
+
                 }
+            }
+
+            // generator value
+            if(value==null){
+
+                Generation generation = columnAnnotation.getGeneration();
+                if (generation != null && !generation.getType().equals(Generation.Type.NONE)) {
+                    value = generation.generate(entity, entityAnnotation.getTable(), prop,
+                            columnAnnotation.getGeneratorArg());
+                    if (value != null) {
+                        if (generation.getType().equals(Generation.Type.VALUE)) {
+                            entityAnnotation.setProperty(entity, prop, value);
+                            valueType=1;
+
+
+                        } else if (generation.getType().equals(Generation.Type.SQL_VALUE)) {
+                           valueType=2;
+                        }
+                        else if (generation.getType().equals(Generation.Type.SELECT_KEY_SQL)) {
+                            PropertyDescriptor pd= entityAnnotation.getPropertyDescriptorMap().get(prop);
+                            selectKeys.append(Utils.format(ProviderSupport.SQL_SELECT_KEY,prop,pd.getPropertyType().getName(),"BEFORE",value));
+                            valueType=3;
+
+                        }
+
+                    }
+                }
+            }
+
+
+            // default value
+            if(value==null) {
+                value = columnAnnotation.getColumnInsertDefault();
+                if (value != null) {
+                    valueType=2;
+                }
+            }
+
+            if (valueType ==1) {
+                columnBuilder.append(columnAnnotation.getName() + ",");
+                valueBuilder.append(Utils.format("#{{}},", prop));
+            }  else if (valueType ==2) {
+                columnBuilder.append(Utils.format("{},", columnAnnotation.getName()));
+                valueBuilder.append(Utils.format("{},", value));
+
             }
 
         }
 
-        return Utils.format(sql.toString(), entityAnnotation.getTable(), s1, s2);
+        return Utils.format(sql.toString(), selectKeys,entityAnnotation.getTable(), columnBuilder, valueBuilder);
 
     }
 
     public String update(E entity) {
-        if(entity==null) throw new RuntimeException("entity can not be null");
+        if (entity == null) throw new RuntimeException("entity can not be null");
         Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         String set = ProviderSupport.sqlSetValues(entity, "");
@@ -75,7 +128,7 @@ public class Provider<E> {
 
     public String updateByEntity(@Param(Const.ENTITY) E entity, @Param(Const.PARAMS) E params) {
         Class entityClass = entity.getClass();
-        if(entity==null || params==null) throw new RuntimeException("entity or params can not be null");
+        if (entity == null || params == null) throw new RuntimeException("entity or params can not be null");
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
 
         String sql = ProviderSupport.SQL_UPDATE;
@@ -92,7 +145,7 @@ public class Provider<E> {
             if (value != null) {
                 whereBuilder.append(Utils.format(Const.SQL_AND, columnAnnotation.getName(), fullProp));
             } else {
-                value = entityAnnotation.getDialectProperty(params, prop);
+                value = entityAnnotation.getDialectParam(params, prop);
                 if (value != null) {
                     whereBuilder.append(Utils.format(Const.SQL_AND_DIALECT, columnAnnotation.getName(), value));
                 }
@@ -100,8 +153,9 @@ public class Provider<E> {
             }
 
         }
-        String where=whereBuilder.toString();
-        if(StringUtils.isBlank(where)) throw new RuntimeException("params for update can not be empty (safely update!!!)");
+        String where = whereBuilder.toString();
+        if (StringUtils.isBlank(where))
+            throw new RuntimeException("params for update can not be empty (safely update!!!)");
 
 
         return Utils.format(sql, entityAnnotation.getTable(), set, where);
@@ -119,8 +173,9 @@ public class Provider<E> {
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         String set = ProviderSupport.sqlSetValues(entity, Const.ENTITY);
 
-        if (StringUtils.isBlank(where)) throw new RuntimeException("because of safety, where condition can not be blank. (set where to * for updating all records)");
-        if(where.equals("*")) where="";//update all
+        if (StringUtils.isBlank(where))
+            throw new RuntimeException("because of safety, where condition can not be blank. (set where to * for updating all records)");
+        if (where.equals("*")) where = "";//update all
         if (where.trim().startsWith("where")) {
             where = where.trim().substring(5);
 
@@ -159,7 +214,7 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
 
         }
-        return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_SELECT, true,selectColumns, null, Const.PARAMS);
+        return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_SELECT, true, selectColumns, null, Const.PARAMS);
 
     }
 
@@ -183,7 +238,7 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertColumns(selectColumns, propertyColumnMap);
         }
 
-        return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_SELECT,true, selectColumns, orderBy, Const.PARAMS);
+        return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_SELECT, true, selectColumns, orderBy, Const.PARAMS);
 
     }
 
@@ -195,7 +250,7 @@ public class Provider<E> {
 
 
     public String deleteByEntity(E params) {
-        return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_DELETE,false, "", null, "");
+        return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_DELETE, false, "", null, "");
 
     }
 
@@ -206,8 +261,9 @@ public class Provider<E> {
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         String sql = ProviderSupport.SQL_DELETE;
 
-        if (StringUtils.isBlank(where)) throw new RuntimeException("because of safety, WHERE condition can not be blank. (set where to * for deleting all records)");
-        if(where.equals("*")) where="";
+        if (StringUtils.isBlank(where))
+            throw new RuntimeException("because of safety, WHERE condition can not be blank. (set where to * for deleting all records)");
+        if (where.equals("*")) where = "";
         if (where != null && where.length() > 0) {
             where = ProviderSupport.convertSql(where, propertyColumnMap);
         }
@@ -253,7 +309,7 @@ public class Provider<E> {
     }
 
     public String pageBySQL(ProviderContext context, @Param(Const.SQL) String sql,
-                            @Param(Const.PARAMS) Object params,@Param(Const.PAGE) Page page) {
+                            @Param(Const.PARAMS) Object params, @Param(Const.PAGE) Page page) {
         return listBySQL(context, sql, params);
 
     }
