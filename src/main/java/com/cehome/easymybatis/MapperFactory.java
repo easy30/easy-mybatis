@@ -1,10 +1,13 @@
 package com.cehome.easymybatis;
 
+import com.cehome.easymybatis.annotation.EntitySelectKey;
 import com.cehome.easymybatis.builder.MethodBuilder;
 import com.cehome.easymybatis.builder.AbstractMethodBuilder;
 import com.cehome.easymybatis.core.*;
+import com.cehome.easymybatis.core.DialectInstance;
 import com.cehome.easymybatis.utils.ObjectSupport;
 import com.cehome.easymybatis.utils.Utils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.SelectKey;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.builder.annotation.MapperAnnotationBuilder;
@@ -39,6 +42,8 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
     Configuration configuration;
     Set<String> methodNameSet = new HashSet<String>();
     Map<String, AbstractMethodBuilder> methodBuilderMap = new HashMap<String, AbstractMethodBuilder>();
+    private String dialect;
+    DialectInstance dialectInstance;
 
 
     private Class[] mapperInterfaces;
@@ -70,7 +75,8 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         if(sqlSessionFactory !=null) configuration= sqlSessionFactory.getConfiguration();
         else if(sqlSessionTemplate!=null) configuration=configuration;
         else throw new RuntimeException("SqlSessionTemplate or SqlSessionFactory not found");
-
+        dialectInstance=new DialectInstance(dialect,configuration);
+        //sqlSessionFactory.openSession().getConnection().getMetaData().getURL()
         //addBuilders(Mapper.class);
 
         // custom mapper interfaces
@@ -112,7 +118,7 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
 
-        configuration.addInterceptor(new DefaultInterceptor());
+        configuration.addInterceptor(new DefaultInterceptor(dialectInstance));
         ApplicationContext context=event.getApplicationContext();
 
         initGenerators(context);
@@ -131,15 +137,9 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
     }
 
     private void initGenerators( ApplicationContext context){
-        Generators generators= Generators.getInstance();
+        Generations generations = Generations.getInstance();
         Map<String, Generation> beans=context.getBeansOfType(Generation.class);
-        generators.putAll(beans);
-        try{
-            Generation bean=  context.getBean(Generation.class);//IdGenerator
-            generators.setPrimary(bean);
-        }catch (Exception e){
-
-        }
+        generations.putAll(beans);
 
     }
 
@@ -159,7 +159,7 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
             MappedStatement ms = configuration.getMappedStatement(namespace + "." + method.getName());
             if (ms != null) {
                 if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {
-                    selectKey(mapperClass,entityClass,method,ms);
+                    doKeyGenerator(mapperClass,entityClass,method,ms);
 
                 }
 
@@ -169,16 +169,22 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         }
     }
 
-    private void selectKey(Class mapperClass,Class entityClass,Method method,MappedStatement ms){
+    private void doKeyGenerator(Class mapperClass,Class entityClass,Method method,MappedStatement ms){
         KeyGenerator keyGenerator=ms.getKeyGenerator();
         // SelectKey exists ,so do nothing
         if(keyGenerator!=null && keyGenerator instanceof SelectKeyGenerator) return;
 
        final EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
-        Generation generation =entityAnnotation.getIdGeneration();
-        if (generation !=null && generation.getType().equals(Generation.Type.SELECT_KEY_SQL)) {
-            //org.apache.ibatis.builder.annotation.MapperAnnotationBuilder.handleSelectKeyAnnotation
+        final EntitySelectKey entitySelectKey=entityAnnotation.getEntitySelectKey();
 
+        List<String> idPropertyNames=entityAnnotation.getIdPropertyNames();
+        List<String> idColumnNames=entityAnnotation.getIdColumnNames();
+        if(idPropertyNames.size()==0) return;
+
+
+        if (entitySelectKey !=null ) {
+
+            //org.apache.ibatis.builder.annotation.MapperAnnotationBuilder.handleSelectKeyAnnotation
             SelectKey selectKey=new SelectKey(){
 
                 @Override
@@ -188,48 +194,63 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
 
                 @Override
                 public String[] statement() {
-                    return new String[0];
+                    return entitySelectKey.statement();
                 }
 
                 @Override
                 public String keyProperty() {
+                    if(!StringUtils.isBlank(entitySelectKey.keyProperty())) return entitySelectKey.keyProperty();
+                    if(entityAnnotation.getIdPropertyNames().size()>1 ){
+
+                            throw new RuntimeException("keyProperty can not be empty for multiple columns key");
+
+                    }
                     return Utils.toString(entityAnnotation.getIdPropertyNames(),",",null);
                 }
 
                 @Override
                 public String keyColumn() {
+                    if(!StringUtils.isBlank(entitySelectKey.keyColumn()))  return entitySelectKey.keyColumn();
+                    if(!StringUtils.isBlank(entitySelectKey.keyProperty())){
+                        String kc="";
+                        Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
+                        for(String p: entitySelectKey.keyProperty().split(",")){
+                            if(kc.length()>0) kc+=",";
+                            kc+=propertyColumnMap.get(p).getName();
+                        }
+                        return kc;
+                    }
                     return Utils.toString(entityAnnotation.getIdColumnNames(),",",null);
+
+
                 }
 
                 @Override
                 public boolean before() {
-                    return true;
+                    return entitySelectKey.before();
                 }
 
                 @Override
                 public Class<?> resultType() {
-                    return null;
+                    return entitySelectKey.resultType();
                 }
 
                 @Override
                 public StatementType statementType() {
-                    return StatementType.PREPARED;
+                    return entitySelectKey.statementType();
                 }
             };
 
-            String value = (String) generation.generate(null, entityAnnotation.getTable(), null,
-                    entityAnnotation.getIdGeneratorArg());
+
 
             MapperAnnotationBuilder  builder=new MapperAnnotationBuilder(configuration,mapperClass);
 
-            //-- handleSelectKeyAnnotation(SelectKey selectKeyAnnotation, String baseStatementId, Class<?> parameterTypeClass, LanguageDriver languageDriver)
+            //invok private method : handleSelectKeyAnnotation(SelectKey selectKeyAnnotation, String baseStatementId, Class<?> parameterTypeClass, LanguageDriver languageDriver)
 
             Method handleSelectKeyAnnotationMethod=ObjectSupport.getMethod(  MapperAnnotationBuilder.class,"handleSelectKeyAnnotation");
 
             Method getParameterTypeMethod=ObjectSupport.getMethod(  MapperAnnotationBuilder.class,"getParameterType");
             getParameterTypeMethod.setAccessible(true);
-          ;
-
 
             handleSelectKeyAnnotationMethod.setAccessible(true);
             try {
@@ -242,9 +263,10 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
 
         }
 
-        if(keyGenerator==null) keyGenerator=Jdbc3KeyGenerator.INSTANCE;
-        ObjectSupport.setFieldValue(ms, "keyProperties", entityAnnotation.getIdPropertyNames().toArray(new String[0]));
-        ObjectSupport.setFieldValue(ms, "keyColumns", entityAnnotation.getIdColumnNames().toArray(new String[0]));
+        if(entitySelectKey==null) keyGenerator=Jdbc3KeyGenerator.INSTANCE;
+        // set private field
+        ObjectSupport.setFieldValue(ms, "keyProperties",idPropertyNames.toArray(new String[0]));
+        ObjectSupport.setFieldValue(ms, "keyColumns", idColumnNames.toArray(new String[0]));
         ObjectSupport.setFieldValue(ms, "keyGenerator", keyGenerator);
 
 

@@ -5,7 +5,7 @@ import com.cehome.easymybatis.DialectEntity;
 import com.cehome.easymybatis.Generation;
 import com.cehome.easymybatis.annotation.ColumnDefault;
 import com.cehome.easymybatis.annotation.ColumnGeneration;
-import com.cehome.easymybatis.annotation.IdGeneration;
+import com.cehome.easymybatis.annotation.EntitySelectKey;
 import com.cehome.easymybatis.utils.ObjectSupport;
 import com.cehome.easymybatis.utils.Const;
 import org.apache.commons.lang3.StringUtils;
@@ -49,8 +49,7 @@ public class EntityAnnotation
 	private Map<String,PropertyDescriptor> propertyDescriptorMap =new HashMap<String, PropertyDescriptor> ();
 	private Class entityClass=null;
 	private boolean dialectEntity;
-	private Generation idGeneration;
-	private String idGeneratorArg;
+	EntitySelectKey entitySelectKey;
 
 	public static EntityAnnotation getInstance(Class entityClass)
 	{
@@ -161,7 +160,8 @@ public class EntityAnnotation
 		boolean columnUnderscoreSupport=true;//(t!=null && t.columnUnderscoreSupport()) || (columnUnderscore!=null ) ;
 		//System.out.println(table);
 		doWithTable();
-		doWithIdGenerator();
+
+		setEntitySelectKey((EntitySelectKey)entityClass.getAnnotation(EntitySelectKey.class));
 
 
 		PropertyDescriptor[] pds= propertyDescriptors(clazz);
@@ -212,6 +212,11 @@ public class EntityAnnotation
 
 
 	}
+
+
+
+
+
 	private void doWithColumn(	Field field,Method method,ColumnAnnotation ca,String prop,boolean columnUnderscoreSupport){
 		Column column=getAnnotation(Column.class,field,method);
 		if (column != null)
@@ -263,7 +268,7 @@ public class EntityAnnotation
 		}
 	}
 
-	private void doWithIdGenerator(){
+	/*private void doWithIdGenerator(){
 		IdGeneration idGeneration =(IdGeneration)entityClass.getAnnotation(IdGeneration.class);
 		if(idGeneration !=null){
 			String generatorName= idGeneration.name();
@@ -288,29 +293,21 @@ public class EntityAnnotation
 			 setIdGeneratorArg(generatorArg);
 
 		}
-	}
+	}*/
 	private void doWithColumnGenerator(Field field, Method method, ColumnAnnotation ca){
-		ColumnGeneration columnGeneration =getAnnotation(ColumnGeneration.class,field,method);
-		if(columnGeneration !=null){
-			String generatorName= columnGeneration.name();
-			String generatorArg= columnGeneration.arg();
-			Generators generators=Generators.getInstance();
+		ColumnGeneration columnGeneration = getAnnotation(ColumnGeneration.class, field, method);
+		if (columnGeneration != null) {
+			String generatorName = columnGeneration.insertGeneration();
+			String generatorArg = columnGeneration.insertArg();
+			Generations generations = Generations.getInstance();
 
-			if(StringUtils.isBlank(generatorName)){
-				if(generators.getPrimary()==null){
-					throw new RuntimeException("no default Generator found for class "+entityClass
-							+". Please set generator name or keep only one primary Generator bean");
 
-				}
-				ca.setGeneration(generators.getPrimary());
-
-			}else{
-				Generation generation =generators.get(generatorName);
-				if(generation ==null){
-					throw new RuntimeException("Generator bean '"+ generatorName+"' not found for class "+entityClass);
-				}
-				ca.setGeneration(generation);
+			Generation generation = generations.get(generatorName);
+			if (generation == null) {
+				throw new RuntimeException("Generator bean '" + generatorName + "' not found for class " + entityClass);
 			}
+			ca.setGeneration(generation);
+
 			ca.setGeneratorArg(generatorArg);
 
 		}
@@ -438,19 +435,13 @@ public class EntityAnnotation
 		EntityAnnotation.logger = logger;
 	}
 
-	public Generation getIdGeneration() {
-		return idGeneration;
+
+
+	public EntitySelectKey getEntitySelectKey() {
+		return entitySelectKey;
 	}
 
-	public void setIdGeneration(Generation idGeneration) {
-		this.idGeneration = idGeneration;
-	}
-
-	public String getIdGeneratorArg() {
-		return idGeneratorArg;
-	}
-
-	public void setIdGeneratorArg(String idGeneratorArg) {
-		this.idGeneratorArg = idGeneratorArg;
+	public void setEntitySelectKey(EntitySelectKey entitySelectKey) {
+		this.entitySelectKey = entitySelectKey;
 	}
 }

@@ -29,7 +29,7 @@ public class Provider<E> {
                 .append("<trim prefix=\"values (\" suffix=\")\" suffixOverrides=\",\">{}</trim>")
                 .append("</script>");
 
-        LineBuilder selectKeys= new LineBuilder();
+        LineBuilder selectKeys = new LineBuilder();
         StringBuilder columnBuilder = new StringBuilder();
         StringBuilder valueBuilder = new StringBuilder();
         Map<String, ColumnAnnotation> columnMap = entityAnnotation.getPropertyColumnMap();
@@ -41,46 +41,35 @@ public class Provider<E> {
 
             if (!columnAnnotation.isInsertable()) continue;
             String prop = e.getKey();
-            int valueType=0;//1 value 2:dialect 3:sql
+            int valueType = 0;//0: none  1 value 2:dialect value
 
             // entity value
             Object value = entityAnnotation.getProperty(entity, prop);
             if (value != null) {
-                valueType=1;
+                valueType = 1;
 
             }
             // dialect value
-            else{
+            else {
 
                 value = entityAnnotation.getDialectValue(entity, prop);
                 if (value != null) {
-                    valueType=2;
+                    valueType = 2;
 
                 }
             }
 
             // generator value
-            if(value==null){
+            if (value == null) {
 
                 Generation generation = columnAnnotation.getGeneration();
-                if (generation != null && !generation.getType().equals(Generation.Type.NONE)) {
+                if (generation != null) {
                     value = generation.generate(entity, entityAnnotation.getTable(), prop,
                             columnAnnotation.getGeneratorArg());
                     if (value != null) {
-                        if (generation.getType().equals(Generation.Type.VALUE)) {
-                            entityAnnotation.setProperty(entity, prop, value);
-                            valueType=1;
 
-
-                        } else if (generation.getType().equals(Generation.Type.SQL_VALUE)) {
-                           valueType=2;
-                        }
-                        else if (generation.getType().equals(Generation.Type.SELECT_KEY_SQL)) {
-                            PropertyDescriptor pd= entityAnnotation.getPropertyDescriptorMap().get(prop);
-                            selectKeys.append(Utils.format(ProviderSupport.SQL_SELECT_KEY,prop,pd.getPropertyType().getName(),"BEFORE",value));
-                            valueType=3;
-
-                        }
+                        entityAnnotation.setProperty(entity, prop, value);
+                        valueType = 1;
 
                     }
                 }
@@ -88,17 +77,17 @@ public class Provider<E> {
 
 
             // default value
-            if(value==null) {
+            if (value == null) {
                 value = columnAnnotation.getColumnInsertDefault();
                 if (value != null) {
-                    valueType=2;
+                    valueType = 2;
                 }
             }
 
-            if (valueType ==1) {
+            if (valueType == 1) {
                 columnBuilder.append(columnAnnotation.getName() + ",");
                 valueBuilder.append(Utils.format("#{{}},", prop));
-            }  else if (valueType ==2) {
+            } else if (valueType == 2) {
                 columnBuilder.append(Utils.format("{},", columnAnnotation.getName()));
                 valueBuilder.append(Utils.format("{},", value));
 
@@ -106,7 +95,7 @@ public class Provider<E> {
 
         }
 
-        return Utils.format(sql.toString(), selectKeys,entityAnnotation.getTable(), columnBuilder, valueBuilder);
+        return Utils.format(sql.toString(), selectKeys, entityAnnotation.getTable(), columnBuilder, valueBuilder);
 
     }
 

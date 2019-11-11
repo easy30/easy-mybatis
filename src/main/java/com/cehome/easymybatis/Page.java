@@ -21,6 +21,7 @@ public class Page<E> implements Serializable {
      * 分页的开始值
      */
     private int pageOffset;
+    private int pageOffsetEnd;
 
     /**
      * 总共多少条记录
@@ -46,6 +47,7 @@ public class Page<E> implements Serializable {
         setPageIndex(pageIndex);
         setPageSize(pageSize);
         setPageOffset((pageIndex-1)*pageSize);
+        setPageOffsetEnd(pageIndex*pageIndex-1);//
     }
 
 
@@ -97,6 +99,11 @@ public class Page<E> implements Serializable {
         this.pageOffset = pageOffset;
     }
 
+    public int getPageOffsetEnd() {
+        return pageOffsetEnd;
+    }
 
-
+    public void setPageOffsetEnd(int pageOffsetEnd) {
+        this.pageOffsetEnd = pageOffsetEnd;
+    }
 }

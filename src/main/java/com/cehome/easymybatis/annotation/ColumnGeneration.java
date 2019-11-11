@@ -5,11 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ColumnGeneration {
-    String name()default "";
+    String insertGeneration()default "";
+    String insertArg() default "";
 
-    String arg() default "";
+    String updateGeneration()default "";
+    String updateArg() default "";
 
 }

@@ -32,6 +32,6 @@
         <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
     </bean>
 
-    <bean class="com.cehome.easymybatis.generation.OracleSQLGeneration" ></bean>
+    <bean class="com.cehome.easymybatis.generation.UUIDGeneration" ></bean>
 
 </beans>
