@@ -76,20 +76,16 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         else if(sqlSessionTemplate!=null) configuration=configuration;
         else throw new RuntimeException("SqlSessionTemplate or SqlSessionFactory not found");
         dialectInstance=new DialectInstance(dialect,configuration);
-        //sqlSessionFactory.openSession().getConnection().getMetaData().getURL()
-        //addBuilders(Mapper.class);
 
-        // custom mapper interfaces
-       /* if (mapperInterfaces != null) {
-            for (Class c : mapperInterfaces) {
-                //addBuilders(c);
-            }
-        }*/
+        //-- default config
+        configuration.setMapUnderscoreToCamelCase(true);
+        configuration.setUseGeneratedKeys(true);
+
 
 
     }
 
-    private void addBuilders(Class c) throws Exception {
+    /*private void addBuilders(Class c) throws Exception {
         for (Method method : c.getMethods()) {
             methodNameSet.add(method.getName());
             MethodBuilder mb = method.getAnnotation(MethodBuilder.class);
@@ -105,7 +101,7 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
             methodBuilderMap.put(methodBuilder.getMethodName(), methodBuilder);
 
         }
-    }
+    }*/
 
     public Class[] getMapperInterfaces() {
         return mapperInterfaces;
@@ -151,7 +147,7 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         MapperBuilderAssistant assistant =
                 new MapperBuilderAssistant(configuration, resource);
         assistant.setCurrentNamespace(namespace);
-        configuration.setMapUnderscoreToCamelCase(true);
+
         for (Method method : mapperClass.getMethods()) {
             //AbstractMethodBuilder methodBuilder= methodBuilderMap.get(method.getName());
             //if(methodBuilder!=null) methodBuilder.add(assistant,mapperClass,entityClass,entityAnnotation);

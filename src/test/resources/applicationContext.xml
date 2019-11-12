@@ -11,23 +11,26 @@
                         http://www.springframework.org/schema/aop
                         http://www.springframework.org/schema/aop/spring-aop.xsd">
 
+    <!-- datasource -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
     <property name="username" value="root"/>
     <property name="password" value="asdf1234!"/>
     <property name="driverClass" value="com.mysql.jdbc.Driver"/>
     <property name="url" value="jdbc:mysql://192.168.0.23:3306/mybatis?useUnicode=true&amp;characterEncoding=utf8&amp;allowMultiQueries=true&amp;useSSL=false"/>
     </bean>
-
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource" />
     </bean>
     <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
     </bean>
-    <bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
-        <property name="mapperInterface" value="com.cehome.easymybatis.UserMapper" />
-        <property name="sqlSessionFactory" ref="sqlSessionFactory" />
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.cehome.easymybatis"></property>
+        <property name="markerInterface" value="com.cehome.easymybatis.Mapper"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
     </bean>
+
     <bean   class="com.cehome.easymybatis.MapperFactory" >
         <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
     </bean>

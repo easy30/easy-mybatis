@@ -9,9 +9,6 @@ import java.util.UUID;
  **/
 public class UUIDGeneration implements Generation {
 
-
-
-
     @Override
     public Object generate(Object entity, String table, String property,String arg) {
         return  UUID.randomUUID().toString();

@@ -23,9 +23,9 @@ public class OracleDialect extends AbstractDialect {
     public String getPageSql(String sql) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ( ");
-        sb.append("SELECT PAGE_TABLE.*,ROWNUM ROW_ID FROM ( ");
+        sb.append("SELECT PAGE_TABLE_SOURCE.*,ROWNUM ROW_ID FROM ( ");
         sb.append(sql);
-        sb.append(" ) PAGE_TABLE WHERE ROWNUM <= ? ");
+        sb.append(" ) PAGE_TABLE_SOURCE WHERE ROWNUM <= ? ");
         sb.append(" ) WHERE ROW_ID > ? ");
         return sb.toString();
     }
