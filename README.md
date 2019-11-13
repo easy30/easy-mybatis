@@ -1,8 +1,8 @@
 # easy-mybatis
 
-## mybatis config
+## Quick start
 
-
+### Create table
 ```sql
 
 CREATE TABLE `user` (
@@ -18,8 +18,8 @@ CREATE TABLE `user` (
 
 ```
 
-## mybatis common config
- Add dataSource,sqlSessionFactory and sqlSessionTemplate in spring mvc config file( for Spring boot use @Bean).
+### Add mybatis common config
+ Add dataSource,sqlSessionFactory and sqlSessionTemplate to spring config file( for Spring boot use @Bean).
  
 ```xml
  <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
@@ -35,14 +35,12 @@ CREATE TABLE `user` (
         <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
     </bean>
 
-  
-
 ```
 
-## easy-mybatis config
+### Add easy-mybatis config
 
 Add bean MapperScannerConfigurer , set **markerInterface propertiy** to **com.cehome.easymybatis.Mapper** (base Mapper interface)
-Add bean MapperFactory -- easy-mybatis core bean.
+Add bean MapperFactory(easy-mybatis core bean). Config scan basePackage.
 
 
 ```xml
@@ -60,12 +58,10 @@ Add bean MapperFactory -- easy-mybatis core bean.
 
 ```
 
-
-## sample1
 ### Create entity
-
+Create User entity with @Table @Id annotation.
 ```java
-import com.cehome.easymybatis.DialectEntity;
+
 import lombok.Data;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -83,7 +79,7 @@ public class User {
 }
 ``` 
 
-### Create UserMapper
+### Create User mapper
 
 ```java
 import com.cehome.easymybatis.Mapper;
@@ -97,4 +93,43 @@ public interface UserMapper1 extends Mapper<User> {
 }
 ```
 
-###
+### insert, update and delete operations
+
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = "classpath:applicationContext.xml")
+public class MapperTest1 {
+    @Autowired
+    UserMapper1 userMapper1;
+    @Test
+    public void insert() throws SQLException {
+        User user = null;
+        //-- insert into user(name,age,real_name) values('coolma',20,'mike')
+        user = new User();
+        user.setName("coolma");
+        user.setAge(20);
+        user.setRealName("mike");
+        userMapper1.insert(user);
+        Long id = user.getId(); //return 100
+
+        //-- update user set real_name='michael' where id=100
+        user = new User();
+        user.setRealName("michael");
+        user.setId(100L);
+        userMapper1.update(user);
+
+        //-- update user set real_name='tom where id=100 and age=20
+        user = new User();
+        user.setRealName("tom");
+        User params = new User();
+        params.setId(100L);
+        params.setAge(20);
+        userMapper1.updateByEntity(user, params);
+
+        //-- delete from user where id=100
+        userMapper1.deleteById(100L);
+
+    }
+}
+
+```
