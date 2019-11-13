@@ -40,6 +40,7 @@ CREATE TABLE `user` (
 ### Add easy-mybatis config
 
 Add bean MapperScannerConfigurer , set **markerInterface propertiy** to **com.cehome.easymybatis.Mapper** (base Mapper interface)
+
 Add bean MapperFactory(easy-mybatis core bean). Config scan basePackage.
 
 
