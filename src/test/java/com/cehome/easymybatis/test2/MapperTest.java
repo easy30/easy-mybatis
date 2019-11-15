@@ -45,7 +45,6 @@ public class MapperTest {
     @Test
     public void testSelect() throws SQLException {
         getByEntity();
-        getUser();
         getById();
         getValueByEntity();
         getValueByWhere();
@@ -199,11 +198,6 @@ public class MapperTest {
 
     }
 
-    @Test
-    public void getUser() throws SQLException {
-         User user= userMapper2.getUser(id);
-        verify(user,id);
-    }
     private void verify(User user, Long id){
         System.out.println(JSON.toJSONString(user));
         Assert.assertEquals(user.getId(),id);

@@ -1,5 +1,9 @@
 # easy-mybatis
 
+mybatis ORM framework base mybatis mapper framework, but more easy to use which can reduce much sql. 
+
+No SQL need for insert, update and some select operations.
+
 ## Quick start
 
 ### Create table
@@ -34,6 +38,34 @@ CREATE TABLE `user` (
     <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
     </bean>
+
+```
+
+### maven dependency
+
+Note :
+ 1) mybatis version must >=3.5.1
+ 
+ 2) mybatis-spring 1.3.x(for spirng 3.2.2+) , 2.0.x(for spring 5,0+)
+
+```xml
+ <dependency>
+    <groupId>com.cehome</groupId>
+    <artifactId>easy-mybatis</artifactId>
+    <version>1.0</version>
+ </dependency>
+ 
+   <dependency>
+         <groupId>org.mybatis</groupId>
+          <artifactId>mybatis</artifactId>
+          <version>3.5.2</version>
+  </dependency>
+
+   <dependency>
+              <groupId>org.mybatis</groupId>
+              <artifactId>mybatis-spring</artifactId>
+              <version>1.3.3</version>
+    </dependency>
 
 ```
 
@@ -84,13 +116,7 @@ public class User {
 
 ```java
 import com.cehome.easymybatis.Mapper;
-
-/**
- * coolma 2019/10/23
- **/
 public interface UserMapper1 extends Mapper<User> {
-
-
 }
 ```
 
@@ -111,7 +137,7 @@ public class MapperTest {
             user.setAge(20);
             user.setRealName("mike");
             userMapper1.insert(user);
-            Long id = user.getId(); //return 100
+            Long id = user.getId(); //return id
     
             //-- update user set real_name='michael' where id=100
             user = new User();
@@ -119,7 +145,7 @@ public class MapperTest {
             user.setId(100L);
             userMapper1.update(user);
     
-            //-- update user set real_name='tom where id=100 and age=20
+            //-- update user set real_name='tom' where id=100 and age=20
             user = new User();
             user.setRealName("tom");
             User params = new User();
@@ -144,11 +170,11 @@ public class MapperTest {
             params.setAge(20);
             List<User> list=userMapper1.listByEntity(params,null,"name,realName");
     
-            //-- page: select name,real_name from user where age=20 order by name asc limit 0,20
+            //-- page: select name,real_name from user where age=20 order by real_name asc limit 0,20
             params=new User();
             params.setAge(20);
             Page<User> page=new Page(1,20);
-            userMapper1.pageByEntity(params,page,"name asc","name,realName");
+            userMapper1.pageByEntity(params,page,"realName asc","name,realName");
             System.out.println(page.getData());
     
     }
@@ -160,8 +186,9 @@ public class MapperTest {
 
 ### DialectEntity
 
-extends DialectEntity - can set sql value or function, such as user.setValue("updateTime","now()").
+Entity inheriting DialectEntity can set sql value or function, such as user.setValue("updateTime","now()").
 
+Add properties createTime,updateTime to entity.
 
 ```java
 import com.cehome.easymybatis.DialectEntity;
@@ -187,6 +214,8 @@ public class User extends DialectEntity {
 
 ```
 
+Invoke setValue to set database time for updateTime propertiy, not application time.
+
 ```java
 class MapperTest1{
     @Autowired
@@ -208,7 +237,7 @@ class MapperTest1{
 ```
 
 ###  Column default value
-@ColumnDefault - set cloumn default value for insert or update with sql value or function. 
+@ColumnDefault - When insert or update, set cloumn default value by sql value or function. 
 
 ```java
 public @interface ColumnDefault {
@@ -218,9 +247,12 @@ public @interface ColumnDefault {
 
 }
 ```
-createTime - set record create time when insert. So set @ColumnDefault(insertValue = "now()") on the field.
 
-updateTime - update time when record changes, no spite of insert or update, So set  @ColumnDefault("now()") on the field.
+Define annotations on properties:
+
+createTime - Record create time. @ColumnDefault(insertValue = "now()") means set to now() when insert.
+
+updateTime - update this column when insert or update, So set  @ColumnDefault("now()") on the field.
 
 ```java
     import com.cehome.easymybatis.DialectEntity;
@@ -268,11 +300,11 @@ class MapperTest1{
 }
 ``` 
 
-### complex query 
+### Complex Query 
 
-1) For SQL "select * from user where age>20 order by create_time desc", you can invoke listBySQL().
+1) For executing  "select * from user where age>20 order by create_time desc", you can invoke listBySQL() with sql:
 
-The SQL with age param is "select * from user where age>{#age} order by create_time desc".
+ "select * from user where age>{#age} order by create_time desc".
 
 This sql can be reduced to  "age>{#age} order by create_time desc".
 
@@ -292,7 +324,7 @@ class MapperTest2{
 
 ```
 
-2) We advice you to use mybatis native annotation or xml sql for complex query .
+2) Recommend using mybatis native annotation or xml sql for complex query .
 
 Define findById  with @Select SQL.
 

@@ -88,11 +88,15 @@ public abstract class AbstractMethodBuilder {
     }
     protected LanguageDriver getLanguageDriver(Method method) {
         Lang lang = method.getAnnotation(Lang.class);
-        Class<? extends LanguageDriver> langClass = null;
+        Class langClass = null;
         if (lang != null) {
             langClass = lang.value();
+
+
         }
-        return configuration.getLanguageDriver(langClass);
+
+        return configuration.getLanguageRegistry().getDriver(langClass); //3.4.6
+       // return configuration.getLanguageDriver(langClass);   //3.5.2
     }
 
     public abstract String getMethodName();
