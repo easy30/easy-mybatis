@@ -30,7 +30,7 @@ public class DialectEntity implements Serializable {
 
     /**
      * set sql value for insert or update
-     * put("updateTime","now()")
+     * setValue("updateTime","now()")
      *
      *
      * @param property
