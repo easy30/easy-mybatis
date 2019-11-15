@@ -71,7 +71,7 @@ Note :
 
 ### Add easy-mybatis config
 
-Add MapperScannerConfigurer , set scan basePackage, set **markerInterface propertiy** to **com.cehome.easymybatis.Mapper** (base Mapper interface)
+Add MapperScannerConfigurer , set scan basePackage, set **markerInterface property** to **com.cehome.easymybatis.Mapper** (base Mapper interface)
 
 Add MapperFactory(easy-mybatis core bean).
 
@@ -214,7 +214,7 @@ public class User extends DialectEntity {
 
 ```
 
-Invoke setValue to set database time for updateTime propertiy, not application time.
+Invoke setValue to set database time for updateTime property, not application time.
 
 ```java
 class MapperTest1{
