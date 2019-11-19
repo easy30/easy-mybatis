@@ -8,34 +8,27 @@ public class Page<E> implements Serializable {
     private static final long serialVersionUID = 7395507780937350288L;
 
     /**
-     * 第几页,从1开始
+     * page no 1,2,3...
      */
     private int pageIndex;
 
-    /**
-     * 每页显示多少条
-     */
+
     private int pageSize;
 
     /**
-     * 分页的开始值
+     *  record start row
      */
     private int pageOffset;
+
     private int pageOffsetEnd;
 
-    /**
-     * 总共多少条记录
-     */
+
     private int totalRecord;
 
-    /**
-     * 总共多少页
-     */
+
     private int totalPage;
 
-    /**
-     * 放置具体数据的列表
-     */
+
     private List<E> data;
 
 

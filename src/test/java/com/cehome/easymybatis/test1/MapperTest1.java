@@ -64,7 +64,7 @@ public class MapperTest1 {
 
     @Test
     public void testDelete() throws SQLException {
-        insert();delete();
+
         insert();deleteById();
         insert();deleteByEntity();
         insert();deleteByWhere();
@@ -111,7 +111,7 @@ public class MapperTest1 {
         User params = new User();
         params.setId(100L);
         params.setAge(20);
-        userMapper1.updateByEntity(user, params);
+        userMapper1.updateByParams(user, params);
 
         //-- delete from user where id=100
         userMapper1.deleteById(100L);
@@ -123,18 +123,18 @@ public class MapperTest1 {
         //-- select one: select * from user where real_name='tom'
         params=new User();
         params.setRealName("tom");
-        user= userMapper1.getByEntity(params,null);
+        user= userMapper1.getByParams(params,null);
 
         //-- list: select name,real_name from user where age=20
         params=new User();
         params.setAge(20);
-        List<User> list=userMapper1.listByEntity(params,null,"name,realName");
+        List<User> list=userMapper1.listByParams(params,null,"name,realName");
 
         //-- page: select name,real_name from user where age=20 order by name asc limit 0,20
         params=new User();
         params.setAge(20);
         Page<User> page=new Page(1,20);
-        userMapper1.pageByEntity(params,page,"name asc","name,realName");
+        userMapper1.pageByParams(params,page,"name asc","name,realName");
         System.out.println(page.getData());
 
     }
@@ -157,7 +157,7 @@ public class MapperTest1 {
         User where=new User();
         where.setId(id);
         where.setAge(age);
-        Assert.assertEquals(1, userMapper1.updateByEntity(user,where));
+        Assert.assertEquals(1, userMapper1.updateByParams(user,where));
 
     }
     @Test
@@ -177,14 +177,7 @@ public class MapperTest1 {
 
     }
 
-    @Test
-    public void delete() throws SQLException {
-        //System.out.println(dataSource.getConnection().getMetaData().getURL());
-        User user=new User();
-        user.setId(id);
-        Assert.assertEquals(1, userMapper1.delete(user));
 
-    }
     @Test
     public void deleteById() throws SQLException {
         Assert.assertEquals(1, userMapper1.deleteById(id));
@@ -197,7 +190,7 @@ public class MapperTest1 {
         User params=new User();
         params.setName(name);
         params.setAge(age);
-        Assert.assertEquals(1, userMapper1.deleteByEntity(params));
+        Assert.assertEquals(1, userMapper1.delete(params));
 
 
     }
@@ -228,7 +221,7 @@ public class MapperTest1 {
     public void getByEntity() throws SQLException {
         User params=new User();
         params.setId(id);
-        User user= userMapper1.getByEntity(params,null);
+        User user= userMapper1.getByParams(params,null);
         verify(user,id);
 
     }
@@ -258,7 +251,7 @@ public class MapperTest1 {
     public void getValueByEntity() throws SQLException {
         User params=new User();
         params.setId(id);
-        Object value= userMapper1.getValueByEntity(params,"name");
+        Object value= userMapper1.getValueByParams(params,"name");
         System.out.println(JSON.toJSONString(value));
         Assert.assertNotNull(value);
 
@@ -288,7 +281,7 @@ public class MapperTest1 {
     public void listByEntity() throws SQLException {
         User params=new User();
         params.setAge(20);
-        List<User> list= userMapper1.listByEntity(params," name asc, createTime desc","age,createTime");
+        List<User> list= userMapper1.listByParams(params," name asc, createTime desc","age,createTime");
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
 
@@ -299,7 +292,7 @@ public class MapperTest1 {
         User params=new User();
         params.setAge(20);
         Page<User> page=new Page(1,3);
-        List<User> list= userMapper1.pageByEntity(params,page," name asc, createTime desc","age,createTime");
+        List<User> list= userMapper1.pageByParams(params,page," name asc, createTime desc","age,createTime");
         System.out.println(page.getData().size()+"\r\n"+JSON.toJSONString(page));
         Assert.assertTrue(page.getData().size()>0);
 

@@ -5,6 +5,7 @@ import com.cehome.easymybatis.core.EntityAnnotation;
 import com.cehome.easymybatis.utils.Const;
 import com.cehome.easymybatis.utils.LineBuilder;
 import com.cehome.easymybatis.core.ProviderSupport;
+import com.cehome.easymybatis.utils.SimpleProperties;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
@@ -108,14 +109,14 @@ public class Provider<E> {
                 ProviderSupport.sqlWhereById(entity, entityAnnotation));
     }
 
-    public String delete(E entity) {
+   /* public String delete(E entity) {
         Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         return Utils.format(ProviderSupport.SQL_DELETE, "", entityAnnotation.getTable(),
                 ProviderSupport.sqlWhereById(entity, entityAnnotation));
-    }
+    }*/
 
-    public String updateByEntity(@Param(Const.ENTITY) E entity, @Param(Const.PARAMS) E params) {
+    public String updateByParams(@Param(Const.ENTITY) E entity, @Param(Const.PARAMS) Object params) {
         Class entityClass = entity.getClass();
         if (entity == null || params == null) throw new RuntimeException("entity or params can not be null");
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
@@ -126,22 +127,21 @@ public class Provider<E> {
 
 
         LineBuilder whereBuilder = new LineBuilder();
-        for (Map.Entry<String, ColumnAnnotation> e : entityAnnotation.getPropertyColumnMap().entrySet()) {
-            String prop = e.getKey();
-            ColumnAnnotation columnAnnotation = e.getValue();
+        SimpleProperties sp=SimpleProperties.getInstance(params);
+        for(String prop:sp.getProperties()){
+            Object value=sp.getValue(prop);
             String fullProp = Const.PARAMS + "." + prop;
-            Object value = entityAnnotation.getProperty(params, prop);
             if (value != null) {
-                whereBuilder.append(Utils.format(Const.SQL_AND, columnAnnotation.getName(), fullProp));
+                whereBuilder.append(Utils.format(Const.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
             } else {
                 value = entityAnnotation.getDialectParam(params, prop);
                 if (value != null) {
-                    whereBuilder.append(Utils.format(Const.SQL_AND_DIALECT, columnAnnotation.getName(), value));
+                    whereBuilder.append(Utils.format(Const.SQL_AND_DIALECT, entityAnnotation.getColumnName(prop), value));
                 }
 
             }
-
         }
+
         String where = whereBuilder.toString();
         if (StringUtils.isBlank(where))
             throw new RuntimeException("params for update can not be empty (safely update!!!)");
@@ -195,7 +195,7 @@ public class Provider<E> {
     }
 
 
-    public String getByEntity(@Param(Const.PARAMS) E params, @Param(Const.COLUMNS) String selectColumns) {
+    public String getByParams(@Param(Const.PARAMS) Object params, @Param(Const.COLUMNS) String selectColumns) {
         if (StringUtils.isBlank(selectColumns)) {
             selectColumns = "*";
         } else {
@@ -207,7 +207,7 @@ public class Provider<E> {
 
     }
 
-    public String getValueByEntity(@Param(Const.PARAMS) E params, @Param(Const.COLUMN) String column) {
+    public String getValueByParams(@Param(Const.PARAMS) Object params, @Param(Const.COLUMN) String column) {
         Class entityClass = params.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
@@ -216,7 +216,7 @@ public class Provider<E> {
 
     }
 
-    public String listByEntity(@Param(Const.PARAMS) E params, @Param(Const.ORDER) String orderBy,
+    public String listByParams(@Param(Const.PARAMS) Object params, @Param(Const.ORDER) String orderBy,
                                @Param(Const.COLUMNS) String selectColumns) {
         Class entityClass = params.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
@@ -231,14 +231,14 @@ public class Provider<E> {
 
     }
 
-    public String pageByEntity(@Param(Const.PARAMS) E params, @Param(Const.PAGE) Page page,
+    public String pageByParams(@Param(Const.PARAMS) Object params, @Param(Const.PAGE) Page page,
                                @Param(Const.ORDER) String orderBy, @Param(Const.COLUMNS) String selectColumns) {
-        return listByEntity(params, orderBy, selectColumns);
+        return listByParams(params, orderBy, selectColumns);
 
     }
 
 
-    public String deleteByEntity(E params) {
+    public String delete(E params) {
         return ProviderSupport.sqlByEntity(params, ProviderSupport.SQL_DELETE, false, "", null, "");
 
     }
@@ -251,7 +251,7 @@ public class Provider<E> {
         String sql = ProviderSupport.SQL_DELETE;
 
         if (StringUtils.isBlank(where))
-            throw new RuntimeException("because of safety, WHERE condition can not be blank. (set where to * for deleting all records)");
+            throw new RuntimeException("For safety, WHERE condition can not be blank. (set where to * for deleting all records)");
         if (where.equals("*")) where = "";
         if (where != null && where.length() > 0) {
             where = ProviderSupport.convertSql(where, propertyColumnMap);

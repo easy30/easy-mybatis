@@ -1,10 +1,7 @@
 package com.cehome.easymybatis.core;
 
 import com.cehome.easymybatis.DialectEntity;
-import com.cehome.easymybatis.utils.Const;
-import com.cehome.easymybatis.utils.LineBuilder;
-import com.cehome.easymybatis.utils.RegularReplace;
-import com.cehome.easymybatis.utils.Utils;
+import com.cehome.easymybatis.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
 
@@ -220,21 +217,18 @@ public class ProviderSupport {
         Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
 
         LineBuilder where = new LineBuilder();
-        for (Map.Entry<String, ColumnAnnotation> e : entityAnnotation.getPropertyColumnMap().entrySet()) {
-            String prop=e.getKey();
-            ColumnAnnotation columnAnnotation =e.getValue();
-
-            Object value= entityAnnotation.getProperty(params,prop);
+        SimpleProperties sp=SimpleProperties.getInstance(params);
+        for(String prop:sp.getProperties()){
+            Object value=sp.getValue(prop);
             if(value!=null){
                 String fullProp= prefix==null||prefix.length()==0?prop:prefix+"."+prop;
-                where.append(Utils.format(Const.SQL_AND,  columnAnnotation.getName(),fullProp));
+                where.append(Utils.format(Const.SQL_AND,  entityAnnotation.getColumnName(prop),fullProp));
             }else {
                 value= entityAnnotation.getDialectParam(params,prop);
                 if(value!=null){
-                    where.append(Utils.format(Const.SQL_AND_DIALECT,   columnAnnotation.getName(),value));
+                    where.append(Utils.format(Const.SQL_AND_DIALECT,entityAnnotation.getColumnName(prop),value));
                 }
             }
-
         }
 
         if(!select && where.length()==0) throw new RuntimeException(" WHERE condition can not be null( Safety!!! )");

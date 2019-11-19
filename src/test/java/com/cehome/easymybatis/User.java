@@ -17,9 +17,11 @@ public class User extends DialectEntity {
     private Integer age;
     private String realName;
     private String email;
+
     @ColumnDefault(insertValue = "now()")
     @Column(updatable = false)
     private Date createTime;
+
     @ColumnDefault("now()")
     private Date updateTime;
 

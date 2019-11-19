@@ -107,7 +107,7 @@ public class RegularReplace
 	}
 
 	/**
-	 * 设置替换的新值
+	 * set to new value
 	 * @param i
 	 * @param o
 	 */
@@ -117,7 +117,7 @@ public class RegularReplace
 	}
 
 	/**
-	 * 设置整个匹配项
+	 * set whole to new value
 	 * @param o
 	 */
 	public void setGroup(Object o)
@@ -127,7 +127,7 @@ public class RegularReplace
 
 	public void replace()
 	{
-		//先排除重叠的group
+		//skip the same range group
 		for(int i=1;i< values.length;i++)
 		{
 			if(values[i]==null) continue;
@@ -138,7 +138,7 @@ public class RegularReplace
 				if(values[k]==null) continue;
 				if(start>=m.start(k)&& start<m.end(k))
 				{
-					values[i]=null; //设置为空，则不管这个group
+					values[i]=null; //set to null，skip this group
 					//System.out.println("values[i]"+i);
 					break;
 				}
@@ -172,15 +172,15 @@ public class RegularReplace
 
 	public static void main(String[] args)
 	{
-		//-- 全部替换为一常量 ，和String.replaceAll()一致
+		//-- the same as String.replaceAll()
 		RegularReplace rr=new RegularReplace("a1b2c3d3e3","[^c]3");
 		System.out.println(rr.replaceAll("-"));
 
-		//-- 全部替换某一组为一常量 (注意 group=0表示整个匹配串，从group=1开始才是真正的组
+		//-- replace a certain group to a value   ( group=0  is whole，group=1..2)
 		rr=new RegularReplace("*abc*abc*","a(b)(c)");
 		System.out.println(rr.replaceAll(1,"-"));
 
-		//-- 全部替换为动态值
+		//-- change whole t
 		rr=new RegularReplace("*abc*abc*","a(b)(c)");
 		int n=0;
 		while(rr.find())
@@ -193,7 +193,7 @@ public class RegularReplace
 
 		System.out.println(rr.getResult());
 
-		//-- 全部替换某几个组为动态值
+
 		rr=new RegularReplace("*abc*abc*","a(b)(c)");
 		while(rr.find())
 		{

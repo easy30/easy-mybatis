@@ -2,7 +2,6 @@ package com.cehome.easymybatis.test2;
 
 import com.alibaba.fastjson.JSON;
 import com.cehome.easymybatis.Page;
-import org.apache.ibatis.session.RowBounds;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,7 +64,7 @@ public class MapperTest {
 
     @Test
     public void testDelete() throws SQLException {
-        insert();delete();
+
         insert();deleteById();
         insert();deleteByEntity();
         insert();deleteByWhere();
@@ -117,7 +116,7 @@ public class MapperTest {
         User where=new User();
         where.setId(id);
         where.setAge(age);
-        Assert.assertEquals(1, userMapper2.updateByEntity(user,where));
+        Assert.assertEquals(1, userMapper2.updateByParams(user,where));
 
     }
     @Test
@@ -137,14 +136,7 @@ public class MapperTest {
 
     }
 
-    @Test
-    public void delete() throws SQLException {
-        //System.out.println(dataSource.getConnection().getMetaData().getURL());
-        User user=new User();
-        user.setId(id);
-        Assert.assertEquals(1, userMapper2.delete(user));
 
-    }
     @Test
     public void deleteById() throws SQLException {
         Assert.assertEquals(1, userMapper2.deleteById(id));
@@ -157,7 +149,7 @@ public class MapperTest {
         User params=new User();
         params.setName(name);
         params.setAge(age);
-        Assert.assertEquals(1, userMapper2.deleteByEntity(params));
+        Assert.assertEquals(1, userMapper2.delete(params));
 
 
     }
@@ -193,7 +185,7 @@ public class MapperTest {
     public void getByEntity() throws SQLException {
         User params=new User();
         params.setId(id);
-        User user= userMapper2.getByEntity(params,null);
+        User user= userMapper2.getByParams(params,null);
         verify(user,id);
 
     }
@@ -218,7 +210,7 @@ public class MapperTest {
     public void getValueByEntity() throws SQLException {
         User params=new User();
         params.setId(id);
-        Object value= userMapper2.getValueByEntity(params,"name");
+        Object value= userMapper2.getValueByParams(params,"name");
         System.out.println(JSON.toJSONString(value));
         Assert.assertNotNull(value);
 
@@ -248,7 +240,7 @@ public class MapperTest {
     public void listByEntity() throws SQLException {
         User params=new User();
         params.setAge(20);
-        List<User> list= userMapper2.listByEntity(params," name asc, createTime desc","age,createTime");
+        List<User> list= userMapper2.listByParams(params," name asc, createTime desc","age,createTime");
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
 
@@ -259,7 +251,7 @@ public class MapperTest {
         User params=new User();
         params.setAge(20);
         Page<User> page=new Page(1,3);
-        List<User> list= userMapper2.pageByEntity(params,page," name asc, createTime desc","age,createTime");
+        List<User> list= userMapper2.pageByParams(params,page," name asc, createTime desc","age,createTime");
         System.out.println(page.getData().size()+"\r\n"+JSON.toJSONString(page));
         Assert.assertTrue(page.getData().size()>0);
 

@@ -48,7 +48,7 @@ public class EntityAnnotation
 	//private PropertyDescriptor[] properties =null;
 	private Map<String,PropertyDescriptor> propertyDescriptorMap =new HashMap<String, PropertyDescriptor> ();
 	private Class entityClass=null;
-	private boolean dialectEntity;
+	//private boolean dialectEntity;
 	EntitySelectKey entitySelectKey;
 
 	public static EntityAnnotation getInstance(Class entityClass)
@@ -154,7 +154,7 @@ public class EntityAnnotation
 	{
 		//if (Enhancer.isEnhanced(c)) c=c.getSuperclass();
 		this.entityClass=clazz;
-		dialectEntity= DialectEntity.class.isAssignableFrom(entityClass);
+		//dialectEntity= DialectEntity.class.isAssignableFrom(entityClass);
 
 		//ColumnUnderscore columnUnderscore=(ColumnUnderscore)c.getAnnotation(ColumnUnderscore.class);
 		boolean columnUnderscoreSupport=true;//(t!=null && t.columnUnderscoreSupport()) || (columnUnderscore!=null ) ;
@@ -409,18 +409,22 @@ public class EntityAnnotation
 	}
 
 	public boolean isDialectEntity(){
-   		return dialectEntity;
+		return DialectEntity.class.isAssignableFrom(entityClass);
+	}
+
+	private boolean isDialectEntity(Object entity){
+   		return DialectEntity.class.isAssignableFrom(entity.getClass());
 	}
 
 	public Object getDialectValue(Object entity,String property){
-   		if(!isDialectEntity()) return null;
+   		if(!isDialectEntity(entity)) return null;
    		 Class c=entity.getClass();
    		 while(c!=DialectEntity.class) c=c.getSuperclass();
 		Map<String, String> dialectMap=(Map<String, String>) ObjectSupport.getFieldValue(c,entity, Const.VALUE_MAP);
 		return dialectMap==null?null:dialectMap.get(property);
 	}
 	public Object getDialectParam(Object entity,String property){
-		if(!isDialectEntity()) return null;
+		if(!isDialectEntity(entity)) return null;
 		Class c=entity.getClass();
 		while(c!=DialectEntity.class) c=c.getSuperclass();
 		Map<String, String> dialectMap=(Map<String, String>) ObjectSupport.getFieldValue(c,entity, Const.PARAM_MAP);
@@ -443,5 +447,12 @@ public class EntityAnnotation
 
 	public void setEntitySelectKey(EntitySelectKey entitySelectKey) {
 		this.entitySelectKey = entitySelectKey;
+	}
+
+
+	public String getColumnName(String prop){
+		ColumnAnnotation columnAnnotation= getPropertyColumnMap().get(prop);
+		if(columnAnnotation==null) return null;
+		return columnAnnotation.getName();
 	}
 }

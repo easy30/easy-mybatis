@@ -3,7 +3,7 @@ package com.cehome.easymybatis.core;
 import com.cehome.easymybatis.Generation;
 
 /**
- * 字段的属性信息
+ * column annotations
  * @author ma
  *
  */

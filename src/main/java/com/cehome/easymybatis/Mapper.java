@@ -25,9 +25,10 @@ public interface Mapper<E> {
     int update(E entity);
 
 
-    @UpdateProvider(type = Provider.class, method = "updateByEntity")
-    int updateByEntity(@Param(Const.ENTITY) E entity,
-                       @Param(Const.PARAMS) E params);
+    @UpdateProvider(type = Provider.class, method = "updateByParams")
+    int updateByParams(@Param(Const.ENTITY) E entity,
+                       @Param(Const.PARAMS) Object params);
+
 
 
     @UpdateProvider(type = Provider.class, method = "updateByWhere")
@@ -40,8 +41,8 @@ public interface Mapper<E> {
      * @param entity
      * @return
      */
-    @DeleteProvider(type = Provider.class, method = "delete")
-    int delete(E entity);
+    //@DeleteProvider(type = Provider.class, method = "delete")
+    //int delete(E entity);
 
     /**
      * delete by id value
@@ -56,8 +57,8 @@ public interface Mapper<E> {
      * @param params
      * @return
      */
-    @DeleteProvider(type = Provider.class, method = "deleteByEntity")
-    int deleteByEntity(E params);
+    @DeleteProvider(type = Provider.class, method = "delete")
+    int delete(E params);
 
     @DeleteProvider(type = Provider.class, method = "deleteByWhere")
     int deleteByWhere(@Param(Const.WHERE) String where,
@@ -68,12 +69,12 @@ public interface Mapper<E> {
     E getById(@Param(Const.ID) Object id,
               @Param(Const.COLUMNS) String selectColumns);
 
-    @SelectProvider(type = Provider.class, method = "getByEntity")
-    E getByEntity(@Param(Const.PARAMS) E params,
+    @SelectProvider(type = Provider.class, method = "getByParams")
+    E getByParams(@Param(Const.PARAMS) Object params,
                   @Param(Const.COLUMNS) String selectColumns);
 
-    @SelectProvider(type = Provider.class, method = "getValueByEntity")
-    <T> T getValueByEntity(@Param(Const.PARAMS) E params,
+    @SelectProvider(type = Provider.class, method = "getValueByParams")
+    <T> T getValueByParams(@Param(Const.PARAMS) Object params,
                            @Param(Const.COLUMN)  String column);
 
     @SelectProvider(type = Provider.class, method = "getValueByWhere")
@@ -82,8 +83,8 @@ public interface Mapper<E> {
                           @Param(Const.COLUMN) String column);
 
 
-    @SelectProvider(type = Provider.class, method = "listByEntity")
-    List<E> listByEntity(@Param(Const.PARAMS) E params,
+    @SelectProvider(type = Provider.class, method = "listByParams")
+    List<E> listByParams(@Param(Const.PARAMS) Object params,
                          @Param(Const.ORDER) String orderBy,
                          @Param(Const.COLUMNS) String selectColumns);
 
@@ -91,8 +92,8 @@ public interface Mapper<E> {
     List<E> listBySQL(@Param(Const.SQL) String sql,
                       @Param(Const.PARAMS) Object params);
 
-    @SelectProvider(type = Provider.class, method = "pageByEntity")
-    List<E> pageByEntity(@Param(Const.PARAMS) E params,
+    @SelectProvider(type = Provider.class, method = "pageByParams")
+    List<E> pageByParams(@Param(Const.PARAMS) Object params,
                          @Param(Const.PAGE) Page page,
                          @Param(Const.ORDER)String orderBy,
                          @Param(Const.COLUMNS) String selectColumns);

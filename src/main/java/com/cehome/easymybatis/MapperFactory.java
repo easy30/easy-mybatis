@@ -1,8 +1,6 @@
 package com.cehome.easymybatis;
 
 import com.cehome.easymybatis.annotation.EntitySelectKey;
-import com.cehome.easymybatis.builder.MethodBuilder;
-import com.cehome.easymybatis.builder.AbstractMethodBuilder;
 import com.cehome.easymybatis.core.*;
 import com.cehome.easymybatis.core.DialectInstance;
 import com.cehome.easymybatis.utils.ObjectSupport;
@@ -41,7 +39,7 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
     SqlSessionFactory sqlSessionFactory;
     Configuration configuration;
     Set<String> methodNameSet = new HashSet<String>();
-    Map<String, AbstractMethodBuilder> methodBuilderMap = new HashMap<String, AbstractMethodBuilder>();
+    //Map<String, AbstractMethodBuilder> methodBuilderMap = new HashMap<String, AbstractMethodBuilder>();
     private String dialect;
     DialectInstance dialectInstance;
 
