@@ -12,8 +12,11 @@ import java.util.List;
  **/
 public interface UserMapper2 extends Mapper<User> {
     @Select("select * from user where id = #{id}")
-    User findById(@Param("id") long id);
+    User getByIdAnno(@Param("id") long id);
 
-    User findById2(long id);
+    User getByIdXml(long id);
+
+    @Select("SELECT * FROM user where id>#{id}")
+    List<User> list(@Param("id") long id, RowBounds rowBounds);
 
 }

@@ -30,7 +30,7 @@ public class UpdateByWhereProvider<E> {
 
         }
         if(where.length()>0) {
-            where=ProviderSupport.convertSqlColumns(where,propertyColumnMap);
+            where=ProviderSupport.convertSqlColumns(where,entityAnnotation);
             //convert  #{id}==> #{params.id}
             where =ProviderSupport.sqlAddParamPrefix(where, Const.PARAMS);
         }

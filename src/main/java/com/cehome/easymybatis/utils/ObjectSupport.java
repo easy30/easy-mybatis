@@ -111,6 +111,14 @@ public class ObjectSupport {
 
 	}
 
+	/**
+	 *
+	 * @param clazz
+	 * @param object  for static field , object can be null
+	 * @param fieldName
+	 * @param <T>
+	 * @return
+	 */
 	public static <T>T getFieldValue(Class clazz, Object object, String fieldName) {
 		try {
 			Field field=clazz.getDeclaredField(fieldName);

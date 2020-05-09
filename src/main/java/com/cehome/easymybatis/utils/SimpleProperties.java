@@ -10,7 +10,7 @@ public abstract class SimpleProperties {
     public abstract String[] getProperties();
     public abstract Object getValue(String prop);
 
-    public static SimpleProperties getInstance(Object source){
+    public static SimpleProperties create(Object source){
         if(source instanceof Map) return new MapProperties((Map)source);
         return new ObjectProperties(source);
 

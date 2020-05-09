@@ -3,7 +3,7 @@
 
 <mapper namespace="com.cehome.easymybatis.test2.UserMapper2">
 
-    <select id="findById2" parameterType="long"  resultType="com.cehome.easymybatis.test2.User">
+    <select id="getByIdXml" parameterType="long"  resultType="com.cehome.easymybatis.test2.User">
        select * from user where id = #{id}
     </select>
 

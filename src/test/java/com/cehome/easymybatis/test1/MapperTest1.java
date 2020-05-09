@@ -3,6 +3,7 @@ package com.cehome.easymybatis.test1;
 import com.alibaba.fastjson.JSON;
 import com.cehome.easymybatis.Page;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -12,6 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,32 +31,44 @@ public class MapperTest1 {
     @Autowired
     SqlSessionTemplate sqlSessionTemplate;
 
-    Long id=36L;
+    Long id;
     Integer age=25;
     String name="ma";
     String realName="coolma";
 
+    @Before
+    public void before(){
+        setId();
+    }
+
     @Test
-    public void testAll() throws SQLException {
+    public void testAll()   {
+        long t=System.currentTimeMillis();
+        name="ma"+t;
+        realName=realName+t;
+
         testDelete();
         testUpdate();
         testSelect();
     }
     @Test
-    public void testSelect() throws SQLException {
-        getByEntity();
-        getUser();
+    public void testSelect()   {
+
+
+        setId();
+
+        getByParams();
         getById();
-        getValueByEntity();
+        getValueByParams();
         getValueByWhere();
-        listByEntity();
+        listByParams();
         listBySQL();
         pageByEntity();
         pageBySQL();
     }
 
     @Test
-    public void testUpdate() throws SQLException {
+    public void testUpdate()   {
         insert();
         update();
         updateByEntity();
@@ -63,7 +77,7 @@ public class MapperTest1 {
     }
 
     @Test
-    public void testDelete() throws SQLException {
+    public void testDelete()   {
 
         insert();deleteById();
         insert();deleteByEntity();
@@ -71,24 +85,25 @@ public class MapperTest1 {
 
     }
     @Test
-    public void insert() throws SQLException {
+    public void insert()   {
         User user = null;
         //-- insert into user(name,age,real_name) values('coolma',20,'mike')
         user = new User();
-        user.setName("coolma");
-        user.setAge(20);
-        user.setRealName("mike");
+        user.setName(name);
+        user.setAge(age);
+        user.setRealName(realName);
         userMapper1.insert(user);
+        id=user.getId();
     }
 
     /**
      *
      *
      *
-     * @throws SQLException
+     * @ 
      */
     @Test
-    public void test() throws SQLException {
+    public void test()   {
         User user = null;
         //-- insert into user(name,age,real_name) values('coolma',20,'mike')
         user = new User();
@@ -139,7 +154,7 @@ public class MapperTest1 {
 
     }
     @Test
-    public void update() throws SQLException {
+    public void update()   {
         User user=new User();
         user.setName("updateById");
         user.setId(id);
@@ -147,7 +162,7 @@ public class MapperTest1 {
         Assert.assertEquals(1, userMapper1.update(user));
     }
     @Test
-    public void updateByEntity() throws SQLException {
+    public void updateByEntity()   {
 
         User user=new User();
         user.setName("updateByEntity");
@@ -161,11 +176,11 @@ public class MapperTest1 {
 
     }
     @Test
-    public void updateByWhere() throws SQLException {
+    public void updateByWhere()   {
 
         User user=new User();
-       // user.setCreateTime(new Date());
-       // user.setEmail("usa@a.com");
+        user.setCreateTime(new Date());
+
 
         String where="{id}=#{id} and {realName}=#{realName}";
         Map map=new HashMap();
@@ -179,13 +194,13 @@ public class MapperTest1 {
 
 
     @Test
-    public void deleteById() throws SQLException {
+    public void deleteById()   {
         Assert.assertEquals(1, userMapper1.deleteById(id));
 
 
     }
     @Test
-    public void deleteByEntity() throws SQLException {
+    public void deleteByEntity()   {
 
         User params=new User();
         params.setName(name);
@@ -195,7 +210,7 @@ public class MapperTest1 {
 
     }
     @Test
-    public void deleteByWhere() throws SQLException {
+    public void deleteByWhere()   {
 
 
         String where="{name}=#{name} and {realName}=#{realName}";
@@ -208,9 +223,13 @@ public class MapperTest1 {
 
     }
 
+    private void setId(){
+        id = userMapper1.getValueByWhere( null, null,"max(id)");
+    }
+
 
     @Test
-    public void findById() throws SQLException {
+    public void findById()   {
 
         //User user=userMapper.findById(36L);
         //System.out.println(JSON.toJSONString(user));
@@ -218,19 +237,16 @@ public class MapperTest1 {
 
 
     @Test
-    public void getByEntity() throws SQLException {
+    public void getByParams()   {
         User params=new User();
         params.setId(id);
+        //params.setAge(20);
         User user= userMapper1.getByParams(params,null);
         verify(user,id);
 
     }
 
-    @Test
-    public void getUser() throws SQLException {
-         //User user=userMapper.getUser(id);
-        //verify(user,id);
-    }
+ 
     private void verify(User user, Long id){
         System.out.println(JSON.toJSONString(user));
         Assert.assertEquals(user.getId(),id);
@@ -238,7 +254,7 @@ public class MapperTest1 {
     }
 
     @Test
-    public void getById() throws SQLException {
+    public void getById()   {
         //System.out.println(dataSource.getConnection().getMetaData().getURL());
 
         User user= userMapper1.getById(id,null);
@@ -248,37 +264,29 @@ public class MapperTest1 {
 
 
     @Test
-    public void getValueByEntity() throws SQLException {
+    public void getValueByParams()   {
         User params=new User();
         params.setId(id);
-        Object value= userMapper1.getValueByParams(params,"name");
+        Object value= userMapper1.getValueByParams(params,null);//"name");
         System.out.println(JSON.toJSONString(value));
         Assert.assertNotNull(value);
 
 
     }
     @Test
-    public void getValueByWhere() throws SQLException {
-        {
-            User params = new User();
-            params.setId(36L);
-            Object value = userMapper1.getValueByWhere( "{id}=#{id}", params,"name");
-            System.out.println(JSON.toJSONString(value));
-            Assert.assertNotNull(value);
-        }
+    public void getValueByWhere()   {
 
-        {
-            Map<String,Object> params=new HashMap();
-            params.put("id",36L);
+            User params = new User();
+            params.setId(id);
             Object value = userMapper1.getValueByWhere( "{id}=#{id}", params,"name");
             System.out.println(JSON.toJSONString(value));
             Assert.assertNotNull(value);
-        }
+
 
     }
 
     @Test
-    public void listByEntity() throws SQLException {
+    public void listByParams()   {
         User params=new User();
         params.setAge(20);
         List<User> list= userMapper1.listByParams(params," name asc, createTime desc","age,createTime");
@@ -288,7 +296,7 @@ public class MapperTest1 {
     }
 
     @Test
-    public void pageByEntity() throws SQLException {
+    public void pageByEntity()   {
         User params=new User();
         params.setAge(20);
         Page<User> page=new Page(1,3);
@@ -299,7 +307,7 @@ public class MapperTest1 {
     }
 
     @Test
-    public void listBySQL() throws SQLException {
+    public void listBySQL()   {
         User params=new User();
         params.setAge(20);
         List<User> list= userMapper1.listBySQL(" age>#{age} order by {createTime} desc",params);
@@ -309,13 +317,13 @@ public class MapperTest1 {
 
 
     @Test
-    public void pageBySQL() throws SQLException {
+    public void pageBySQL()   {
         User params=new User();
-        params.setAge(20);
-        Page<User> page=new Page(2,5);
-        List<User> list= userMapper1.pageBySQL(" age>#{age} order by {createTime} desc",params,page);
-        System.out.println(list.size()+"\r\n"+JSON.toJSONString(page));
-        Assert.assertTrue(list.size()>0);
+        params.setAge(age);
+        Page<User> page=new Page(1,5);
+        userMapper1.pageBySQL(" age>=#{age} order by {createTime} desc",params,page);
+        System.out.println(page.getData().size()+"\r\n"+JSON.toJSONString(page));
+        Assert.assertTrue(page.getData().size()>0);
     }
 
 

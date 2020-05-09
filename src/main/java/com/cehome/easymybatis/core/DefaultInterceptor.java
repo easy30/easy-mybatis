@@ -17,7 +17,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -41,9 +40,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultInterceptor implements Interceptor {
 
     private Map<String, MappedStatement> countMap = new ConcurrentHashMap();
-    DialectInstance dialectInstance;
-    public DefaultInterceptor(DialectInstance dialectInstance){
-        this.dialectInstance=dialectInstance;
+    private DialectInstance dialectInstance;
+    private static ThreadLocal<MappedStatement> mappedStatementHolder = new ThreadLocal<>();
+
+    public DefaultInterceptor(DialectInstance dialectInstance) {
+        this.dialectInstance = dialectInstance;
+    }
+
+    public static MappedStatement getCurrentMappedStatement(){
+        return mappedStatementHolder.get();
     }
 
     @Override
@@ -52,40 +57,50 @@ public class DefaultInterceptor implements Interceptor {
         final Object[] args = invocation.getArgs();
 
         MappedStatement statement = (MappedStatement) args[0];
-
-        if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
-            Page page = getPage(args[1]);
-            if (page != null) {
-                Object parameterObject = args[1];
-                RowBounds rowBounds = (RowBounds) args[2];
-                Executor executor = (Executor) invocation.getTarget();
-
-                BoundSql boundSql = statement.getBoundSql(parameterObject);
-                String sql=boundSql.getSql();
-
-                String pageSql= dialectInstance.getInstance().getPageSql(sql);
-                List<ParameterMapping> pms = dialectInstance.getInstance().getPageParameterMapping(statement.getConfiguration(),boundSql.getParameterMappings());
-
-                BoundSql pageBoundSql = new BoundSql(statement.getConfiguration(), pageSql, pms, parameterObject);
-                CacheKey cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, pageBoundSql);
-                //Class entityClass= EntityAnnotation.getInstanceByMapper(getMapperClass(statement.getId())).getEntityClass();
-                List list = executor.query(statement, parameterObject, rowBounds, null, cacheKey, pageBoundSql);
-                page.setData(list);
+        try {
 
 
-                String countSql=dialectInstance.getInstance().getCountSql(sql);
-                BoundSql countBoundSql = new BoundSql(statement.getConfiguration(), countSql, boundSql.getParameterMappings(), parameterObject);
-                cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, countBoundSql);
-                int total = (Integer) executor.query(createMappedStatement(statement, Integer.class), parameterObject, rowBounds, null, cacheKey, countBoundSql).get(0);
-                page.setTotalRecord(total);
-                page.setTotalPage((total - 1) / page.getPageSize() + 1);
-                return list;
+            mappedStatementHolder.set(statement);
+
+            if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
+                Page page = getPage(args[1]);
+                if (page != null) {
+                    Object parameterObject = args[1];
+                    RowBounds rowBounds = (RowBounds) args[2];
+                    Executor executor = (Executor) invocation.getTarget();
+
+                    BoundSql boundSql = statement.getBoundSql(parameterObject);
+                    String sql = boundSql.getSql();
+
+                    String pageSql = dialectInstance.getInstance().getPageSql(sql);
+                    List<ParameterMapping> pms = dialectInstance.getInstance().getPageParameterMapping(statement.getConfiguration(), boundSql.getParameterMappings());
+
+                    BoundSql pageBoundSql = new BoundSql(statement.getConfiguration(), pageSql, pms, parameterObject);
+                    CacheKey cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, pageBoundSql);
+                    //Class entityClass= EntityAnnotation.getInstanceByMapper(getMapperClass(statement.getId())).getEntityClass();
+                    List list = executor.query(statement, parameterObject, rowBounds, null, cacheKey, pageBoundSql);
+                    page.setData(list);
+
+
+                    if (page.isQueryCount()) {
+                        String countSql = dialectInstance.getInstance().getCountSql(sql);
+                        BoundSql countBoundSql = new BoundSql(statement.getConfiguration(), countSql, boundSql.getParameterMappings(), parameterObject);
+                        cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, countBoundSql);
+                        int total = (Integer) executor.query(createMappedStatement(statement, Integer.class), parameterObject, rowBounds, null, cacheKey, countBoundSql).get(0);
+                        page.setRecordCount(total);
+                        page.setPageCount((total - 1) / page.getPageSize() + 1);
+                    }
+                    return list;
+                }
+
+
             }
 
 
+            return invocation.proceed();
+        } finally {
+            mappedStatementHolder.remove();
         }
-
-        return invocation.proceed();
     }
 
     private Page getPage(Object arg) {

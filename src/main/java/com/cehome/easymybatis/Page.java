@@ -3,6 +3,10 @@ package com.cehome.easymybatis;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ *
+ * @param <E>
+ */
 public class Page<E> implements Serializable {
 
     private static final long serialVersionUID = 7395507780937350288L;
@@ -18,20 +22,20 @@ public class Page<E> implements Serializable {
     /**
      *  record start row
      */
-    private int pageOffset;
+    private int recordStart;
 
-    private int pageOffsetEnd;
-
-
-    private int totalRecord;
+    private int recordEnd;
 
 
-    private int totalPage;
+    private int recordCount;
+
+
+    private int pageCount;
 
 
     private List<E> data;
 
-
+    private boolean queryCount=true;
 
     public Page() {
     }
@@ -39,8 +43,8 @@ public class Page<E> implements Serializable {
     public Page(int pageIndex,int pageSize) {
         setPageIndex(pageIndex);
         setPageSize(pageSize);
-        setPageOffset((pageIndex-1)*pageSize);
-        setPageOffsetEnd(pageIndex*pageIndex-1);//
+        setRecordStart((pageIndex-1)*pageSize);
+        setRecordEnd(pageIndex*pageIndex-1);//
     }
 
 
@@ -60,20 +64,20 @@ public class Page<E> implements Serializable {
         this.pageSize = pageSize;
     }
 
-    public int getTotalRecord() {
-        return totalRecord;
+    public int getRecordCount() {
+        return recordCount;
     }
 
-    public void setTotalRecord(int totalRecord) {
-        this.totalRecord = totalRecord;
+    public void setRecordCount(int recordCount) {
+        this.recordCount = recordCount;
     }
 
-    public int getTotalPage() {
-        return totalPage;
+    public int getPageCount() {
+        return pageCount;
     }
 
-    public void setTotalPage(int totalPage) {
-        this.totalPage = totalPage;
+    public void setPageCount(int pageCount) {
+        this.pageCount = pageCount;
     }
 
     public List<E> getData() {
@@ -84,19 +88,27 @@ public class Page<E> implements Serializable {
         this.data = data;
     }
 
-    public int getPageOffset() {
-        return pageOffset;
+    public int getRecordStart() {
+        return recordStart;
     }
 
-    public void setPageOffset(int pageOffset) {
-        this.pageOffset = pageOffset;
+    public void setRecordStart(int recordStart) {
+        this.recordStart = recordStart;
     }
 
-    public int getPageOffsetEnd() {
-        return pageOffsetEnd;
+    public int getRecordEnd() {
+        return recordEnd;
     }
 
-    public void setPageOffsetEnd(int pageOffsetEnd) {
-        this.pageOffsetEnd = pageOffsetEnd;
+    public void setRecordEnd(int recordEnd) {
+        this.recordEnd = recordEnd;
+    }
+
+    public boolean isQueryCount() {
+        return queryCount;
+    }
+
+    public void setQueryCount(boolean queryCount) {
+        this.queryCount = queryCount;
     }
 }

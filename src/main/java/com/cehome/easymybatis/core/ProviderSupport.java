@@ -4,6 +4,8 @@ import com.cehome.easymybatis.DialectEntity;
 import com.cehome.easymybatis.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,7 @@ import java.util.Map;
  * coolma 2019/10/30
  **/
 public class ProviderSupport {
+    private  static Logger logger= LoggerFactory.getLogger(ProviderSupport.class);
     public static String SQL_UPDATE = "<script>\r\n update {} <set>{}</set> \r\n <where>{}</where> \r\n </script> ";
     public static String SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
     public static String SQL_DELETE="<script>\r\n delete {} from {} <where>{}</where>\r\n</script>";
@@ -49,7 +52,7 @@ public class ProviderSupport {
 
         }
         String result= s1.toString();
-        if(StringUtils.isEmpty(result)) throw new RuntimeException("entity for update is empty");
+        if(StringUtils.isEmpty(result)) throw new RuntimeException("entity for update is empty. You need set some values");
         return  result;
     }
 
@@ -109,13 +112,17 @@ public class ProviderSupport {
 
     }
 
-    public static String convertSqlColumns(String sql, Map<String, ColumnAnnotation> propertyColumnMap) {
+    public static String convertSqlColumns(String sql,  EntityAnnotation entityAnnotation ) {
         //  regex= ([^#\$]\{|^\{)(\w+)\} .  "{id}" or  "  {id}" ,but not #{id} ${id}
         RegularReplace rr = new RegularReplace(sql, "([^#\\$]\\{|^\\{)(\\w+)\\}");
         //  [^#\$]\{\w+\}|^\{(\w+)\}
-
+        Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
         while (rr.find()) {
             String prop = rr.group(2);
+            if("TABLE".equalsIgnoreCase(prop)){
+                rr.replace(entityAnnotation.getTable());
+                continue;
+            }
             ColumnAnnotation ca = propertyColumnMap.get(prop);
             String column = null;
             if (ca != null) {
@@ -138,28 +145,31 @@ public class ProviderSupport {
      * @return
      */
     public static String convertColumns(String properties, Map<String, ColumnAnnotation> propertyColumnMap){
-        String order = "";
+        String result = "";
         if (properties != null && properties.length() > 0) {
-            String[] orders = properties.split(",");
-            for (String s : orders) {
+            if(properties.trim().equals("*")) return  properties;
+            String[] items = properties.split(",");
+            for (String s : items) {
                 s = s.trim();
-                if (order.length() > 0) order += " , ";
+                if (result.length() > 0) result += " , ";
                 int n = indexOfWhitespace(s);
                 String prop=n==-1?s:s.substring(0, n);
                 prop= trimBrace(prop);
-                if(prop.startsWith("{")) prop=prop.substring(1);
-                if(prop.endsWith("}")) prop=prop.substring(0,prop.length()-1);
+
                 ColumnAnnotation ca=propertyColumnMap.get(prop);
+                if(ca==null){
+                    logger.warn("can't find prop {} in entity ",prop);
+                }
                 String column=ca!=null?ca.getName():prop;
                 if (n == -1)
-                    order += column + " ";
+                    result += column + " ";
                 else
-                    order += column + s.substring(n);
+                    result += column + s.substring(n);
 
             }
 
         }
-        return order;
+        return result;
     }
 
     public static String convertColumn(String propertyOrColumn, Map<String, ColumnAnnotation> propertyColumnMap){
@@ -209,29 +219,31 @@ public class ProviderSupport {
     }
 
 
-    public static String sqlByEntity(Object params, String sqlFormat, boolean select,String columns, String orderBy, String prefix){
+    public static String sqlByParams(EntityAnnotation entityAnnotation,Object params, String sqlFormat, boolean select, String columns, String orderBy, String prefix){
 
-        Class entityClass=params.getClass();
-        EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
-
+       // Class entityClass=params.getClass();
+        //EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
+        columns= ProviderSupport.convertColumns(columns, propertyColumnMap);
 
         LineBuilder where = new LineBuilder();
-        SimpleProperties sp=SimpleProperties.getInstance(params);
-        for(String prop:sp.getProperties()){
-            Object value=sp.getValue(prop);
-            if(value!=null){
-                String fullProp= prefix==null||prefix.length()==0?prop:prefix+"."+prop;
-                where.append(Utils.format(Const.SQL_AND,  entityAnnotation.getColumnName(prop),fullProp));
-            }else {
-                value= entityAnnotation.getDialectParam(params,prop);
-                if(value!=null){
-                    where.append(Utils.format(Const.SQL_AND_DIALECT,entityAnnotation.getColumnName(prop),value));
+        if(params!=null) {
+            SimpleProperties sp = SimpleProperties.create(params);
+            for (String prop : sp.getProperties()) {
+                Object value = sp.getValue(prop);
+                if (value != null) {
+                    String fullProp = prefix == null || prefix.length() == 0 ? prop : prefix + "." + prop;
+                    where.append(Utils.format(Const.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
+                } else {
+                    value = entityAnnotation.getDialectParam(params, prop);
+                    if (value != null) {
+                        where.append(Utils.format(Const.SQL_AND_DIALECT, entityAnnotation.getColumnName(prop), value));
+                    }
                 }
             }
         }
 
-        if(!select && where.length()==0) throw new RuntimeException(" WHERE condition can not be null( Safety!!! )");
+        if(!select && where.length()==0) throw new RuntimeException(" 'Where' condition can not be null( Safety!!! ). params need.");
 
         String order= convertColumns(orderBy,propertyColumnMap);
         if(order.length()>0) where.append( " order by "+order);
@@ -241,8 +253,8 @@ public class ProviderSupport {
 
     }
 
-    public static String convertSql(String sql, Map<String, ColumnAnnotation> propertyColumnMap){
-        sql= convertSqlColumns(sql,propertyColumnMap);
+    public static String convertSql(String sql, EntityAnnotation entityAnnotation){
+        sql= convertSqlColumns(sql,entityAnnotation);
         //convert  #{id}==> #{params.id}
         sql = sqlAddParamPrefix(sql, Const.PARAMS);
         return sql;

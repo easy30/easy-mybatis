@@ -19,11 +19,11 @@ public class BySQLProvider<E> {
     public String deleteByWhere(ProviderContext context,
                                   @Param(Const.WHERE) String where, @Param(Const.PARAMS) Object params){
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-        Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
+        //Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
         String sql= ProviderSupport.SQL_DELETE;
 
         if(where!=null &&where.length()>0) {
-            where=fixSql(where,propertyColumnMap);
+            where=fixSql(where,entityAnnotation);
         }
 
         return Utils.format(sql,"",entityAnnotation.getTable(),where);
@@ -39,7 +39,7 @@ public class BySQLProvider<E> {
 
         column=ProviderSupport.convertColumn(column,propertyColumnMap);
         if(where!=null &&where.length()>0) {
-            where=fixSql(where,propertyColumnMap);
+            where=fixSql(where,entityAnnotation);
 
         }
         //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
@@ -52,12 +52,12 @@ public class BySQLProvider<E> {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
 
         //String sql=ProviderSupport.SQL_UPDATE;
-        Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
+        //Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
         //String set = ProviderSupport.getSetValues(propertyColumnMap,"e");
 
         if(sql!=null &&sql.length()>0) {
 
-            sql=fixSql(sql,propertyColumnMap);
+            sql=fixSql(sql,entityAnnotation);
             sql=ProviderSupport.sqlComplete(sql,entityAnnotation);
         }
 
@@ -66,8 +66,8 @@ public class BySQLProvider<E> {
 
     }
 
-    protected String fixSql(String sql,  Map<String, ColumnAnnotation> propertyColumnMap){
-        sql=ProviderSupport.convertSqlColumns(sql,propertyColumnMap);
+    protected String fixSql(String sql,  EntityAnnotation entityAnnotation){
+        sql=ProviderSupport.convertSqlColumns(sql,entityAnnotation);
         //convert  #{id}==> #{params.id}
         sql =ProviderSupport.sqlAddParamPrefix(sql, Const.PARAMS);
         return sql;

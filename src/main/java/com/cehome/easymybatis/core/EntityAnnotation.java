@@ -60,6 +60,9 @@ public class EntityAnnotation
 		{
 			synchronized(beanMap)
 			{
+				if( Map.class.isAssignableFrom(entityClass)){
+					throw new RuntimeException("entity class can not be a Map");
+				}
 				ba= beanMap.get(entityClass);
 				if(ba==null)
 				{
