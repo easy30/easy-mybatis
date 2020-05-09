@@ -1,8 +1,8 @@
 # easy-mybatis
 
-mybatis ORM framework base mybatis mapper framework, but more easy to use which can reduce much sql. 
+mybatis ORM framework base on mybatis mapper, but more easy to use which can reduce much sql. 
 
-No SQL need for insert, update and some select operations.
+No SQL need for insert, update and most select operations.
 
 ## Quick start
 
@@ -151,7 +151,7 @@ public class MapperTest {
             User params = new User();
             params.setId(100L);
             params.setAge(20);
-            userMapper1.updateByEntity(user, params);
+            userMapper1.updateByParams(user, params);
     
             //-- delete from user where id=100
             userMapper1.deleteById(100L);
@@ -163,18 +163,18 @@ public class MapperTest {
             //-- select one: select * from user where real_name='tom'
             params=new User();
             params.setRealName("tom");
-            user= userMapper1.getByEntity(params,null);
+            user= userMapper1.getByParams(params,null);
     
             //-- list: select name,real_name from user where age=20
             params=new User();
             params.setAge(20);
-            List<User> list=userMapper1.listByEntity(params,null,"name,realName");
+            List<User> list=userMapper1.listByParams(params,null,"name,realName");
     
             //-- page: select name,real_name from user where age=20 order by real_name asc limit 0,20
             params=new User();
             params.setAge(20);
             Page<User> page=new Page(1,20);
-            userMapper1.pageByEntity(params,page,"realName asc","name,realName");
+            userMapper1.pageByParams(params,page,"realName asc","name,realName");
             System.out.println(page.getData());
     
     }
