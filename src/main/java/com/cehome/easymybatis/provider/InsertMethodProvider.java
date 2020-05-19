@@ -11,6 +11,7 @@ import java.util.Map;
 /**
  * coolma 2019/10/28
  **/
+@Deprecated
 public class InsertMethodProvider<E> {
 
 

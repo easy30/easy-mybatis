@@ -317,9 +317,7 @@ public class EntityAnnotation
 	}
 
 	private <T extends Annotation> T getAnnotation(Class<T> annotationClass,Field field,Method method){
-		T  t=field.getAnnotation(annotationClass);
-		if(t==null)  t=method.getAnnotation(annotationClass);
-		return t;
+		return ObjectSupport.getAnnotation(annotationClass,field,method);
 	}
 
 	public Object getProperty(Object object,String property){

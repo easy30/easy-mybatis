@@ -122,7 +122,9 @@ public class Provider<E> {
         String set = ProviderSupport.sqlSetValues(entity, Const.ENTITY);
 
 
-        LineBuilder whereBuilder = new LineBuilder();
+        String[] result= ProviderSupport.parseParams(entityAnnotation,params,ProviderSupport.SQL_TYPE_UPDATE,"",null,Const.PARAMS );
+
+        /*LineBuilder whereBuilder = new LineBuilder();
         SimpleProperties sp=SimpleProperties.create(params);
         for(String prop:sp.getProperties()){
             Object value=sp.getValue(prop);
@@ -140,10 +142,10 @@ public class Provider<E> {
 
         String where = whereBuilder.toString();
         if (StringUtils.isBlank(where))
-            throw new RuntimeException("params for update can not be empty (safely update!!!)");
+            throw new RuntimeException("params for update can not be empty (safely update!!!)");*/
 
 
-        return Utils.format(sql, entityAnnotation.getTable(), set, where);
+        return Utils.format(sql, result[1], set, result[2]);
 
 
     }
@@ -180,7 +182,7 @@ public class Provider<E> {
             selectColumns = "*";
         } else {
             EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-            selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
+            selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation);
 
         }
         return ProviderSupport.sqlById(context, id, ProviderSupport.SQL_SELECT, selectColumns);
@@ -204,14 +206,14 @@ public class Provider<E> {
 
     public String getByParams(ProviderContext context,@Param(Const.PARAMS) Object params, @Param(Const.COLUMNS) String selectColumns) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-        if (StringUtils.isBlank(selectColumns)) {
+        /*if (StringUtils.isBlank(selectColumns)) {
             selectColumns = "*";
-        } /*else {
+        } *//*else {
 
             selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
 
         }*/
-        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_SELECT, true, selectColumns, null, Const.PARAMS);
+        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_SELECT, ProviderSupport.SQL_TYPE_SELECT, selectColumns, null, Const.PARAMS);
 
     }
 
@@ -219,10 +221,10 @@ public class Provider<E> {
         //Class entityClass = params.getClass();
         EntityAnnotation entityAnnotation =  EntityAnnotation.getInstanceByMapper(context.getMapperType());
         //Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
-        if (StringUtils.isBlank(column)) {
+      /*  if (StringUtils.isBlank(column)) {
             column = "*";
-        }
-        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_SELECT, true, column, null, Const.PARAMS);
+        }*/
+        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_SELECT, ProviderSupport.SQL_TYPE_SELECT, column, null, Const.PARAMS);
 
     }
 
@@ -231,13 +233,13 @@ public class Provider<E> {
         //Class entityClass = params.getClass();
         EntityAnnotation entityAnnotation =  EntityAnnotation.getInstanceByMapper(context.getMapperType());
         //Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
-        if (StringUtils.isBlank(selectColumns)) {
+       /* if (StringUtils.isBlank(selectColumns)) {
             selectColumns = "*";
-        }/* else {
+        }*//* else {
             selectColumns = ProviderSupport.convertColumns(selectColumns, propertyColumnMap);
         }*/
 
-        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_SELECT, true, selectColumns, orderBy, Const.PARAMS);
+        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_SELECT, ProviderSupport.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS);
 
     }
 
@@ -248,9 +250,9 @@ public class Provider<E> {
     }
 
 
-    public String delete(ProviderContext context,E params) {
+    public String deleteByParams(ProviderContext context,E params) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_DELETE, false, "", null, "");
+        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_DELETE, ProviderSupport.SQL_TYPE_DELETE, "", null,  "");
 
     }
 
@@ -313,5 +315,8 @@ public class Provider<E> {
                             @Param(Const.PARAMS) Object params, @Param(Const.PAGE) Page page) {
         return listBySQL(context, sql, params);
 
+    }
+    public String getValueBySQL(ProviderContext context, @Param(Const.SQL) String sql, @Param(Const.PARAMS) Object params) {
+        return listBySQL(context, sql, params);
     }
 }

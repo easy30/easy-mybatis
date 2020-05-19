@@ -12,7 +12,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +62,7 @@ public class MapperTest1 {
         getValueByWhere();
         listByParams();
         listBySQL();
-        pageByEntity();
+        pageByParams();
         pageBySQL();
     }
 
@@ -205,7 +204,7 @@ public class MapperTest1 {
         User params=new User();
         params.setName(name);
         params.setAge(age);
-        Assert.assertEquals(1, userMapper1.delete(params));
+        Assert.assertEquals(1, userMapper1.deleteByParams(params));
 
 
     }
@@ -296,7 +295,7 @@ public class MapperTest1 {
     }
 
     @Test
-    public void pageByEntity()   {
+    public void pageByParams()   {
         User params=new User();
         params.setAge(20);
         Page<User> page=new Page(1,3);
@@ -326,7 +325,15 @@ public class MapperTest1 {
         Assert.assertTrue(page.getData().size()>0);
     }
 
+    @Test
+    public void listByParams2()   {
+        UserParams params=new UserParams();
+        params.setAge(20);
+        List<User> list= userMapper1.listByParams(params," name asc, createTime desc","age,createTime");
+        System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
+        Assert.assertTrue(list.size()>0);
 
+    }
 
 
 }

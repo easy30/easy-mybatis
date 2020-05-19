@@ -13,6 +13,7 @@ import java.util.Map;
 /**
  * coolma 2019/10/28
  **/
+@Deprecated
 public class ByEntityProvider<E> {
 
     public String getByEntity(@Param(Const.PARAMS) E params){
@@ -65,7 +66,7 @@ public class ByEntityProvider<E> {
             }
         }
 
-        String order=ProviderSupport.convertColumns(orderBy,propertyColumnMap);
+        String order=ProviderSupport.convertColumns(orderBy,entityAnnotation);
         if(order.length()>0) where.append( " order by "+order);
 
         //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";

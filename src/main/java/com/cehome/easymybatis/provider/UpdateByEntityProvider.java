@@ -13,6 +13,7 @@ import java.util.Map;
 /**
  * coolma 2019/10/28
  **/
+@Deprecated
 public class UpdateByEntityProvider<E> {
 
     public String build(@Param(Const.ENTITY) E entity, @Param(Const.PARAMS) E params){

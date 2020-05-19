@@ -11,7 +11,6 @@ import java.util.List;
  **/
 public interface Mapper<E> {
 
-
     /**
      *
      * @param entity
@@ -68,8 +67,8 @@ public interface Mapper<E> {
      * @param params
      * @return
      */
-    @DeleteProvider(type = Provider.class, method = "delete")
-    int delete(Object params);
+    @DeleteProvider(type = Provider.class, method = "deleteByParams")
+    int deleteByParams(Object params);
 
     /**
      *
@@ -83,7 +82,7 @@ public interface Mapper<E> {
 
 
     /**
-     *
+     * get single entity
      * @param id  integer,long,string ...
      * @param selectColumns
      * @return
@@ -93,7 +92,7 @@ public interface Mapper<E> {
               @Param(Const.COLUMNS) String selectColumns);
 
     /**
-     *
+     * get single entity
      * @param params E(entity or same props Object), Map
      * @param selectColumns Can be prop or column. null means all columns.
      * @return
@@ -103,7 +102,7 @@ public interface Mapper<E> {
                   @Param(Const.COLUMNS) String selectColumns);
 
     /**
-     *
+     * get one column
      * @param params E(entity or same props Object), Map
      * @param column  prop or column name. null - return the first column
      * @param <T>
@@ -114,7 +113,7 @@ public interface Mapper<E> {
                            @Param(Const.COLUMN)  String column);
 
     /**
-     *
+     * get one column
      * @param where  {realName}=#{realName} or real_name=#{realName} . You can use {prop} to instead of column name
      * @param params E(entity or same props Object), Map
      * @param column prop or column name. null - return the first column
@@ -126,6 +125,16 @@ public interface Mapper<E> {
                           @Param(Const.PARAMS) Object params,
                           @Param(Const.COLUMN) String column);
 
+    /**
+     * get one column
+     * @param sql  select column1 from {TABLE}
+     * @param params
+     * @param <T>
+     * @return
+     */
+    @SelectProvider(type = Provider.class, method = "getValueBySQL")
+    <T> T getValueBySQL(@Param(Const.SQL) String sql,
+                        @Param(Const.PARAMS) Object params);
 
     /**
      *

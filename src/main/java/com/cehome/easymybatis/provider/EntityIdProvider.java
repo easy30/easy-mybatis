@@ -7,6 +7,7 @@ import com.cehome.easymybatis.utils.Utils;
 /**
  * coolma 2019/10/28
  **/
+@Deprecated
 public class EntityIdProvider<E> {
 
     public String delete(E entity) {

@@ -8,6 +8,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -134,5 +135,37 @@ public class ObjectSupport {
 			if (m.getName().equals(methodName)) return m;
 		}
 		return null;
+	}
+
+
+	public static  <T extends Annotation> T getAnnotation(Class<T> annotationClass, Field field, Method method){
+		T  t=field.getAnnotation(annotationClass);
+		if(t==null)  t=method.getAnnotation(annotationClass);
+		return t;
+	}
+	public static  <T extends Annotation> T getAnnotation(Class<T> annotationClass,Class clazz, String prop){
+		Field field = ObjectSupport.getField(clazz, prop);
+		T  t=field.getAnnotation(annotationClass);
+		if(t==null) {
+			Method method=null;
+			BeanInfo beanInfo = null;
+			try {
+				beanInfo = Introspector.getBeanInfo(clazz);
+			} catch (IntrospectionException e) {
+				throw new RuntimeException(e);
+			}
+			for(PropertyDescriptor pd:  beanInfo.getPropertyDescriptors()){
+				String prop2=pd.getName();
+				if (prop2.equals(prop)) {
+					method=pd.getReadMethod();
+					break;
+				}
+
+			}
+			if(method!=null) {
+				t = method.getAnnotation(annotationClass);
+			}
+		}
+		return t;
 	}
 }

@@ -6,7 +6,7 @@
 
     <groupId>com.github.easy-ware</groupId>
     <artifactId>easy-mybatis</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <url>https://github.com/easy-ware/easy-mybatis</url>
     <description>easy mybatis</description>
     <properties>

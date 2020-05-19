@@ -10,6 +10,7 @@ import java.util.List;
 /**
  * coolma 2019/10/30
  **/
+@Deprecated
 public class ByIdProvider<E> {
     public String getById(ProviderContext context, Object id) {
        return doBuild(context,id, ProviderSupport.SQL_SELECT,"*");

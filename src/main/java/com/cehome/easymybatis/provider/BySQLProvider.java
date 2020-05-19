@@ -13,6 +13,7 @@ import java.util.Map;
 /**
  * coolma 2019/10/30
  **/
+@Deprecated
 public class BySQLProvider<E> {
 
 

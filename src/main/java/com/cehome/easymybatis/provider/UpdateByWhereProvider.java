@@ -12,6 +12,7 @@ import java.util.Map;
 /**
  * coolma 2019/10/30
  **/
+@Deprecated
 public class UpdateByWhereProvider<E> {
 
     public String build(@Param(Const.ENTITY) E entity, String where, @Param(Const.PARAMS) Object params){
