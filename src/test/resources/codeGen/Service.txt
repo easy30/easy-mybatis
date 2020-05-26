@@ -1,0 +1,68 @@
+package ${apiPackage};
+import ${poPackage}.${modelName};
+import ${dtoPackage}.${modelName}Dto;
+import ${reqDtoPackage}.${modelName}ReqDto;
+import org.springframework.cloud.netflix.feign.FeignClient;
+import com.cehome.cloud.common.dao.base.Page;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+
+/**
+ *
+ * @author ${author}
+ * @date: ${date}
+ * @since 1.0.0
+ */
+@FeignClient(${service}API.SERVICE_ID)
+public interface ${modelName}Service {
+    String BASE_PATH="/equipmentSms2";
+
+	/**
+  	 *
+ 	 * 添加
+ 	 * @param
+ 	 * @return id
+  	 */
+	@RequestMapping(value=BASE_PATH+"/add" , method = RequestMethod.POST)
+	Integer add(@RequestBody  ${modelName} ${modelVar}ReqDto);
+
+	/**
+  	 *
+ 	 * 修改
+ 	 * @param
+ 	 * @return
+  	 */
+	@RequestMapping(value=BASE_PATH+"/update" , method = RequestMethod.POST)
+	int update(@RequestBody  ${modelName} ${modelVar}ReqDto);
+
+	/**
+  	 *
+ 	 * 删除
+ 	 * @param
+ 	 * @return
+  	 */
+	@RequestMapping(value=BASE_PATH+"/delete" , method = RequestMethod.GET)
+	int delete(@RequestParam("id") Integer id);
+
+	/**
+  	 *
+ 	 * 根据Id取对象
+ 	 * @param
+ 	 * @return
+  	 */
+	@RequestMapping(value=BASE_PATH+"/get" , method = RequestMethod.GET)
+	${modelName}Dto get(@RequestParam("id") Integer id);
+
+	/**
+  	 *
+ 	 * 分页查询
+ 	 * @param
+ 	 * @return
+  	 */
+	@RequestMapping(value=BASE_PATH+"/page" , method = RequestMethod.POST)
+	Page<${modelName}Dto> page(@RequestBody  ${modelName}ReqDto ${modelVar}ReqDto, @RequestParam("pageIndex") int pageIndex, @RequestParam("pageSize")int pageSize);
+
+}

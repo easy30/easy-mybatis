@@ -1,0 +1,89 @@
+package ${implPackage};
+
+import com.cehome.cloud.common.dao.base.Page;
+import ${apiPackage}.${modelName}Service;
+import ${mapperPackage}.${modelName}Mapper;
+import ${poPackage}.${modelName};
+import ${dtoPackage}.${modelName}Dto;
+import ${reqDtoPackage}.${modelName}ReqDto;
+import com.cehome.utils.FastjsonUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import javax.annotation.Resource;
+
+/**
+ * @author ${author}
+ * @since 1.0.0
+ * @date: ${date}
+ */
+@RestController
+public class ${modelName}ServiceImpl implements ${modelName}Service {
+
+    private final Logger logger = LoggerFactory.getLogger(${modelName}ServiceImpl.class);
+
+    @Resource
+    private ${modelName}Mapper ${modelVar}Mapper;
+
+    /**
+     * 添加
+     * @param
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer add(@RequestBody ${modelName} ${modelVar}) {
+        logger.info("${modelName}ServiceImpl.add  ${modelVar}:{}", FastjsonUtils.toJSONString(${modelVar}));
+        ${modelVar}Mapper.insert(${modelVar});
+        return ${modelVar}.getId();
+    }
+
+    /**
+     * 更新
+     * @param
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int update(@RequestBody ${modelName} ${modelVar}) {
+        logger.info("${modelName}ServiceImpl.update  ${modelVar}:{}", FastjsonUtils.toJSONString(${modelVar}));
+        return ${modelVar}Mapper.update(${modelVar});
+    }
+
+    /**
+     * 删除
+     * @param
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int delete(Integer id) {
+        return ${modelVar}Mapper.deleteById(id);
+    }
+
+    /**
+     * 根据Id取对象
+     * @param
+     * @return
+     */
+    @Override
+    public ${modelName}Dto get(Integer id) {
+        return ${modelVar}Mapper.getById(id,null);
+    }
+
+    /**
+     * 分页查询
+     * @param
+     * @return
+     */
+    @Override
+    public Page<${modelName}Dto> page(@RequestBody ${modelName}ReqDto ${modelVar}ReqDto,int pageIndex,int pageSize) {
+        com.cehome.easymybatis.Page<${modelName}Dto> page=new com.cehome.easymybatis.Page(pageIndex,pageSize);
+        ${modelVar}Mapper.pageByParams(${modelVar}ReqDto,page,null,null);
+        return new Page(page);
+    }
+
+}
+

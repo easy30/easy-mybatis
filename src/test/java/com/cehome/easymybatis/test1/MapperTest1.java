@@ -142,7 +142,7 @@ public class MapperTest1 {
         //-- list: select name,real_name from user where age=20
         params=new User();
         params.setAge(20);
-        List<User> list=userMapper1.listByParams(params,null,"name,realName");
+        List<UserDto> list=userMapper1.listByParams(params,null,"name,realName");
 
         //-- page: select name,real_name from user where age=20 order by name asc limit 0,20
         params=new User();
@@ -288,7 +288,7 @@ public class MapperTest1 {
     public void listByParams()   {
         User params=new User();
         params.setAge(20);
-        List<User> list= userMapper1.listByParams(params," name asc, createTime desc","age,createTime");
+        List<UserDto> list= userMapper1.listByParams(params," name asc, createTime desc","age,createTime");
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
 
@@ -299,7 +299,7 @@ public class MapperTest1 {
         User params=new User();
         params.setAge(20);
         Page<User> page=new Page(1,3);
-        List<User> list= userMapper1.pageByParams(params,page," name asc, createTime desc","age,createTime");
+        List<UserDto> list= userMapper1.pageByParams(params,page," name asc, createTime desc","age,createTime");
         System.out.println(page.getData().size()+"\r\n"+JSON.toJSONString(page));
         Assert.assertTrue(page.getData().size()>0);
 
@@ -309,7 +309,7 @@ public class MapperTest1 {
     public void listBySQL()   {
         User params=new User();
         params.setAge(20);
-        List<User> list= userMapper1.listBySQL(" age>#{age} order by {createTime} desc",params);
+        List<UserDto> list= userMapper1.listBySQL(" age>#{age} order by {createTime} desc",params);
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
     }
@@ -319,7 +319,7 @@ public class MapperTest1 {
     public void pageBySQL()   {
         User params=new User();
         params.setAge(age);
-        Page<User> page=new Page(1,5);
+        Page<UserDto> page=new Page(1,5);
         userMapper1.pageBySQL(" age>=#{age} order by {createTime} desc",params,page);
         System.out.println(page.getData().size()+"\r\n"+JSON.toJSONString(page));
         Assert.assertTrue(page.getData().size()>0);
@@ -329,7 +329,7 @@ public class MapperTest1 {
     public void listByParams2()   {
         UserParams params=new UserParams();
         params.setAge(20);
-        List<User> list= userMapper1.listByParams(params," name asc, createTime desc","age,createTime");
+        List<UserDto> list= userMapper1.listByParams(params," name asc, createTime desc","age,createTime");
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
 

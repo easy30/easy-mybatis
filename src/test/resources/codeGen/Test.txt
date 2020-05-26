@@ -1,0 +1,63 @@
+package ${package}.test;
+
+import ${package}.BaseTest;
+import ${poPackage}.${modelName};
+import ${dtoPackage}.${modelName}Dto;
+import ${reqDtoPackage}.${modelName}ReqDto;
+import ${apiPackage}.${modelName}Service;
+import ${implPackage}.${modelName}ServiceImpl;
+import org.junit.Assert;
+import org.junit.Test;
+import com.cehome.easymybatis.codegen.RandomObjectUtil;
+import javax.annotation.Resource;
+
+public class ${modelName}Test extends BaseTest {
+    @Resource
+    ${modelName}Service ${modelVar}Service;
+    Integer id;
+
+     @Test
+     public void testAll(){
+            add();
+            get();
+            update();
+            page();
+            delete();
+     }
+
+    @Test
+    public void add(){
+        ${modelName} ${modelVar}=new ${modelName}();
+        RandomObjectUtil.initObject(${modelVar},"id");
+        id=${modelVar}Service.add(${modelVar});
+        Assert.assertTrue(id>0);
+
+    }
+
+    @Test
+    public void get(){
+        Assert.assertNotNull(${modelVar}Service.get(id));
+    }
+    @Test
+    public void page(){
+        ${modelName}ReqDto req=new ${modelName}ReqDto();
+        req.setId(id);
+        Assert.assertNotNull(${modelVar}Service.page(req,1,10).getTotalRecord()==1);
+    }
+
+    @Test
+    public void update(){
+        ${modelName} ${modelVar}=new ${modelName}();
+        ${modelVar}.setId(id);
+        RandomObjectUtil.initObject(${modelVar},"id");
+        ${modelVar}Service.update(${modelVar});
+        Assert.assertTrue(${modelVar}Service.update(${modelVar})==1);
+
+    }
+
+    @Test
+    public void delete(){
+        Assert.assertTrue(${modelVar}Service.delete(id)==1);
+    }
+
+}

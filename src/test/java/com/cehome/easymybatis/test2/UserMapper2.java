@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * coolma 2019/10/23
  **/
-public interface UserMapper2 extends Mapper<User> {
+public interface UserMapper2 extends Mapper<User,User> {
     @Select("select * from user where id = #{id}")
     User getByIdAnno(@Param("id") long id);
 

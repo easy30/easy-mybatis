@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * coolma 2019/10/24
  **/
-public interface Mapper<E> {
+public interface Mapper<E,R> {
 
     /**
      *
@@ -88,7 +88,7 @@ public interface Mapper<E> {
      * @return
      */
     @SelectProvider(type = Provider.class, method = "getById")
-    E getById(@Param(Const.ID) Object id,
+    R getById(@Param(Const.ID) Object id,
               @Param(Const.COLUMNS) String selectColumns);
 
     /**
@@ -98,7 +98,7 @@ public interface Mapper<E> {
      * @return
      */
     @SelectProvider(type = Provider.class, method = "getByParams")
-    E getByParams(@Param(Const.PARAMS) Object params,
+    R getByParams(@Param(Const.PARAMS) Object params,
                   @Param(Const.COLUMNS) String selectColumns);
 
     /**
@@ -144,7 +144,7 @@ public interface Mapper<E> {
      * @return
      */
     @SelectProvider(type = Provider.class, method = "listByParams")
-    List<E> listByParams(@Param(Const.PARAMS) Object params,
+    List<R> listByParams(@Param(Const.PARAMS) Object params,
                          @Param(Const.ORDER) String orderBy,
                          @Param(Const.COLUMNS) String selectColumns);
 
@@ -160,7 +160,7 @@ public interface Mapper<E> {
      * @return
      */
     @SelectProvider(type = BySQLProvider.class, method = "listBySQL")
-    List<E> listBySQL(@Param(Const.SQL) String sql,
+    List<R> listBySQL(@Param(Const.SQL) String sql,
                       @Param(Const.PARAMS) Object params);
 
     /**
@@ -172,7 +172,7 @@ public interface Mapper<E> {
      * @return
      */
     @SelectProvider(type = Provider.class, method = "pageByParams")
-    List<E> pageByParams(@Param(Const.PARAMS) Object params,
+    List<R> pageByParams(@Param(Const.PARAMS) Object params,
                          @Param(Const.PAGE) Page page,
                          @Param(Const.ORDER)String orderBy,
                          @Param(Const.COLUMNS) String selectColumns);
@@ -185,7 +185,7 @@ public interface Mapper<E> {
      * @return
      */
     @SelectProvider(type = Provider.class, method = "pageBySQL")
-    List<E> pageBySQL(@Param(Const.SQL) String sql,
+    List<R> pageBySQL(@Param(Const.SQL) String sql,
                       @Param(Const.PARAMS) Object params,
                       @Param(Const.PAGE) Page page);
 
