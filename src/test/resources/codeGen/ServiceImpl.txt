@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
-
+import com.cehome.cloud.common.dao.base.PageConvert;
 /**
  * @author ${author}
  * @since 1.0.0
@@ -82,7 +82,7 @@ public class ${modelName}ServiceImpl implements ${modelName}Service {
     public Page<${modelName}Dto> page(@RequestBody ${modelName}ReqDto ${modelVar}ReqDto,int pageIndex,int pageSize) {
         com.cehome.easymybatis.Page<${modelName}Dto> page=new com.cehome.easymybatis.Page(pageIndex,pageSize);
         ${modelVar}Mapper.pageByParams(${modelVar}ReqDto,page,null,null);
-        return new Page(page);
+        return PageConvert.convert(page);
     }
 
 }
