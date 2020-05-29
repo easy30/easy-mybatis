@@ -24,6 +24,8 @@ public @interface Query {
      */
     String orderBy() default "";
 
+    boolean queryPropertyEnable() default true;
+
     /**By default is AND, then the whole sql is: baseConditions() + @QueryCondition props.
      * If you use baseConditions() only, set to NONE
      * @return

@@ -234,7 +234,7 @@ public class ProviderSupport {
         return -1;
     }
 
-    private static String findNotBlank(String... args) {
+    private static String findFirstNotBlank(String... args) {
         String s = "";
         for (String a : args) {
             if (StringUtils.isNotBlank(a)) {
@@ -253,17 +253,21 @@ public class ProviderSupport {
         OperatorEnum innerOperator = OperatorEnum.AND;
         OperatorEnum outerOperator = OperatorEnum.AND;
         boolean bSelect = sqlType == SQL_TYPE_SELECT;
+        boolean queryPropertyEnable=true;
+        //-- load Query Anno
         if (params != null) {
             Query query = params.getClass().getAnnotation(Query.class);
+            //-- Query found
             if (query != null) {
                 //-- overwrite columns
                 if (bSelect) {
-                    columns = findNotBlank(columns, query.columns());
-                    orderBy = findNotBlank(orderBy, query.orderBy());
+                    // if columns is null then use query.columns. args columns > query.columns
+                    columns = findFirstNotBlank(columns, query.columns());
+                    orderBy = findFirstNotBlank(orderBy, query.orderBy());
 
                 }
 
-                //-- overwrite default tables
+                //-- overwrite default tables. query.tables() > @Table on entity
                 if (!StringUtils.isBlank(query.tables())) {
                     tables = query.tables();
                 }
@@ -271,18 +275,21 @@ public class ProviderSupport {
                 //-- set base conditions
                 conditions = Utils.toString(query.conditions(), System.lineSeparator(), null);
 
-                //-- do not need
-                outerOperator = query.queryPropertyOuterOperator();
+                queryPropertyEnable=query.queryPropertyEnable();
+                if(queryPropertyEnable){
+                    //--
+                    outerOperator = query.queryPropertyOuterOperator();
+                    //-- set    innerOperator
+                    innerOperator = query.queryPropertyInnerOperator();
+                }
 
 
-                //-- set    innerOperator
-                innerOperator = query.queryPropertyInnerOperator();
 
             }
 
         }
 
-        if (innerOperator.equals(OperatorEnum.NONE)) innerOperator = OperatorEnum.AND;
+        //if (innerOperator.equals(OperatorEnum.NONE)) innerOperator = OperatorEnum.AND;
 
 
         if (StringUtils.isBlank(columns) && bSelect) {
@@ -293,29 +300,34 @@ public class ProviderSupport {
 
 
         LineBuilder propertyConditions = new LineBuilder();
-        if (!outerOperator.equals(OperatorEnum.NONE) && params != null) {
+        if (queryPropertyEnable) {
 
             SimpleProperties sp = SimpleProperties.create(params);
             for (String prop : sp.getProperties()) {
                 Object value = sp.getValue(prop);
                 if (value != null) {
                     String fullProp = prefix == null || prefix.length() == 0 ? prop : prefix + "." + prop;
+                    // map params
                     if (params instanceof Map) {
                         propertyConditions.append(Utils.format(Const.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
-                    } else {
-
+                    } else { // object params
                         String condition = "";
                         QueryProperty queryProperty = ObjectSupport.getAnnotation(QueryProperty.class, params.getClass(), prop);
+                        //-- use queryProperty
                         if (queryProperty != null) {
                             condition = Utils.toString(queryProperty.value(), System.lineSeparator(), null);
                         }
 
+                        //-- use default: a=b
                         if (StringUtils.isBlank(condition)) {
                             condition = entityAnnotation.getColumnName(prop) + "=#{" + fullProp + "} ";
                         }
-                        if (propertyConditions.length() > 0)
-                            propertyConditions.append(" " + innerOperator + " " + condition + " ");
-                        else propertyConditions.append(condition);
+
+                        if (propertyConditions.length() > 0){
+                            propertyConditions.append(" " + innerOperator +" ");
+                        }
+                        propertyConditions.append(condition);
+
 
                         //propertyConditions.append(Utils.format(Const.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
                     }
