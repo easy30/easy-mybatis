@@ -64,7 +64,7 @@ public class DefaultInterceptor implements Interceptor {
             Page page = getPage(args[1]);
             if (page != null) {
                 try {
-                    // -- avoid  recurise invoke :executor.query
+                    // -- avoid recursively invoke :executor.query
                     inPage.set(true);
                     Object parameterObject = args[1];
                     RowBounds rowBounds = (RowBounds) args[2];

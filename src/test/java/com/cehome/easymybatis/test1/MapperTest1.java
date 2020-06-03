@@ -64,6 +64,7 @@ public class MapperTest1 {
         listBySQL();
         pageByParams();
         pageBySQL();
+        queryProperty();
     }
 
     @Test
@@ -333,6 +334,18 @@ public class MapperTest1 {
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
 
+    }
+
+    @Test
+    public void queryProperty(){
+        insert();
+        User user= userMapper1.getById(id,null);
+        UserParams2 params=new UserParams2();
+        params.setId(id);
+        params.setCreateTime1(user.getCreateTime());
+        User user1=userMapper1.getByParams(params,null);
+        Assert.assertEquals(user1.getId(),id);
+        deleteById();
     }
 
 

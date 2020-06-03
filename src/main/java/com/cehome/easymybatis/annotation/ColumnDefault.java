@@ -13,8 +13,22 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ColumnDefault {
+    /**
+     * for insert or update
+     * @return
+     */
     String value() default "";
+
+    /**
+     * for insert only
+     * @return
+     */
     String insertValue() default "";
+
+    /**
+     * for update only
+     * @return
+     */
     String updateValue() default "";
 
 }

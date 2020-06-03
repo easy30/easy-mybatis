@@ -66,7 +66,7 @@ public class ByEntityProvider<E> {
             }
         }
 
-        String order=ProviderSupport.convertColumns(orderBy,entityAnnotation);
+        String order=ProviderSupport.convertPropsToColumns(orderBy,entityAnnotation);
         if(order.length()>0) where.append( " order by "+order);
 
         //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";

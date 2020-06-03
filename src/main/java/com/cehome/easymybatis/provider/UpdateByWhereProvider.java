@@ -31,9 +31,9 @@ public class UpdateByWhereProvider<E> {
 
         }
         if(where.length()>0) {
-            where=ProviderSupport.convertSqlColumns(where,entityAnnotation);
+            where=ProviderSupport.convertSqlPropsToColumns(where,entityAnnotation);
             //convert  #{id}==> #{params.id}
-            where =ProviderSupport.sqlAddParamPrefix(where, Const.PARAMS);
+            where =ProviderSupport.convertSqlAddParamPrefix(where, Const.PARAMS);
         }
 
 

@@ -2,6 +2,7 @@ package com.cehome.easymybatis.test1;
 
 
 import com.cehome.easymybatis.DialectEntity;
+import com.cehome.easymybatis.annotation.ColumnDefault;
 import lombok.Data;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -16,6 +17,7 @@ public class User {
     private String name;
     private Integer age;
     private String realName;
+    @ColumnDefault(insertValue = "now()")
     private Date createTime;
 
 }

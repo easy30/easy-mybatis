@@ -68,9 +68,9 @@ public class BySQLProvider<E> {
     }
 
     protected String fixSql(String sql,  EntityAnnotation entityAnnotation){
-        sql=ProviderSupport.convertSqlColumns(sql,entityAnnotation);
+        sql=ProviderSupport.convertSqlPropsToColumns(sql,entityAnnotation);
         //convert  #{id}==> #{params.id}
-        sql =ProviderSupport.sqlAddParamPrefix(sql, Const.PARAMS);
+        sql =ProviderSupport.convertSqlAddParamPrefix(sql, Const.PARAMS);
         return sql;
     }
 }

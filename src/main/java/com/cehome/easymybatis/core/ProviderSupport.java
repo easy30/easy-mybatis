@@ -120,7 +120,13 @@ public class ProviderSupport {
 
     }
 
-    public static String convertSqlColumns(String sql, EntityAnnotation entityAnnotation) {
+    /**
+     * convert
+     * @param sql
+     * @param entityAnnotation
+     * @return
+     */
+    public static String convertSqlPropsToColumns(String sql, EntityAnnotation entityAnnotation) {
         //  regex= ([^#\$]\{|^\{)(\w+)\} .  "{id}" or  "  {id}" ,but not #{id} ${id}
         RegularReplace rr = new RegularReplace(sql, "([^#\\$]\\{|^\\{)(\\w+)\\}");
         //  [^#\$]\{\w+\}|^\{(\w+)\}
@@ -153,14 +159,14 @@ public class ProviderSupport {
      * @param entityAnnotation
      * @return
      */
-    public static String convertColumns(String columns, EntityAnnotation entityAnnotation) {
+    public static String convertPropsToColumns(String columns, EntityAnnotation entityAnnotation) {
         String result = "";
         if (columns != null && columns.length() > 0) {
 
             // for complex columns such as "substring(prop1,1,3),prop2", it's hard to parse.
             // so must use {} , that is "substring({prop1},1,3),{prop2}", and use convertSqlColumns() to parse easily
             if (columns.indexOf('(') >= 0) {
-                return convertSqlColumns(columns, entityAnnotation);
+                return convertSqlPropsToColumns(columns, entityAnnotation);
             }
             Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
             if (columns.trim().equals("*")) return columns;
@@ -215,7 +221,7 @@ public class ProviderSupport {
         }
     }
 
-    public static String sqlAddParamPrefix(String sql, String prefix) {
+    public static String convertSqlAddParamPrefix(String sql, String prefix) {
         return Utils.regularReplace(sql, "[#\\$]\\{(\\w+)\\}", "#'{'" + prefix + ".{1}'}'");
     }
 
@@ -273,7 +279,7 @@ public class ProviderSupport {
                 }
 
                 //-- set base conditions
-                conditions = Utils.toString(query.conditions(), System.lineSeparator(), null);
+                conditions =convertSql( Utils.toString(query.conditions(), System.lineSeparator(), null),entityAnnotation);
 
                 queryPropertyEnable=query.queryPropertyEnable();
                 if(queryPropertyEnable){
@@ -296,7 +302,7 @@ public class ProviderSupport {
             columns = "*";
         }
 
-        columns = ProviderSupport.convertColumns(columns, entityAnnotation);
+        columns = ProviderSupport.convertPropsToColumns(columns, entityAnnotation);
 
 
         LineBuilder propertyConditions = new LineBuilder();
@@ -315,7 +321,7 @@ public class ProviderSupport {
                         QueryProperty queryProperty = ObjectSupport.getAnnotation(QueryProperty.class, params.getClass(), prop);
                         //-- use queryProperty
                         if (queryProperty != null) {
-                            condition = Utils.toString(queryProperty.value(), System.lineSeparator(), null);
+                            condition = convertSql(Utils.toString(queryProperty.value(), System.lineSeparator(), null),entityAnnotation);
                         }
 
                         //-- use default: a=b
@@ -357,7 +363,7 @@ public class ProviderSupport {
             throw new RuntimeException(" 'Where' conditions can not be null( Safety!!! ). params need.");
 
         if (bSelect) {
-            String order = convertColumns(orderBy, entityAnnotation);
+            String order = convertPropsToColumns(orderBy, entityAnnotation);
             if (order.length() > 0) conditions += (" order by " + order);
         }
 
@@ -378,9 +384,10 @@ public class ProviderSupport {
     }
 
     public static String convertSql(String sql, EntityAnnotation entityAnnotation) {
-        sql = convertSqlColumns(sql, entityAnnotation);
+        if(StringUtils.isBlank(sql)) return sql;
+        sql = convertSqlPropsToColumns(sql, entityAnnotation);
         //convert  #{id}==> #{params.id}
-        sql = sqlAddParamPrefix(sql, Const.PARAMS);
+        sql = convertSqlAddParamPrefix(sql, Const.PARAMS);
         return sql;
     }
 

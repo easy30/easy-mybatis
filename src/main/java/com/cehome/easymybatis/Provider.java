@@ -182,7 +182,7 @@ public class Provider<E> {
             selectColumns = "*";
         } else {
             EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-            selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation);
+            selectColumns = ProviderSupport.convertPropsToColumns(selectColumns, entityAnnotation);
 
         }
         return ProviderSupport.sqlById(context, id, ProviderSupport.SQL_SELECT, selectColumns);

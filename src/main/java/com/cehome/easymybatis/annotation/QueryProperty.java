@@ -9,7 +9,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface QueryProperty {
 
+    /**
+     * mybatis sql such as "name = #{name} "
+     * @return
+     */
     String[] value() default "";
-    //OperatorEnum operator() default OperatorEnum.NONE;
 
 }
