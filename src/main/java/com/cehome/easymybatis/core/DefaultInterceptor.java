@@ -41,30 +41,31 @@ public class DefaultInterceptor implements Interceptor {
 
     private Map<String, MappedStatement> countMap = new ConcurrentHashMap();
     private DialectInstance dialectInstance;
-    private static ThreadLocal<MappedStatement> mappedStatementHolder = new ThreadLocal<>();
+    private static ThreadLocal<Boolean> inPage = new ThreadLocal<>();
 
     public DefaultInterceptor(DialectInstance dialectInstance) {
         this.dialectInstance = dialectInstance;
     }
 
-    public static MappedStatement getCurrentMappedStatement(){
+  /*  public static MappedStatement getCurrentMappedStatement(){
         return mappedStatementHolder.get();
-    }
+    }*/
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
+        if (inPage.get() != null) return invocation.proceed();
 
         final Object[] args = invocation.getArgs();
 
         MappedStatement statement = (MappedStatement) args[0];
-        try {
 
 
-            mappedStatementHolder.set(statement);
-
-            if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
-                Page page = getPage(args[1]);
-                if (page != null) {
+        if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
+            Page page = getPage(args[1]);
+            if (page != null) {
+                try {
+                    // -- avoid  recurise invoke :executor.query
+                    inPage.set(true);
                     Object parameterObject = args[1];
                     RowBounds rowBounds = (RowBounds) args[2];
                     Executor executor = (Executor) invocation.getTarget();
@@ -91,16 +92,17 @@ public class DefaultInterceptor implements Interceptor {
                         page.setPageCount((total - 1) / page.getPageSize() + 1);
                     }
                     return list;
+                } finally {
+                    inPage.remove();
                 }
-
-
             }
 
 
-            return invocation.proceed();
-        } finally {
-            mappedStatementHolder.remove();
         }
+
+
+        return invocation.proceed();
+
     }
 
     private Page getPage(Object arg) {
