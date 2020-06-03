@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
+import java.math.BigDecimal;
 import java.util.*;
 
 public class RandomObjectUtil {
@@ -222,7 +223,7 @@ public class RandomObjectUtil {
         }
 
     }
-    public static <T> T getObject(Class<?> clazz,String... skipProps) {
+    public static <T> T getObject(Class<T> clazz,String... skipProps) {
         T t = null;
         if (clazz == null) {
             return t;
@@ -230,9 +231,14 @@ public class RandomObjectUtil {
         if((t = (T)getPrimitive(clazz))!= null){
             return t;
         }
+        if(clazz.equals( java.math.BigDecimal.class)){
+            return (T)new BigDecimal(RandomValueUtil.getIntValue());
+        }
+
         //需要有无参的构造器
         try {
             t = (T)clazz.newInstance();
+
             initObject(t,skipProps);
         } catch (InstantiationException e) {
             e.printStackTrace();
