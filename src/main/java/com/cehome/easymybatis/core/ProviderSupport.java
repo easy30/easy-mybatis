@@ -3,7 +3,7 @@ package com.cehome.easymybatis.core;
 import com.cehome.easymybatis.DialectEntity;
 import com.cehome.easymybatis.annotation.OperatorEnum;
 import com.cehome.easymybatis.annotation.Query;
-import com.cehome.easymybatis.annotation.QueryProperty;
+import com.cehome.easymybatis.annotation.QueryItem;
 import com.cehome.easymybatis.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
@@ -318,10 +318,10 @@ public class ProviderSupport {
                         propertyConditions.append(Utils.format(Const.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
                     } else { // object params
                         String condition = "";
-                        QueryProperty queryProperty = ObjectSupport.getAnnotation(QueryProperty.class, params.getClass(), prop);
-                        //-- use queryProperty
-                        if (queryProperty != null) {
-                            condition = convertSql(Utils.toString(queryProperty.value(), System.lineSeparator(), null),entityAnnotation);
+                        QueryItem queryItem = ObjectSupport.getAnnotation(QueryItem.class, params.getClass(), prop);
+                        //-- use queryItem
+                        if (queryItem != null) {
+                            condition = convertSql(Utils.toString(queryItem.value(), System.lineSeparator(), null),entityAnnotation);
                         }
 
                         //-- use default: a=b

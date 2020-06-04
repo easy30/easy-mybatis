@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface QueryProperty {
+public @interface QueryItem {
 
     /**
      * mybatis sql such as "name = #{name} "
