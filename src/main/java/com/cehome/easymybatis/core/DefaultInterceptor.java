@@ -89,7 +89,7 @@ public class DefaultInterceptor implements Interceptor {
                         cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, countBoundSql);
                         int total = (Integer) executor.query(createMappedStatement(statement, Integer.class), parameterObject, rowBounds, null, cacheKey, countBoundSql).get(0);
                         page.setRecordCount(total);
-                        page.setPageCount((total - 1) / page.getPageSize() + 1);
+                        page.setPageCount(total==0?0:(total - 1) / page.getPageSize() + 1);
                     }
                     return list;
                 } finally {
