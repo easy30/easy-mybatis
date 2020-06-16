@@ -6,6 +6,7 @@ import com.cehome.easymybatis.Generation;
 import com.cehome.easymybatis.annotation.ColumnDefault;
 import com.cehome.easymybatis.annotation.ColumnGeneration;
 import com.cehome.easymybatis.annotation.EntitySelectKey;
+import com.cehome.easymybatis.dialect.Dialect;
 import com.cehome.easymybatis.utils.ObjectSupport;
 import com.cehome.easymybatis.utils.Const;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +50,8 @@ public class EntityAnnotation
 	private Map<String,PropertyDescriptor> propertyDescriptorMap =new HashMap<String, PropertyDescriptor> ();
 	private Class entityClass=null;
 	//private boolean dialectEntity;
-	EntitySelectKey entitySelectKey;
+	private EntitySelectKey entitySelectKey;
+	private Dialect dialect;
 
 	public static EntityAnnotation getInstance(Class entityClass)
 	{
@@ -455,5 +457,13 @@ public class EntityAnnotation
 		ColumnAnnotation columnAnnotation= getPropertyColumnMap().get(prop);
 		if(columnAnnotation==null) return null;
 		return columnAnnotation.getName();
+	}
+
+	public Dialect getDialect() {
+		return dialect;
+	}
+
+	public void setDialect(Dialect dialect) {
+		this.dialect = dialect;
 	}
 }

@@ -11,9 +11,9 @@ import java.util.Map;
 /**
  * coolma 2019/11/11
  **/
-public class DialectInstance {
+public class DialectFactory {
     private static Map<String, Class> map = new HashMap();
-    private volatile AbstractDialect dialect = null;
+    //private volatile AbstractDialect dialect = null;
 
     static {
         registerDialect("mysql", MysqlDialect.class);
@@ -35,32 +35,32 @@ public class DialectInstance {
         map.put(name, dialectClass);
     }
 
-    private String name;
+    /*private String name;
     private Configuration configuration;
 
-    public DialectInstance(String name, Configuration configuration) {
+    public DialectFactory(String name, Configuration configuration) {
         this.name = name;
         this.configuration = configuration;
-    }
+    }*/
 
-    public AbstractDialect getInstance() {
-        if (dialect != null) return dialect;
+    public static Dialect createDialect(String name, Configuration configuration) {
+        //if (dialect != null) return dialect;
         Class c = null;
-        synchronized (this) {
-            if (dialect != null) return dialect;
+
+            //if (dialect != null) return dialect;
             try {
-                if (StringUtils.isNotBlank(this.name)) {
+                if (StringUtils.isNotBlank(name)) {
                     c = map.get(name);
-                    if (c == null) throw new RuntimeException("Dialect class not found for name: " + this.name);
+                    if (c == null) throw new RuntimeException("Dialect class not found for name: " + name);
 
                 } else {
                     Connection connection = null;
                     try {
                         connection = configuration.getEnvironment().getDataSource().getConnection();
                         String url = connection.getMetaData().getURL().toLowerCase();
-                        for (String name : map.keySet()) {
-                            if (url.startsWith("jdbc:" + name.toLowerCase())) {
-                                c = map.get(name);
+                        for (String db : map.keySet()) {
+                            if (url.startsWith("jdbc:" + db.toLowerCase())) {
+                                c = map.get(db);
                                 break;
                             }
                         }
@@ -71,12 +71,12 @@ public class DialectInstance {
 
                 }
 
-                dialect = (AbstractDialect) c.newInstance();
+                Dialect dialect = (Dialect) c.newInstance();
                 return dialect;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        }
+
 
     }
 

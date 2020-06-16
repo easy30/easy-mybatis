@@ -1,6 +1,7 @@
 package com.cehome.easymybatis.core;
 
 import com.cehome.easymybatis.Page;
+import com.cehome.easymybatis.dialect.Dialect;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.cache.CacheKey;
@@ -40,11 +41,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultInterceptor implements Interceptor {
 
     private Map<String, MappedStatement> countMap = new ConcurrentHashMap();
-    private DialectInstance dialectInstance;
+    private Dialect dialect;
     private static ThreadLocal<Boolean> inPage = new ThreadLocal<>();
 
-    public DefaultInterceptor(DialectInstance dialectInstance) {
-        this.dialectInstance = dialectInstance;
+    public DefaultInterceptor(Dialect dialect) {
+        this.dialect = dialect;
     }
 
   /*  public static MappedStatement getCurrentMappedStatement(){
@@ -73,8 +74,8 @@ public class DefaultInterceptor implements Interceptor {
                     BoundSql boundSql = statement.getBoundSql(parameterObject);
                     String sql = boundSql.getSql();
 
-                    String pageSql = dialectInstance.getInstance().getPageSql(sql);
-                    List<ParameterMapping> pms = dialectInstance.getInstance().getPageParameterMapping(statement.getConfiguration(), boundSql.getParameterMappings());
+                    String pageSql = dialect.getPageSql(sql);
+                    List<ParameterMapping> pms = dialect.getPageParameterMapping(statement.getConfiguration(), boundSql.getParameterMappings());
 
                     BoundSql pageBoundSql = new BoundSql(statement.getConfiguration(), pageSql, pms, parameterObject);
                     CacheKey cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, pageBoundSql);
@@ -84,7 +85,7 @@ public class DefaultInterceptor implements Interceptor {
 
 
                     if (page.isQueryCount()) {
-                        String countSql = dialectInstance.getInstance().getCountSql(sql);
+                        String countSql = dialect.getCountSql(sql);
                         BoundSql countBoundSql = new BoundSql(statement.getConfiguration(), countSql, boundSql.getParameterMappings(), parameterObject);
                         cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, countBoundSql);
                         int total = (Integer) executor.query(createMappedStatement(statement, Integer.class), parameterObject, rowBounds, null, cacheKey, countBoundSql).get(0);

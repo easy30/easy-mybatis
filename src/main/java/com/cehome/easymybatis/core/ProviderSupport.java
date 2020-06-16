@@ -1,9 +1,10 @@
 package com.cehome.easymybatis.core;
 
 import com.cehome.easymybatis.DialectEntity;
-import com.cehome.easymybatis.annotation.OperatorEnum;
-import com.cehome.easymybatis.annotation.Query;
-import com.cehome.easymybatis.annotation.QueryItem;
+import com.cehome.easymybatis.MapperException;
+import com.cehome.easymybatis.annotation.*;
+import com.cehome.easymybatis.enums.ColumnOperator;
+import com.cehome.easymybatis.enums.RelatedOperator;
 import com.cehome.easymybatis.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
@@ -60,7 +61,7 @@ public class ProviderSupport {
         }
         String result = s1.toString();
         if (StringUtils.isEmpty(result))
-            throw new RuntimeException("entity for update is empty. You need set some values");
+            throw new MapperException("entity for update is empty. You need set some values");
         return result;
     }
 
@@ -101,7 +102,7 @@ public class ProviderSupport {
         String where = "";
         List<String> props = entityAnnotation.getIdPropertyNames();
         List<String> columns = entityAnnotation.getIdColumnNames();
-        if (props.size() == 0) throw new RuntimeException("no primary keys found");
+        if (props.size() == 0) throw new MapperException("no primary keys found");
         for (int i = 0; i < props.size(); i++) {
             if (i > 0) where += ",";
             String prop = props.get(i);
@@ -110,7 +111,7 @@ public class ProviderSupport {
                 where += columns.get(i) + " = #{" + props.get(i) + "}";
             } else {
                 value = entityAnnotation.getDialectParam(entity, prop);
-                if (value == null) throw new RuntimeException("property " + prop + " can not be null");
+                if (value == null) throw new MapperException("property " + prop + " can not be null");
                 where += columns.get(i) + " = " + value;
             }
 
@@ -256,8 +257,8 @@ public class ProviderSupport {
 
         String tables = entityAnnotation.getTable();
         String conditions = "";
-        OperatorEnum innerOperator = OperatorEnum.AND;
-        OperatorEnum outerOperator = OperatorEnum.AND;
+        RelatedOperator innerOperator = RelatedOperator.AND;
+        RelatedOperator outerOperator = RelatedOperator.AND;
         boolean bSelect = sqlType == SQL_TYPE_SELECT;
         boolean queryPropertyEnable=true;
         //-- load Query Anno
@@ -295,7 +296,7 @@ public class ProviderSupport {
 
         }
 
-        //if (innerOperator.equals(OperatorEnum.NONE)) innerOperator = OperatorEnum.AND;
+        //if (innerOperator.equals(RelatedOperator.NONE)) innerOperator = RelatedOperator.AND;
 
 
         if (StringUtils.isBlank(columns) && bSelect) {
@@ -318,16 +319,28 @@ public class ProviderSupport {
                         propertyConditions.append(Utils.format(Const.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
                     } else { // object params
                         String condition = "";
+
                         QueryItem queryItem = ObjectSupport.getAnnotation(QueryItem.class, params.getClass(), prop);
                         //-- use queryItem
                         if (queryItem != null) {
+
                             condition = convertSql(Utils.toString(queryItem.value(), System.lineSeparator(), null),entityAnnotation);
+                        }else{
+                            Class valueType= ((ObjectProperties)sp).getType(prop);
+                            QueryColumn queryColumn=ObjectSupport.getAnnotation(QueryColumn.class, params.getClass(), prop);
+                            String columnName=entityAnnotation.getColumnName(prop);
+                            if(queryColumn!=null){
+                                condition = doQueryColumn( entityAnnotation,columnName, queryColumn.operator(),  fullProp,  value);
+
+                            }
+                            //-- use default: a=b   or in []
+                            else{
+
+                                condition = doQueryColumn( entityAnnotation,columnName, null,  fullProp,  value);
+
+                            }
                         }
 
-                        //-- use default: a=b
-                        if (StringUtils.isBlank(condition)) {
-                            condition = entityAnnotation.getColumnName(prop) + "=#{" + fullProp + "} ";
-                        }
 
                         if (propertyConditions.length() > 0){
                             propertyConditions.append(" " + innerOperator +" ");
@@ -360,18 +373,45 @@ public class ProviderSupport {
 
 
         if (!bSelect && StringUtils.isBlank(conditions))
-            throw new RuntimeException(" 'Where' conditions can not be null( Safety!!! ). params need.");
+            throw new MapperException(" 'Where' conditions can not be null( Safety!!! ). params need.");
 
         if (bSelect) {
             String order = convertPropsToColumns(orderBy, entityAnnotation);
             if (order.length() > 0) conditions += (" order by " + order);
         }
 
-
         return new String[]{columns, tables, conditions};
         //SQL_SELECT="<script>\r\n select {} from {} <propertyConditions>{}</propertyConditions>\r\n</script>";
         //return Utils.format(sqlFormat,columns,tables,propertyConditions);
 
+    }
+    private static String doQueryColumn(EntityAnnotation entityAnnotation,String column, ColumnOperator operator, String prop, Object value){
+        boolean array=value.getClass().isArray();
+        if(operator==null){
+            operator=array?ColumnOperator.IN:ColumnOperator.EQ;
+        }
+        String operatorValue=entityAnnotation.getDialect().getColumnOperatorValue(operator);
+        String    item = column +" "+operatorValue;
+        //-- in,not in
+        if(ColumnOperator.IN.equals(operator) || ColumnOperator.NOT_IN.equals(operator) ){
+           if( array){
+               item +=  "<foreach collection=\""+prop+"\" separator=\",\" item=\"item\" open=\" (\" close=\") \">#{item}</foreach>" ;
+
+           }else{
+               item+=" ( ${"+prop+"} ) ";
+           }
+        }
+        //-- between, not between
+        else if(ColumnOperator.BETWEEN.equals(operator) || ColumnOperator.NOT_BETWEEN.equals(operator)){
+            if( array){
+                item+=String.format(" #{%s[0]} and #{%s[1]} ",prop,prop);
+            }else {
+               throw new MapperException("array property need for operator "+operatorValue);
+            }
+        }else {
+            item+=" #{"+prop+"} ";
+        }
+        return item;
     }
 
     public static String sqlByParams(EntityAnnotation entityAnnotation, Object params, String sqlFormat, int sqlType, String columns, String orderBy, String prefix) {
@@ -396,8 +436,8 @@ public class ProviderSupport {
 
         List<String> props = entityAnnotation.getIdPropertyNames();
         List<String> columns = entityAnnotation.getIdColumnNames();
-        if (props.size() == 0) throw new RuntimeException("primary key not found");
-        if (props.size() > 1) throw new RuntimeException("multi primary keys not supported for GetById");
+        if (props.size() == 0) throw new MapperException("primary key not found");
+        if (props.size() > 1) throw new MapperException("multi primary keys not supported for GetById");
 
         String where = columns.get(0) + " = #{" + props.get(0) + "}";
 

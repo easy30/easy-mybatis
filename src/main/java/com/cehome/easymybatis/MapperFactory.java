@@ -2,7 +2,8 @@ package com.cehome.easymybatis;
 
 import com.cehome.easymybatis.annotation.EntitySelectKey;
 import com.cehome.easymybatis.core.*;
-import com.cehome.easymybatis.core.DialectInstance;
+import com.cehome.easymybatis.core.DialectFactory;
+import com.cehome.easymybatis.dialect.Dialect;
 import com.cehome.easymybatis.utils.ObjectSupport;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,8 +41,9 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
     Configuration configuration;
     Set<String> methodNameSet = new HashSet<String>();
     //Map<String, AbstractMethodBuilder> methodBuilderMap = new HashMap<String, AbstractMethodBuilder>();
-    private String dialect;
-    DialectInstance dialectInstance;
+    private Dialect dialect;
+
+    private String dialectName;
 
 
     private Class[] mapperInterfaces;
@@ -73,7 +75,8 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         if(sqlSessionFactory !=null) configuration= sqlSessionFactory.getConfiguration();
         else if(sqlSessionTemplate!=null) configuration=configuration;
         else throw new RuntimeException("SqlSessionTemplate or SqlSessionFactory not found");
-        dialectInstance=new DialectInstance(dialect,configuration);
+
+        dialect=DialectFactory.createDialect(dialectName,configuration);
 
         //-- default config
         configuration.setMapUnderscoreToCamelCase(true);
@@ -112,7 +115,7 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
 
-        configuration.addInterceptor(new DefaultInterceptor(dialectInstance));
+        configuration.addInterceptor(new DefaultInterceptor(dialect));
         ApplicationContext context=event.getApplicationContext();
 
         initGenerators(context);
@@ -141,6 +144,7 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         String namespace = mapperClass.getName();
         Class entityClass = ObjectSupport.getGenericInterfaces(mapperClass, 0, 0);
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
+        entityAnnotation.setDialect(dialect);
         String resource = namespace.replace('.', '/') + ".java (best guess)";
         MapperBuilderAssistant assistant =
                 new MapperBuilderAssistant(configuration, resource);
@@ -266,5 +270,11 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
 
     }
 
+    public String getDialectName() {
+        return dialectName;
+    }
 
+    public void setDialectName(String dialectName) {
+        this.dialectName = dialectName;
+    }
 }

@@ -1,5 +1,6 @@
 package com.cehome.easymybatis.dialect;
 
+import com.cehome.easymybatis.enums.ColumnOperator;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.session.Configuration;
 
@@ -8,7 +9,8 @@ import java.util.List;
 /**
  * coolma 2019/11/11
  **/
-public abstract class AbstractDialect {
+public abstract class AbstractDialect implements Dialect{
+    @Override
     public String getCountSql(String sql)
     {
 
@@ -49,6 +51,11 @@ public abstract class AbstractDialect {
         else
             return "select count(*) from ( " + sql + " ) t_table_count ";
 
+    }
+
+    @Override
+    public String getColumnOperatorValue(ColumnOperator columnOperator){
+        return columnOperator.getValue();
     }
 
     public abstract List<ParameterMapping> getPageParameterMapping(Configuration configuration, List<ParameterMapping> source);

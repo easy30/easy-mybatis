@@ -50,4 +50,10 @@ public class ObjectProperties extends SimpleProperties {
         }
 
     }
+
+    public Class getType(String prop){
+        PropertyDescriptor pd=map.get(prop);
+        if(pd==null) return null;
+        return pd.getPropertyType();
+    }
 }

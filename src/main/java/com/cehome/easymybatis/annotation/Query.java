@@ -1,5 +1,7 @@
 package com.cehome.easymybatis.annotation;
 
+import com.cehome.easymybatis.enums.RelatedOperator;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -32,13 +34,13 @@ public @interface Query {
      * 缺省整个sql是baseConditions()和@QueryCondition（即属性字段）拼接一起。
      * 如果仅仅只使用baseConditions()，则设置NONE
      */
-    OperatorEnum queryPropertyOuterOperator() default OperatorEnum.AND;
+    RelatedOperator queryPropertyOuterOperator() default RelatedOperator.AND;
 
     /**
      * default operator between multi props (@QueryCondition)
      * @return
      * 多个@QueryCondition属性条件之间的缺省操作关系
      */
-    OperatorEnum queryPropertyInnerOperator() default OperatorEnum.AND;
+    RelatedOperator queryPropertyInnerOperator() default RelatedOperator.AND;
 
 }
