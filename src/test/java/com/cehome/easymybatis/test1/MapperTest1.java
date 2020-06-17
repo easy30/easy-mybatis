@@ -12,10 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.sql.DataSource;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
@@ -64,7 +61,8 @@ public class MapperTest1 {
         listBySQL();
         pageByParams();
         pageBySQL();
-        queryProperty();
+        queryItem();
+        columnOperator();
     }
 
     @Test
@@ -195,8 +193,11 @@ public class MapperTest1 {
 
     @Test
     public void deleteById()   {
-        Assert.assertEquals(1, userMapper1.deleteById(id));
+        deleteById(id);
 
+    }
+    private void deleteById(Long id)   {
+        Assert.assertEquals(1, userMapper1.deleteById(id));
 
     }
     @Test
@@ -337,15 +338,42 @@ public class MapperTest1 {
     }
 
     @Test
-    public void queryProperty(){
+    public void queryItem(){
         insert();
         User user= userMapper1.getById(id,null);
         UserParams2 params=new UserParams2();
         params.setId(id);
-        params.setCreateTime1(user.getCreateTime());
+        params.setCreateTimeStart(user.getCreateTime());
         User user1=userMapper1.getByParams(params,null);
         Assert.assertEquals(user1.getId(),id);
         deleteById();
+    }
+
+    @Test
+    public void columnOperator(){
+        List<Long> ids=new ArrayList<>();
+        insert();
+        ids.add(id);
+        insert();
+        ids.add(id);
+
+        UserParams2 params=new UserParams2();
+        params.setIds(ids.toArray(new Long[0]));
+        List<UserDto> list=userMapper1.listByParams(params,"id",null);
+        Assert.assertEquals(2,list.size());
+        Assert.assertEquals(list.get(0).getId(),ids.get(0));
+        Assert.assertEquals(list.get(1).getId(),ids.get(1));
+
+        params=new UserParams2();
+
+        params.setIdRange(ids.toArray(new Long[0]));
+        list=userMapper1.listByParams(params,"id",null);
+        Assert.assertEquals(2,list.size());
+        Assert.assertEquals(list.get(0).getId(),ids.get(0));
+        Assert.assertEquals(list.get(1).getId(),ids.get(1));
+
+        deleteById(ids.get(0));
+        deleteById(ids.get(1));
     }
 
 

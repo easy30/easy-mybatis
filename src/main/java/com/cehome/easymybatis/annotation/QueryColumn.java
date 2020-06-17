@@ -17,10 +17,11 @@ public @interface QueryColumn {
      */
     String column() default "";
     /**
-     *   > ,= , in ...
+     *  operator such as  > ,= , in ...
+     *  DEFAULT will replace with "="(for single propertiy) or "in" (for array property) 
      *  @QueryColumn(operator=ColumnOperator.GT)  is same as @QueryItem("a>${a})
      * If @QueryItem exists, ignore @QueryColumn
      * @return
      */
-    ColumnOperator operator() default ColumnOperator.EQ;
+    ColumnOperator operator() default ColumnOperator.DEFAULT;
 }

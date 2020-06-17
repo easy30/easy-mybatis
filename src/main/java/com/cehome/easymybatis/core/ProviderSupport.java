@@ -123,6 +123,7 @@ public class ProviderSupport {
 
     /**
      * convert
+     *
      * @param sql
      * @param entityAnnotation
      * @return
@@ -260,7 +261,7 @@ public class ProviderSupport {
         RelatedOperator innerOperator = RelatedOperator.AND;
         RelatedOperator outerOperator = RelatedOperator.AND;
         boolean bSelect = sqlType == SQL_TYPE_SELECT;
-        boolean queryPropertyEnable=true;
+        boolean queryPropertyEnable = true;
         //-- load Query Anno
         if (params != null) {
             Query query = params.getClass().getAnnotation(Query.class);
@@ -280,16 +281,15 @@ public class ProviderSupport {
                 }
 
                 //-- set base conditions
-                conditions =convertSql( Utils.toString(query.conditions(), System.lineSeparator(), null),entityAnnotation);
+                conditions = convertSql(Utils.toString(query.conditions(), System.lineSeparator(), null), entityAnnotation);
 
-                queryPropertyEnable=query.queryPropertyEnable();
-                if(queryPropertyEnable){
+                queryPropertyEnable = query.queryPropertyEnable();
+                if (queryPropertyEnable) {
                     //--
                     outerOperator = query.queryPropertyOuterOperator();
                     //-- set    innerOperator
                     innerOperator = query.queryPropertyInnerOperator();
                 }
-
 
 
             }
@@ -324,26 +324,26 @@ public class ProviderSupport {
                         //-- use queryItem
                         if (queryItem != null) {
 
-                            condition = convertSql(Utils.toString(queryItem.value(), System.lineSeparator(), null),entityAnnotation);
-                        }else{
-                            Class valueType= ((ObjectProperties)sp).getType(prop);
-                            QueryColumn queryColumn=ObjectSupport.getAnnotation(QueryColumn.class, params.getClass(), prop);
-                            String columnName=entityAnnotation.getColumnName(prop);
-                            if(queryColumn!=null){
-                                condition = doQueryColumn( entityAnnotation,columnName, queryColumn.operator(),  fullProp,  value);
+                            condition = convertSql(Utils.toString(queryItem.value(), System.lineSeparator(), null), entityAnnotation);
+                        } else {
+                            //Class valueType= ((ObjectProperties)sp).getType(prop);
+                            //-- user QueryColumn
+                            QueryColumn queryColumn = ObjectSupport.getAnnotation(QueryColumn.class, params.getClass(), prop);
+                            if (queryColumn != null) {
+                                String column = StringUtils.isNotBlank(queryColumn.column()) ? queryColumn.column() : entityAnnotation.getColumnName(prop);
+                                condition = doQueryColumn(entityAnnotation, column, queryColumn.operator(), fullProp, value);
 
                             }
                             //-- use default: a=b   or in []
-                            else{
-
-                                condition = doQueryColumn( entityAnnotation,columnName, null,  fullProp,  value);
+                            else {
+                                condition = doQueryColumn(entityAnnotation, entityAnnotation.getColumnName(prop), null, fullProp, value);
 
                             }
                         }
 
 
-                        if (propertyConditions.length() > 0){
-                            propertyConditions.append(" " + innerOperator +" ");
+                        if (propertyConditions.length() > 0) {
+                            propertyConditions.append(" " + innerOperator + " ");
                         }
                         propertyConditions.append(condition);
 
@@ -385,38 +385,39 @@ public class ProviderSupport {
         //return Utils.format(sqlFormat,columns,tables,propertyConditions);
 
     }
-    private static String doQueryColumn(EntityAnnotation entityAnnotation,String column, ColumnOperator operator, String prop, Object value){
-        boolean array=value.getClass().isArray();
-        if(operator==null){
-            operator=array?ColumnOperator.IN:ColumnOperator.EQ;
-        }
-        String operatorValue=entityAnnotation.getDialect().getColumnOperatorValue(operator);
-        String    item = column +" "+operatorValue;
-        //-- in,not in
-        if(ColumnOperator.IN.equals(operator) || ColumnOperator.NOT_IN.equals(operator) ){
-           if( array){
-               item +=  "<foreach collection=\""+prop+"\" separator=\",\" item=\"item\" open=\" (\" close=\") \">#{item}</foreach>" ;
 
-           }else{
-               item+=" ( ${"+prop+"} ) ";
-           }
+    private static String doQueryColumn(EntityAnnotation entityAnnotation, String column, ColumnOperator operator, String prop, Object value) {
+        boolean array = value.getClass().isArray();
+        if (operator == null || operator.equals(ColumnOperator.DEFAULT)) {
+            operator = array ? ColumnOperator.IN : ColumnOperator.EQ;
+        }
+        String operatorValue = entityAnnotation.getDialect().getColumnOperatorValue(operator);
+        String item = column + " " + operatorValue + " ";
+        //-- in,not in
+        if (ColumnOperator.IN.equals(operator) || ColumnOperator.NOT_IN.equals(operator)) {
+            if (array) {
+                item += "<foreach collection=\"" + prop + "\" separator=\",\" item=\"item\" open=\" (\" close=\") \">#{item}</foreach>";
+
+            } else {
+                item += " ( ${" + prop + "} ) ";
+            }
         }
         //-- between, not between
-        else if(ColumnOperator.BETWEEN.equals(operator) || ColumnOperator.NOT_BETWEEN.equals(operator)){
-            if( array){
-                item+=String.format(" #{%s[0]} and #{%s[1]} ",prop,prop);
-            }else {
-               throw new MapperException("array property need for operator "+operatorValue);
+        else if (ColumnOperator.BETWEEN.equals(operator) || ColumnOperator.NOT_BETWEEN.equals(operator)) {
+            if (array) {
+                item += String.format(" #{%s[0]} and #{%s[1]} ", prop, prop);
+            } else {
+                throw new MapperException("array property need for operator " + operatorValue);
             }
-        }else {
-            item+=" #{"+prop+"} ";
+        } else {
+            item += " #{" + prop + "} ";
         }
         return item;
     }
 
     public static String sqlByParams(EntityAnnotation entityAnnotation, Object params, String sqlFormat, int sqlType, String columns, String orderBy, String prefix) {
 
-        String[] result=parseParams(entityAnnotation,params,sqlType,columns,orderBy,prefix);
+        String[] result = parseParams(entityAnnotation, params, sqlType, columns, orderBy, prefix);
 
         //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
         return Utils.format(sqlFormat, result[0], result[1], result[2]);
@@ -424,7 +425,7 @@ public class ProviderSupport {
     }
 
     public static String convertSql(String sql, EntityAnnotation entityAnnotation) {
-        if(StringUtils.isBlank(sql)) return sql;
+        if (StringUtils.isBlank(sql)) return sql;
         sql = convertSqlPropsToColumns(sql, entityAnnotation);
         //convert  #{id}==> #{params.id}
         sql = convertSqlAddParamPrefix(sql, Const.PARAMS);

@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * coolma 2019/10/24
+ * E means Entity, R means return DTO. R can be same as E or  R extends E ...
  **/
 public interface Mapper<E,R> {
 
