@@ -6,17 +6,22 @@ public enum ColumnOperator{
         * */
         DEFAULT(""),
         EQ("="),NOT_EQ("<>"), GT(">"),GE(">="),LT("<"),LE("<="),
-        BETWEEN("BETWEEN"),NOT_BETWEEN("NOT BETWEEN"),
-        IN("IN"),NOT_IN("NOT IN"),LIKE("LIKE"),
-        IS_NULL("IS NULL"),IS_NOT_NULL("IS NOT NULL");
+        BETWEEN("BETWEEN"),
+        NOT_BETWEEN("NOT BETWEEN"),
+        LIKE("LIKE"),
+        IN("IN"),NOT_IN("NOT IN"),
+        //IS_NULL("IS NULL"),
+        //IS_NOT_NULL("IS NOT NULL"),
+        //must be boolean value ,true means IS NULL , false means IS NOT NULL;
+        NULL("IS NULL","IS NOT NULL");
 
-        private String value;
-         ColumnOperator(String value){
+        private String[] value;
+         ColumnOperator(String... value){
              this.value=value;
 
         }
 
-    public String getValue() {
+    public String[] getValue() {
         return value;
     }
 

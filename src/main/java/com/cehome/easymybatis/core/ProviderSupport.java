@@ -8,6 +8,7 @@ import com.cehome.easymybatis.enums.RelatedOperator;
 import com.cehome.easymybatis.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
+import org.mybatis.spring.MyBatisSystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -391,8 +392,16 @@ public class ProviderSupport {
         if (operator == null || operator.equals(ColumnOperator.DEFAULT)) {
             operator = array ? ColumnOperator.IN : ColumnOperator.EQ;
         }
-        String operatorValue = entityAnnotation.getDialect().getColumnOperatorValue(operator);
-        String item = column + " " + operatorValue + " ";
+        String[] operatorValue = entityAnnotation.getDialect().getColumnOperatorValue(operator);
+
+        if(ColumnOperator.NULL.equals(operator)){
+            if(! (value instanceof Boolean)){
+                throw new MapperException(" boolean value need for ColumnOperator.NULL ");
+            }
+            boolean b=(Boolean) value;
+            return  column + " " + (b?operatorValue[0]:operatorValue[1]) + " ";
+        }
+        String item = column + " " + operatorValue[0] + " ";
         //-- in,not in
         if (ColumnOperator.IN.equals(operator) || ColumnOperator.NOT_IN.equals(operator)) {
             if (array) {

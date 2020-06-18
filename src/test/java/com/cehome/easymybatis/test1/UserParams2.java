@@ -25,5 +25,8 @@ public class UserParams2 extends User {
     @QueryColumn(column ="id",operator = ColumnOperator.BETWEEN)
     private Long[] idRange;
 
+    @QueryColumn(column = "name",operator =ColumnOperator.NULL )
+    private boolean nameNull;
+
 
 }

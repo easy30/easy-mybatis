@@ -54,7 +54,7 @@ public abstract class AbstractDialect implements Dialect{
     }
 
     @Override
-    public String getColumnOperatorValue(ColumnOperator columnOperator){
+    public String[] getColumnOperatorValue(ColumnOperator columnOperator){
         return columnOperator.getValue();
     }
 

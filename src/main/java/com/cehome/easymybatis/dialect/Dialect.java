@@ -10,5 +10,5 @@ public interface Dialect {
     String getCountSql(String sql);
     List<ParameterMapping> getPageParameterMapping(Configuration configuration, List<ParameterMapping> source);
     String getPageSql(String sql);
-    String getColumnOperatorValue(ColumnOperator columnOperator);
+    String[] getColumnOperatorValue(ColumnOperator columnOperator);
 }
