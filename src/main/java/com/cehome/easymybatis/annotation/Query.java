@@ -17,14 +17,17 @@ public @interface Query {
     String columns() default "";
     // table1 t1,table2 t2 on t1.id=t2.id ...
     String tables() default "";
-    // t1.name='test' . Normally is where conditions. You can also add group by /order by/limit ...
-    String[] conditions() default "";
+    // t1.name='test' . where conditions.
+    String[] where() default "";
 
+    String[] groupBy() default "";
     /**
-     *  if you define order by here, do not redefine in conditions()
+     *  define group by , order by or limit ...
      * @return
      */
-    String orderBy() default "";
+    String[] orderBy() default "";
+
+    String[] other() default "";
 
     boolean queryPropertyEnable() default true;
 

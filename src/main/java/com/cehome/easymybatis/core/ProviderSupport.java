@@ -2,13 +2,13 @@ package com.cehome.easymybatis.core;
 
 import com.cehome.easymybatis.DialectEntity;
 import com.cehome.easymybatis.MapperException;
+import com.cehome.easymybatis.Range;
 import com.cehome.easymybatis.annotation.*;
 import com.cehome.easymybatis.enums.ColumnOperator;
 import com.cehome.easymybatis.enums.RelatedOperator;
 import com.cehome.easymybatis.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
-import org.mybatis.spring.MyBatisSystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +20,9 @@ import java.util.Map;
  **/
 public class ProviderSupport {
     private static Logger logger = LoggerFactory.getLogger(ProviderSupport.class);
-    public static String SQL_UPDATE = "<script>\r\n update {} <set>{}</set> \r\n <where>{}</where> \r\n </script> ";
-    public static String SQL_SELECT = "<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
-    public static String SQL_DELETE = "<script>\r\n delete {} from {} <where>{}</where>\r\n</script>";
+    public static String SQL_UPDATE = "<script>\r\n update {} <set>{}</set> \r\n {} \r\n </script> ";
+    public static String SQL_SELECT = "<script>\r\n select {} from {} {}\r\n</script>";
+    public static String SQL_DELETE = "<script>\r\n delete {} from {} {}\r\n</script>";
     public static String SQL_SELECT_KEY = "<selectKey keyProperty='{}' resultType='{}' order='{}'>{}</selectKey>";
     public static int SQL_TYPE_INSERT = 1;
     public static int SQL_TYPE_UPDATE = 2;
@@ -254,11 +254,15 @@ public class ProviderSupport {
         return s;
     }
 
-    public static String[] parseParams(EntityAnnotation entityAnnotation, Object params, int sqlType, String columns, String orderBy, String prefix) {
+    public static QueryDefine parseParams(EntityAnnotation entityAnnotation, Object params, int sqlType, String columns, String orderBy, String prefix) {
 
 
+        QueryDefine queryDefine=new QueryDefine(sqlType);
         String tables = entityAnnotation.getTable();
-        String conditions = "";
+        String where="";
+        String groupBy="";
+
+        String other="";
         RelatedOperator innerOperator = RelatedOperator.AND;
         RelatedOperator outerOperator = RelatedOperator.AND;
         boolean bSelect = sqlType == SQL_TYPE_SELECT;
@@ -272,7 +276,6 @@ public class ProviderSupport {
                 if (bSelect) {
                     // if columns is null then use query.columns. args columns > query.columns
                     columns = findFirstNotBlank(columns, query.columns());
-                    orderBy = findFirstNotBlank(orderBy, query.orderBy());
 
                 }
 
@@ -282,7 +285,10 @@ public class ProviderSupport {
                 }
 
                 //-- set base conditions
-                conditions = convertSql(Utils.toString(query.conditions(), System.lineSeparator(), null), entityAnnotation);
+                where = convertSql(arrayToString(query.where()), entityAnnotation);
+                groupBy=convertPropsToColumns(arrayToString(query.groupBy()), entityAnnotation);
+                orderBy = findFirstNotBlank(orderBy, arrayToString(query.orderBy()));
+                other=convertSql(arrayToString(query.other()), entityAnnotation);
 
                 queryPropertyEnable = query.queryPropertyEnable();
                 if (queryPropertyEnable) {
@@ -308,8 +314,7 @@ public class ProviderSupport {
 
 
         LineBuilder propertyConditions = new LineBuilder();
-        if (queryPropertyEnable) {
-
+        if (queryPropertyEnable && params!=null)  {
             SimpleProperties sp = SimpleProperties.create(params);
             for (String prop : sp.getProperties()) {
                 Object value = sp.getValue(prop);
@@ -362,31 +367,40 @@ public class ProviderSupport {
 
         }
 
-        if (StringUtils.isBlank(conditions)) {
-            if (propertyConditions.length() > 0) {
-                conditions = propertyConditions.toString();
-            }
-        } else {
-            if (propertyConditions.length() > 0) {
-                conditions = conditions + " " + outerOperator + " ( " + propertyConditions + " ) ";
+
+        if (propertyConditions.length() > 0) {
+            if (StringUtils.isBlank(where)) {
+                where= propertyConditions.toString();
+            }else{
+                where+= " "+ outerOperator + " ( " + propertyConditions  + " ) ";
             }
         }
 
 
-        if (!bSelect && StringUtils.isBlank(conditions))
+        if (!bSelect && StringUtils.isBlank(where))
             throw new MapperException(" 'Where' conditions can not be null( Safety!!! ). params need.");
 
-        if (bSelect) {
-            String order = convertPropsToColumns(orderBy, entityAnnotation);
-            if (order.length() > 0) conditions += (" order by " + order);
-        }
 
-        return new String[]{columns, tables, conditions};
+        orderBy = convertPropsToColumns(orderBy, entityAnnotation);
+
+
+        queryDefine.setColumns(columns);
+        queryDefine.setTables(tables);
+        queryDefine.setWhere(where);
+        queryDefine.setGroupBy(groupBy);
+        queryDefine.setOrderBy(orderBy);
+        queryDefine.setOther(other);
+
+
+        return queryDefine;//new String[]{columns, tables, conditions};
         //SQL_SELECT="<script>\r\n select {} from {} <propertyConditions>{}</propertyConditions>\r\n</script>";
         //return Utils.format(sqlFormat,columns,tables,propertyConditions);
 
     }
 
+    private static String arrayToString(String[] ss){
+      return   Utils.toString(ss, System.lineSeparator(), null);
+    }
     private static String doQueryColumn(EntityAnnotation entityAnnotation, String column, ColumnOperator operator, String prop, Object value) {
         boolean array = value.getClass().isArray();
         if (operator == null || operator.equals(ColumnOperator.DEFAULT)) {
@@ -394,6 +408,17 @@ public class ProviderSupport {
         }
         String[] operatorValue = entityAnnotation.getDialect().getColumnOperatorValue(operator);
 
+        if(value instanceof Range){
+            Range range=(Range)value;
+            String  item ="";
+            if(range.getMin()!=null){
+
+                item+=column+( range.isIncludeMin()?">=":">")+ String.format("#{%s.min}",prop);
+            }
+
+        }
+
+        //-- is null  / not is null
         if(ColumnOperator.NULL.equals(operator)){
             if(! (value instanceof Boolean)){
                 throw new MapperException(" boolean value need for ColumnOperator.NULL ");
@@ -424,12 +449,11 @@ public class ProviderSupport {
         return item;
     }
 
-    public static String sqlByParams(EntityAnnotation entityAnnotation, Object params, String sqlFormat, int sqlType, String columns, String orderBy, String prefix) {
+    public static String sqlByParams(EntityAnnotation entityAnnotation, Object params, int sqlType, String columns, String orderBy, String prefix) {
 
-        String[] result = parseParams(entityAnnotation, params, sqlType, columns, orderBy, prefix);
+        QueryDefine define = parseParams(entityAnnotation, params, sqlType, columns, orderBy, prefix);
+        return define.toSQL();
 
-        //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
-        return Utils.format(sqlFormat, result[0], result[1], result[2]);
 
     }
 
@@ -441,7 +465,7 @@ public class ProviderSupport {
         return sql;
     }
 
-    public static String sqlById(ProviderContext context, Object id, String sql, String select) {
+    public static String sqlById(ProviderContext context, Object id, int sqlType, String select) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
 
         List<String> props = entityAnnotation.getIdPropertyNames();
@@ -451,7 +475,11 @@ public class ProviderSupport {
 
         String where = columns.get(0) + " = #{" + props.get(0) + "}";
 
-        return Utils.format(sql, select, entityAnnotation.getTable(), where);
+         QueryDefine queryDefine=new QueryDefine(sqlType);
+        queryDefine.setColumns(select);
+        queryDefine.setTables(entityAnnotation.getTable());
+        queryDefine.setWhere(where);
+        return queryDefine.toSQL();
 
     }
 }

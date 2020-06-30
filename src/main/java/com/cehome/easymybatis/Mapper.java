@@ -1,6 +1,6 @@
 package com.cehome.easymybatis;
 
-import com.cehome.easymybatis.provider.*;
+import com.cehome.easymybatis.annotation.ReturnFirst;
 import com.cehome.easymybatis.utils.Const;
 import org.apache.ibatis.annotations.*;
 
@@ -98,8 +98,10 @@ public interface Mapper<E,R> {
      * @param selectColumns Can be prop or column. null means all columns.
      * @return
      */
+    @ReturnFirst
     @SelectProvider(type = Provider.class, method = "getByParams")
     R getByParams(@Param(Const.PARAMS) Object params,
+                  @Param(Const.ORDER) String orderBy,
                   @Param(Const.COLUMNS) String selectColumns);
 
     /**
@@ -109,8 +111,10 @@ public interface Mapper<E,R> {
      * @param <T>
      * @return
      */
+    @ReturnFirst
     @SelectProvider(type = Provider.class, method = "getValueByParams")
     <T> T getValueByParams(@Param(Const.PARAMS) Object params,
+                           @Param(Const.ORDER) String orderBy,
                            @Param(Const.COLUMN)  String column);
 
     /**
@@ -121,6 +125,7 @@ public interface Mapper<E,R> {
      * @param <T>
      * @return
      */
+    @ReturnFirst
     @SelectProvider(type = Provider.class, method = "getValueByWhere")
     <T> T getValueByWhere(@Param(Const.WHERE) String where,
                           @Param(Const.PARAMS) Object params,
@@ -133,6 +138,7 @@ public interface Mapper<E,R> {
      * @param <T>
      * @return
      */
+    @ReturnFirst
     @SelectProvider(type = Provider.class, method = "getValueBySQL")
     <T> T getValueBySQL(@Param(Const.SQL) String sql,
                         @Param(Const.PARAMS) Object params);
@@ -160,7 +166,7 @@ public interface Mapper<E,R> {
      * @param params E(entity or same props Object), Map
      * @return
      */
-    @SelectProvider(type = BySQLProvider.class, method = "listBySQL")
+    @SelectProvider(type = Provider.class, method = "listBySQL")
     List<R> listBySQL(@Param(Const.SQL) String sql,
                       @Param(Const.PARAMS) Object params);
 

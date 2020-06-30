@@ -1,7 +1,9 @@
 package com.cehome.easymybatis.core;
 
 import com.cehome.easymybatis.Page;
+import com.cehome.easymybatis.annotation.ReturnFirst;
 import com.cehome.easymybatis.dialect.Dialect;
+import com.cehome.easymybatis.utils.Const;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.cache.CacheKey;
@@ -13,6 +15,8 @@ import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -40,6 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultInterceptor implements Interceptor {
 
+    private static Logger logger = LoggerFactory.getLogger(DefaultInterceptor.class);
     private Map<String, MappedStatement> countMap = new ConcurrentHashMap();
     private Dialect dialect;
     private static ThreadLocal<Boolean> inPage = new ThreadLocal<>();
@@ -60,9 +65,13 @@ public class DefaultInterceptor implements Interceptor {
 
         MappedStatement statement = (MappedStatement) args[0];
 
-
+        Method m = getMethod(statement.getId());
+        System.out.println(m.getAnnotations()[0]);
+        // -- do with select
         if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
+
             Page page = getPage(args[1]);
+            //-- do with page
             if (page != null) {
                 try {
                     // -- avoid recursively invoke :executor.query
@@ -81,28 +90,38 @@ public class DefaultInterceptor implements Interceptor {
                     CacheKey cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, pageBoundSql);
                     //Class entityClass= EntityAnnotation.getInstanceByMapper(getMapperClass(statement.getId())).getEntityClass();
                     List list = executor.query(statement, parameterObject, rowBounds, null, cacheKey, pageBoundSql);
+
                     page.setData(list);
-
-
                     if (page.isQueryCount()) {
                         String countSql = dialect.getCountSql(sql);
                         BoundSql countBoundSql = new BoundSql(statement.getConfiguration(), countSql, boundSql.getParameterMappings(), parameterObject);
                         cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, countBoundSql);
                         int total = (Integer) executor.query(createMappedStatement(statement, Integer.class), parameterObject, rowBounds, null, cacheKey, countBoundSql).get(0);
                         page.setRecordCount(total);
-                        page.setPageCount(total==0?0:(total - 1) / page.getPageSize() + 1);
+                        page.setPageCount(total == 0 ? 0 : (total - 1) / page.getPageSize() + 1);
                     }
                     return list;
+
                 } finally {
                     inPage.remove();
                 }
+            }else{
+                List list = (List) invocation.proceed();
+                
+                // fix "mybatis Expected one result (or null) to be returned by selectOne()"
+                // for method getByParams ,getValueByParams ...
+                //@see org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne(java.lang.String, java.lang.Object)
+                if (isReturnFirst(statement) && list != null && list.size() > 1) {
+                    return list.subList(0, 1);
+                }
+                return list;
             }
 
-
+           
+        } else { //update
+            return invocation.proceed();
         }
 
-
-        return invocation.proceed();
 
     }
 
@@ -121,6 +140,27 @@ public class DefaultInterceptor implements Interceptor {
         }
         return page;
     }
+
+    private boolean isReturnFirst(MappedStatement statement) {
+        Method m = getMethod(statement.getId());
+        ReturnFirst returnFirst = m.getAnnotation(ReturnFirst.class);
+        return returnFirst != null;
+    }
+
+    private Page getPageLimitOne(MappedStatement statement, Object arg) {
+        Page page = null;
+        Method m = getMethod(statement.getId());
+        ReturnFirst returnFirst = m.getAnnotation(ReturnFirst.class);
+        if (returnFirst != null) {
+            if (arg instanceof MapperMethod.ParamMap) {
+                MapperMethod.ParamMap parameterObject = (MapperMethod.ParamMap) arg;
+                page = new Page(1, 1);
+                parameterObject.put(Const.PAGE, page);
+            }
+        }
+        return page;
+    }
+
 
     private Class getMapperClass(String id) {
         int n = id.lastIndexOf('.');

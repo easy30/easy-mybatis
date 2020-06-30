@@ -13,20 +13,25 @@ import java.util.Date;
  * @selectBase
  */
 @Data
-@Query(columns = "id,createTime",conditions = "1=1 and {createTime} is not null ")
+@Query(columns = "id,createTime", where = "1=1 and {createTime} is not null ")
 public class UserParams2 extends User {
 
     @QueryItem("create_time>= #{createTimeStart} ")
     private Date createTimeStart;
 
+    @QueryItem("name like CONCAT('%',#{nameSuffix})")
+    private String nameSuffix;
+
+    //-- array default is IN , id in ( 1,2,3...)
     @QueryColumn(column ="id")
     private Long[] ids;
 
+    //-- between
     @QueryColumn(column ="id",operator = ColumnOperator.BETWEEN)
     private Long[] idRange;
 
     @QueryColumn(column = "name",operator =ColumnOperator.NULL )
-    private boolean nameNull;
+    private Boolean nameNull;
 
 
 }

@@ -2,6 +2,7 @@ package com.cehome.easymybatis;
 
 import com.cehome.easymybatis.core.ColumnAnnotation;
 import com.cehome.easymybatis.core.EntityAnnotation;
+import com.cehome.easymybatis.core.QueryDefine;
 import com.cehome.easymybatis.utils.*;
 import com.cehome.easymybatis.core.ProviderSupport;
 import org.apache.commons.lang3.StringUtils;
@@ -101,8 +102,12 @@ public class Provider<E> {
         Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         String set = ProviderSupport.sqlSetValues(entity, "");
-        return Utils.format(ProviderSupport.SQL_UPDATE, entityAnnotation.getTable(), set,
-                ProviderSupport.sqlWhereById(entity, entityAnnotation));
+        String where= ProviderSupport.sqlWhereById(entity, entityAnnotation);
+        QueryDefine queryDefine=new QueryDefine(ProviderSupport.SQL_TYPE_UPDATE);
+        queryDefine.setWhere(where);
+        queryDefine.setSet(set);
+        queryDefine.setTables(entityAnnotation.getTable());
+        return queryDefine.toSQL();
     }
 
    /* public String delete(E entity) {
@@ -117,13 +122,14 @@ public class Provider<E> {
         if (entity == null || params == null) throw new RuntimeException("entity or params can not be null");
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
 
-        String sql = ProviderSupport.SQL_UPDATE;
+        //String sql = ProviderSupport.SQL_UPDATE;
 
         String set = ProviderSupport.sqlSetValues(entity, Const.ENTITY);
 
 
-        String[] result= ProviderSupport.parseParams(entityAnnotation,params,ProviderSupport.SQL_TYPE_UPDATE,"",null,Const.PARAMS );
-
+        QueryDefine result= ProviderSupport.parseParams(entityAnnotation,params,ProviderSupport.SQL_TYPE_UPDATE,"",null,Const.PARAMS );
+        result.setSet(set);
+        return result.toSQL();
         /*LineBuilder whereBuilder = new LineBuilder();
         SimpleProperties sp=SimpleProperties.create(params);
         for(String prop:sp.getProperties()){
@@ -145,7 +151,7 @@ public class Provider<E> {
             throw new RuntimeException("params for update can not be empty (safely update!!!)");*/
 
 
-        return Utils.format(sql, result[1], set, result[2]);
+        //return Utils.format(sql, result[1], set, result[2]);
 
 
     }
@@ -156,7 +162,6 @@ public class Provider<E> {
         Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
 
-        String sql = ProviderSupport.SQL_UPDATE;
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         String set = ProviderSupport.sqlSetValues(entity, Const.ENTITY);
 
@@ -170,9 +175,11 @@ public class Provider<E> {
         if (where.length() > 0) {
             where = ProviderSupport.convertSql(where, entityAnnotation);
         }
-
-        return Utils.format(sql, entityAnnotation.getTable(), set, where);
-
+        QueryDefine queryDefine=new QueryDefine(ProviderSupport.SQL_TYPE_UPDATE);
+        queryDefine.setWhere(where);
+        queryDefine.setSet(set);
+        queryDefine.setTables(entityAnnotation.getTable());
+        return queryDefine.toSQL();
 
     }
 
@@ -185,11 +192,11 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertPropsToColumns(selectColumns, entityAnnotation);
 
         }
-        return ProviderSupport.sqlById(context, id, ProviderSupport.SQL_SELECT, selectColumns);
+        return ProviderSupport.sqlById(context, id, ProviderSupport.SQL_TYPE_SELECT, selectColumns);
     }
 
     public String deleteById(ProviderContext context, Object id) {
-        return ProviderSupport.sqlById(context, id, ProviderSupport.SQL_DELETE, "");
+        return ProviderSupport.sqlById(context, id, ProviderSupport.SQL_TYPE_DELETE, "");
     }
 
 
@@ -204,7 +211,7 @@ public class Provider<E> {
         return EntityAnnotation.getInstanceByMapper(getCurrentMapperClass());
     }*/
 
-    public String getByParams(ProviderContext context,@Param(Const.PARAMS) Object params, @Param(Const.COLUMNS) String selectColumns) {
+    public String getByParams(ProviderContext context,@Param(Const.PARAMS) Object params, @Param(Const.ORDER) String orderBy,@Param(Const.COLUMNS) String selectColumns) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         /*if (StringUtils.isBlank(selectColumns)) {
             selectColumns = "*";
@@ -213,18 +220,18 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
 
         }*/
-        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_SELECT, ProviderSupport.SQL_TYPE_SELECT, selectColumns, null, Const.PARAMS);
+        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS);
 
     }
 
-    public String getValueByParams(ProviderContext context,@Param(Const.PARAMS) Object params, @Param(Const.COLUMN) String column) {
+    public String getValueByParams(ProviderContext context,@Param(Const.PARAMS) Object params,  @Param(Const.ORDER) String orderBy,@Param(Const.COLUMN) String column) {
         //Class entityClass = params.getClass();
         EntityAnnotation entityAnnotation =  EntityAnnotation.getInstanceByMapper(context.getMapperType());
         //Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
       /*  if (StringUtils.isBlank(column)) {
             column = "*";
         }*/
-        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_SELECT, ProviderSupport.SQL_TYPE_SELECT, column, null, Const.PARAMS);
+        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_TYPE_SELECT, column, orderBy, Const.PARAMS);
 
     }
 
@@ -239,7 +246,7 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertColumns(selectColumns, propertyColumnMap);
         }*/
 
-        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_SELECT, ProviderSupport.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS);
+        return ProviderSupport.sqlByParams(entityAnnotation,params,  ProviderSupport.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS);
 
     }
 
@@ -252,7 +259,7 @@ public class Provider<E> {
 
     public String deleteByParams(ProviderContext context,E params) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_DELETE, ProviderSupport.SQL_TYPE_DELETE, "", null,  "");
+        return ProviderSupport.sqlByParams(entityAnnotation,params, ProviderSupport.SQL_TYPE_DELETE, "", null,  "");
 
     }
 
@@ -261,7 +268,6 @@ public class Provider<E> {
                                 @Param(Const.WHERE) String where, @Param(Const.PARAMS) Object params) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
-        String sql = ProviderSupport.SQL_DELETE;
 
         if (StringUtils.isBlank(where))
             throw new RuntimeException("For safety, WHERE condition can not be blank. (set where to * for deleting all records)");
@@ -269,8 +275,10 @@ public class Provider<E> {
         if (where != null && where.length() > 0) {
             where = ProviderSupport.convertSql(where, entityAnnotation);
         }
-
-        return Utils.format(sql, "", entityAnnotation.getTable(), where);
+        QueryDefine queryDefine=new QueryDefine(ProviderSupport.SQL_TYPE_DELETE);
+        queryDefine.setTables(entityAnnotation.getTable());
+        queryDefine.setWhere(where);
+        return queryDefine.toSQL();
 
     }
 
@@ -278,16 +286,20 @@ public class Provider<E> {
                                   @Param(Const.COLUMN) String column) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
-        String sql = ProviderSupport.SQL_SELECT;
+        //String sql = ProviderSupport.SQL_SELECT;
 
         column = ProviderSupport.convertColumn(column, propertyColumnMap);
         if(where==null) where="";
         if (where.length() > 0) {
-            where = ProviderSupport.convertSql(where, entityAnnotation);
+            where =ProviderSupport.convertSql(where, entityAnnotation);
 
         }
-        //SQL_SELECT="<script>\r\n select {} from {} <where>{}</where>\r\n</script>";
-        return Utils.format(sql, column, entityAnnotation.getTable(), where);
+        QueryDefine queryDefine=new QueryDefine(ProviderSupport.SQL_TYPE_SELECT);
+        queryDefine.setColumns(column);
+        queryDefine.setTables(entityAnnotation.getTable());
+        queryDefine.setWhere(where);
+        return queryDefine.toSQL();
+
 
     }
 
