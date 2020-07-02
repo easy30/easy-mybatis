@@ -90,7 +90,7 @@ public class QueryDefine {
         if(StringUtils.isNotBlank(getOther())){
             condition+=" "+getOther();
         }
-        return Utils.format(ProviderSupport.SQL_SELECT, getColumns(), getTables(), condition);
+        return Utils.format(Global.SQL_SELECT, getColumns(), getTables(), condition);
     }
     private String toDelete(){
         String condition="";
@@ -104,7 +104,7 @@ public class QueryDefine {
         if(StringUtils.isNotBlank(getOther())){
             condition+=" "+getOther();
         }*/
-        return Utils.format(ProviderSupport.SQL_DELETE, "", getTables(), condition);
+        return Utils.format(Global.SQL_DELETE, "", getTables(), condition);
     }
     private String toUpdate(){
         String condition="";
@@ -113,16 +113,16 @@ public class QueryDefine {
         }
         if(StringUtils.isBlank(set)) throw new MapperException("set values condition need");
 
-        return Utils.format(ProviderSupport.SQL_UPDATE, getTables(), getSet(),condition);
+        return Utils.format(Global.SQL_UPDATE, getTables(), getSet(),condition);
     }
 
     public String toSQL(){
-        if(sqlType==ProviderSupport.SQL_TYPE_SELECT){
+        if(sqlType== Global.SQL_TYPE_SELECT){
             return toSelect();
-        }else if(sqlType==ProviderSupport.SQL_TYPE_UPDATE){
+        }else if(sqlType== Global.SQL_TYPE_UPDATE){
             return toUpdate();
 
-        }else if(sqlType==ProviderSupport.SQL_TYPE_DELETE){
+        }else if(sqlType== Global.SQL_TYPE_DELETE){
             return toDelete();
         }
         throw new MapperException("not support sqlType="+sqlType);

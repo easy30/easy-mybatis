@@ -20,16 +20,7 @@ import java.util.Map;
  **/
 public class ProviderSupport {
     private static Logger logger = LoggerFactory.getLogger(ProviderSupport.class);
-    public static String SQL_UPDATE = "<script>\r\n update {} <set>{}</set> \r\n {} \r\n </script> ";
-    public static String SQL_SELECT = "<script>\r\n select {} from {} {}\r\n</script>";
-    public static String SQL_DELETE = "<script>\r\n delete {} from {} {}\r\n</script>";
-    public static String SQL_SELECT_KEY = "<selectKey keyProperty='{}' resultType='{}' order='{}'>{}</selectKey>";
-    public static int SQL_TYPE_INSERT = 1;
-    public static int SQL_TYPE_UPDATE = 2;
-    public static int SQL_TYPE_DELETE = 3;
-    public static int SQL_TYPE_SELECT = 4;
-
-
+    //public static String SQL_SELECT_KEY = "<selectKey keyProperty='{}' resultType='{}' order='{}'>{}</selectKey>";
     public static String sqlSetValues(Object entity, String prefix) {
         LineBuilder s1 = new LineBuilder();
         if (prefix == null) prefix = "";
@@ -265,7 +256,7 @@ public class ProviderSupport {
         String other="";
         RelatedOperator innerOperator = RelatedOperator.AND;
         RelatedOperator outerOperator = RelatedOperator.AND;
-        boolean bSelect = sqlType == SQL_TYPE_SELECT;
+        boolean bSelect = sqlType == Global.SQL_TYPE_SELECT;
         boolean queryPropertyEnable = true;
         //-- load Query Anno
         if (params != null) {

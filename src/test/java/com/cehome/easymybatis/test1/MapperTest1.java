@@ -61,6 +61,7 @@ public class MapperTest1 {
         listByParams();
         listBySQL();
         pageByParams();
+        pageByParamsNullOrEmpty();
         pageBySQL();
         queryItem();
         columnOperator();
@@ -325,7 +326,7 @@ public class MapperTest1 {
 
         Page<User> page=new Page(1,3);
         List<UserDto> list=null;
-        //list= userMapper1.pageByParams(null,page," name asc, createTime desc","age,createTime");
+        list= userMapper1.pageByParams(null,page," name asc, createTime desc","age,createTime");
         list= userMapper1.pageByParams(new User(),page," name asc, createTime desc","age,createTime");
 
     }
