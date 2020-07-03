@@ -3,7 +3,7 @@ package com.cehome.easymybatis.core;
 import com.cehome.easymybatis.Page;
 import com.cehome.easymybatis.annotation.ReturnFirst;
 import com.cehome.easymybatis.dialect.Dialect;
-import com.cehome.easymybatis.utils.Const;
+import com.cehome.easymybatis.Const;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.cache.CacheKey;

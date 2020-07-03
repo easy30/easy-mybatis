@@ -8,7 +8,7 @@ import com.cehome.easymybatis.annotation.ColumnGeneration;
 import com.cehome.easymybatis.annotation.EntitySelectKey;
 import com.cehome.easymybatis.dialect.Dialect;
 import com.cehome.easymybatis.utils.ObjectSupport;
-import com.cehome.easymybatis.utils.Const;
+import com.cehome.easymybatis.Const;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

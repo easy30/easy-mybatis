@@ -1,7 +1,6 @@
 package com.cehome.easymybatis;
 
 import com.cehome.easymybatis.annotation.ReturnFirst;
-import com.cehome.easymybatis.utils.Const;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

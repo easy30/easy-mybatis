@@ -1,10 +1,9 @@
 package com.cehome.easymybatis.core;
 
+import com.cehome.easymybatis.Const;
 import com.cehome.easymybatis.DialectEntity;
 import com.cehome.easymybatis.MapperException;
-import com.cehome.easymybatis.Range;
 import com.cehome.easymybatis.annotation.*;
-import com.cehome.easymybatis.enums.ColumnOperator;
 import com.cehome.easymybatis.enums.RelatedOperator;
 import com.cehome.easymybatis.utils.*;
 import org.apache.commons.lang3.StringUtils;
@@ -313,7 +312,7 @@ public class ProviderSupport {
                     String fullProp = prefix == null || prefix.length() == 0 ? prop : prefix + "." + prop;
                     // map params
                     if (params instanceof Map) {
-                        propertyConditions.append(Utils.format(Const.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
+                        propertyConditions.append(Utils.format(Global.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
                     } else { // object params
                         String condition = "";
 
@@ -328,12 +327,12 @@ public class ProviderSupport {
                             QueryColumn queryColumn = ObjectSupport.getAnnotation(QueryColumn.class, params.getClass(), prop);
                             if (queryColumn != null) {
                                 String column = StringUtils.isNotBlank(queryColumn.column()) ? queryColumn.column() : entityAnnotation.getColumnName(prop);
-                                condition = doQueryColumn(entityAnnotation, column, queryColumn.operator(), fullProp, value);
+                                condition = QueryColumnSupport.doQueryColumn(entityAnnotation, column, queryColumn.operator(), fullProp, value);
 
                             }
                             //-- use default: a=b   or in []
                             else {
-                                condition = doQueryColumn(entityAnnotation, entityAnnotation.getColumnName(prop), null, fullProp, value);
+                                condition = QueryColumnSupport.doQueryColumn(entityAnnotation, entityAnnotation.getColumnName(prop), null, fullProp, value);
 
                             }
                         }
@@ -351,7 +350,7 @@ public class ProviderSupport {
                 } else { //@Deprecated 使用@QueryCondition后，此功能可以去掉
                     value = entityAnnotation.getDialectParam(params, prop);
                     if (value != null) {
-                        propertyConditions.append(Utils.format(Const.SQL_AND_DIALECT, entityAnnotation.getColumnName(prop), value));
+                        propertyConditions.append(Utils.format(Global.SQL_AND_DIALECT, entityAnnotation.getColumnName(prop), value));
                     }
                 }
             }
@@ -392,53 +391,7 @@ public class ProviderSupport {
     private static String arrayToString(String[] ss){
       return   Utils.toString(ss, System.lineSeparator(), null);
     }
-    private static String doQueryColumn(EntityAnnotation entityAnnotation, String column, ColumnOperator operator, String prop, Object value) {
-        boolean array = value.getClass().isArray();
-        if (operator == null || operator.equals(ColumnOperator.DEFAULT)) {
-            operator = array ? ColumnOperator.IN : ColumnOperator.EQ;
-        }
-        String[] operatorValue = entityAnnotation.getDialect().getColumnOperatorValue(operator);
 
-        if(value instanceof Range){
-            Range range=(Range)value;
-            String  item ="";
-            if(range.getMin()!=null){
-
-                item+=column+( range.isIncludeMin()?">=":">")+ String.format("#{%s.min}",prop);
-            }
-
-        }
-
-        //-- is null  / not is null
-        if(ColumnOperator.NULL.equals(operator)){
-            if(! (value instanceof Boolean)){
-                throw new MapperException(" boolean value need for ColumnOperator.NULL ");
-            }
-            boolean b=(Boolean) value;
-            return  column + " " + (b?operatorValue[0]:operatorValue[1]) + " ";
-        }
-        String item = column + " " + operatorValue[0] + " ";
-        //-- in,not in
-        if (ColumnOperator.IN.equals(operator) || ColumnOperator.NOT_IN.equals(operator)) {
-            if (array) {
-                item += "<foreach collection=\"" + prop + "\" separator=\",\" item=\"item\" open=\" (\" close=\") \">#{item}</foreach>";
-
-            } else {
-                item += " ( ${" + prop + "} ) ";
-            }
-        }
-        //-- between, not between
-        else if (ColumnOperator.BETWEEN.equals(operator) || ColumnOperator.NOT_BETWEEN.equals(operator)) {
-            if (array) {
-                item += String.format(" #{%s[0]} and #{%s[1]} ", prop, prop);
-            } else {
-                throw new MapperException("array property need for operator " + operatorValue);
-            }
-        } else {
-            item += " #{" + prop + "} ";
-        }
-        return item;
-    }
 
     public static String sqlByParams(EntityAnnotation entityAnnotation, Object params, int sqlType, String columns, String orderBy, String prefix) {
 

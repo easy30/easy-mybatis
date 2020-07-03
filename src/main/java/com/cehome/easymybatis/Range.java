@@ -11,11 +11,11 @@ public class Range {
 
     }
 
-    public static Range createInRange(Object min, Object max, boolean includeMin, boolean isIncludeMax){
+    public static Range inRange(Object min, Object max, boolean includeMin, boolean isIncludeMax){
         return new Range(min,max,includeMin,isIncludeMax,true);
     }
 
-    public static Range createNotInRange(Object min, Object max, boolean includeMin, boolean isIncludeMax){
+    public static Range notInRange(Object min, Object max, boolean includeMin, boolean isIncludeMax){
         return new Range(min,max,includeMin,isIncludeMax,false);
     }
 

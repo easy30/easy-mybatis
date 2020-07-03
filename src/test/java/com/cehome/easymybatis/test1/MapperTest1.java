@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -17,6 +19,8 @@ import java.util.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 public class MapperTest1 {
+
+    private static Logger logger = LoggerFactory.getLogger(MapperTest1.class);
 
     @Autowired
     DataSource dataSource;
@@ -64,7 +68,7 @@ public class MapperTest1 {
         pageByParamsNullOrEmpty();
         pageBySQL();
         queryItem();
-        columnOperator();
+        queryColumn();
     }
 
     @Test
@@ -89,6 +93,14 @@ public class MapperTest1 {
     public void insert()   {
         User user=doInsert();
         id=user.getId();
+    }
+
+    private User createUser(){
+        User user = new User();
+        user.setName(name);
+        user.setAge(age);
+        user.setRealName(realName);
+        return user;
     }
 
     public User doInsert()   {
@@ -391,7 +403,7 @@ public class MapperTest1 {
     }
 
     @Test
-    public void columnOperator(){
+    public void queryColumn(){
         List<Long> ids=new ArrayList<>();
         insert();
         ids.add(id);
@@ -406,8 +418,7 @@ public class MapperTest1 {
         Assert.assertEquals(list.get(1).getId(),ids.get(1));
 
         params=new UserParams2();
-
-        params.setIdRange(ids.toArray(new Long[0]));
+        params.setIdBetween(ids.toArray(new Long[0]));
         params.setNameNull(false);
         list=userMapper1.listByParams(params,"id",null);
         Assert.assertEquals(2,list.size());

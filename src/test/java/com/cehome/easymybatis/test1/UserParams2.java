@@ -28,7 +28,7 @@ public class UserParams2 extends User {
 
     //-- between
     @QueryColumn(column ="id",operator = ColumnOperator.BETWEEN)
-    private Long[] idRange;
+    private Long[] idBetween;
 
     @QueryColumn(column = "name",operator =ColumnOperator.NULL )
     private Boolean nameNull;
