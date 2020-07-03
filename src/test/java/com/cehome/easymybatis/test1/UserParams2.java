@@ -1,6 +1,7 @@
 package com.cehome.easymybatis.test1;
 
 
+import com.cehome.easymybatis.Range;
 import com.cehome.easymybatis.annotation.Query;
 import com.cehome.easymybatis.annotation.QueryColumn;
 import com.cehome.easymybatis.annotation.QueryItem;
@@ -32,6 +33,9 @@ public class UserParams2 extends User {
 
     @QueryColumn(column = "name",operator =ColumnOperator.NULL )
     private Boolean nameNull;
+
+    @QueryColumn(column = "age")
+    private Range ageRange;
 
 
 }

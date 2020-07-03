@@ -2,6 +2,7 @@ package com.cehome.easymybatis.test1;
 
 import com.alibaba.fastjson.JSON;
 import com.cehome.easymybatis.Page;
+import com.cehome.easymybatis.Range;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -427,6 +428,28 @@ public class MapperTest1 {
 
         deleteById(ids.get(0));
         deleteById(ids.get(1));
+    }
+    @Test
+    public void queryColumnRange(){
+        User user1=createUser();
+        user1.setAge(80);
+        userMapper1.insert(user1);
+
+        User user2=createUser();
+        user2.setAge(90);
+        userMapper1.insert(user2);
+
+        UserParams2 userParams2=new UserParams2();
+        Range range=Range.inRange(70,95,true,true);
+        userParams2.setAgeRange(range);
+
+        int count=userMapper1.getValueByParams(userParams2,null,"count(*)");
+        Assert.assertEquals(2,count);
+
+        userMapper1.deleteById(user1.getId());
+        userMapper1.deleteById(user2.getId());
+
+
     }
 
 
