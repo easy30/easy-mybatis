@@ -43,14 +43,14 @@ public interface Mapper<E,R> {
     /**
      *
      * @param entity    entity need to update
-     * @param where   "{id}=#{id} and {realName}=#{realName}"
-     * @param params   where params. can be entity , other Object, Map.  {id:2,realName:"mike" }
+     * @param condition   "{id}=#{id} and {realName}=#{realName}"
+     * @param params   condition params. can be entity , other Object, Map.  {id:2,realName:"mike" }
      * @return
      */
-    @UpdateProvider(type = Provider.class, method = "updateByWhere")
-    int updateByWhere(@Param(Const.ENTITY) E entity,
-                      @Param(Const.WHERE) String where,
-                      @Param(Const.PARAMS) Object params);
+    @UpdateProvider(type = Provider.class, method = "updateByCondition")
+    int updateByCondition(@Param(Const.ENTITY) E entity,
+                          @Param(Const.CONDITION) String condition,
+                          @Param(Const.PARAMS) Object params);
 
 
 
@@ -72,13 +72,13 @@ public interface Mapper<E,R> {
 
     /**
      *
-     * @param where   "{name}=#{name} and {realName}=#{realName}"
+     * @param condition   "{name}=#{name} and {realName}=#{realName}"
      * @param params  Entity(or similar object with the same props: name,realName... ) or Map
      * @return
      */
-    @DeleteProvider(type = Provider.class, method = "deleteByWhere")
-    int deleteByWhere(@Param(Const.WHERE) String where,
-                      @Param(Const.PARAMS) Object params);
+    @DeleteProvider(type = Provider.class, method = "deleteByCondition")
+    int deleteByCondition(@Param(Const.CONDITION) String condition,
+                          @Param(Const.PARAMS) Object params);
 
 
     /**
@@ -118,17 +118,17 @@ public interface Mapper<E,R> {
 
     /**
      * get one column
-     * @param where  {realName}=#{realName} or real_name=#{realName} . You can use {prop} to instead of column name
+     * @param condition  {realName}=#{realName} or real_name=#{realName} . You can use {prop} to instead of column name
      * @param params E(entity or same props Object), Map
      * @param column prop or column name. null - return the first column
      * @param <T>
      * @return
      */
     @ReturnFirst
-    @SelectProvider(type = Provider.class, method = "getValueByWhere")
-    <T> T getValueByWhere(@Param(Const.WHERE) String where,
-                          @Param(Const.PARAMS) Object params,
-                          @Param(Const.COLUMN) String column);
+    @SelectProvider(type = Provider.class, method = "getValueByCondition")
+    <T> T getValueByCondition(@Param(Const.CONDITION) String condition,
+                              @Param(Const.PARAMS) Object params,
+                              @Param(Const.COLUMN) String column);
 
     /**
      * get one column

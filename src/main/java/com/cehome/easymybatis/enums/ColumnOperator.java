@@ -1,11 +1,13 @@
 package com.cehome.easymybatis.enums;
 
+import com.cehome.easymybatis.core.Global;
+
 public enum ColumnOperator{
         /* not include special operator such as REGEXP  <=>
            DEFAULT will replace with "=" or "in" (array property)
         * */
         DEFAULT(""),
-        EQ("="),NOT_EQ("<>"), GT(">"),GE(">="),LT("<"),LE("<="),
+        EQ("="),NOT_EQ("<>"), GT(">"),GE(">="),LT(Global.OPER_LESS_THAN),LE(Global.OPER_LESS_EQUAL),
         BETWEEN("BETWEEN"),
         NOT_BETWEEN("NOT BETWEEN"),
         LIKE("LIKE"),

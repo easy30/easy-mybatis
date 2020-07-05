@@ -20,6 +20,12 @@ public class UserParams2 extends User {
     @QueryItem("create_time>= #{createTimeStart} ")
     private Date createTimeStart;
 
+    @QueryColumn(column ="createTime",operator = ColumnOperator.GT)
+    private Date createTimeStart2;
+
+    @QueryColumn(column ="createTime",operator = ColumnOperator.LE)
+    private Date createTimeEnd;
+
     @QueryItem("name like CONCAT('%',#{nameSuffix})")
     private String nameSuffix;
 

@@ -57,19 +57,20 @@ public class QueryColumnSupport {
             }
             if (range.getMax() != null) {
                 if (item.length() > 0) item += " " + Global.OPER_AND + " ";
-                item += column + (range.isIncludeMax() ? "<=" : "<") + String.format("#{%s.max}", prop);
+                item += column + (range.isIncludeMax() ? Global.OPER_LESS_EQUAL : Global.OPER_LESS_THAN) + String.format("#{%s.max}", prop);
             }
         }else{
             if (range.getMin() != null) {
 
-                item += column + (range.isIncludeMin() ? "<" : "<=") + String.format("#{%s.min}", prop);
+                item += column + (range.isIncludeMin() ? Global.OPER_LESS_THAN : Global.OPER_LESS_EQUAL) + String.format("#{%s.min}", prop);
             }
             if (range.getMax() != null) {
                 if (item.length() > 0) item += " " + Global.OPER_AND + " ";
                 item += column + (range.isIncludeMax() ? ">" : ">=") + String.format("#{%s.max}", prop);
             }
+
         }
-        return item;
+        return item.length()>0?" ( "+item+" ) ":item;
     }
     private static String doWithNull(String column,Object value,String[] operatorValue){
         if(! (value instanceof Boolean)){

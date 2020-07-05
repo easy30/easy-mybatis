@@ -154,26 +154,26 @@ public class Provider<E> {
     }
 
 
-    public String updateByWhere(@Param(Const.ENTITY) E entity, @Param(Const.WHERE) String where, @Param(Const.PARAMS) Object params) {
+    public String updateByCondition(@Param(Const.ENTITY) E entity, @Param(Const.CONDITION) String condition, @Param(Const.PARAMS) Object params) {
 
         Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
 
-        Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
+        //Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         String set = ProviderSupport.sqlSetValues(entity, Const.ENTITY);
 
-        if (StringUtils.isBlank(where))
+        if (StringUtils.isBlank(condition))
             throw new RuntimeException("because of safety, where condition can not be blank. (set where to * for updating all records)");
-        if (where.equals("*")) where = "";//update all
-        if (where.trim().startsWith("where")) {
-            where = where.trim().substring(5);
+        if (condition.equals("*")) condition = "";//update all
+        if (condition.trim().startsWith("where ")) {
+            condition = condition.trim().substring(5);
 
         }
-        if (where.length() > 0) {
-            where = ProviderSupport.convertSql(where, entityAnnotation);
+        if (condition.length() > 0) {
+            condition = ProviderSupport.convertSql(condition, entityAnnotation);
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_UPDATE);
-        queryDefine.setWhere(where);
+        queryDefine.setWhere(condition);
         queryDefine.setSet(set);
         queryDefine.setTables(entityAnnotation.getTable());
         return queryDefine.toSQL();
@@ -261,40 +261,48 @@ public class Provider<E> {
     }
 
 
-    public String deleteByWhere(ProviderContext context,
-                                @Param(Const.WHERE) String where, @Param(Const.PARAMS) Object params) {
+    public String deleteByCondition(ProviderContext context,
+                                    @Param(Const.CONDITION) String condition, @Param(Const.PARAMS) Object params) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
 
-        if (StringUtils.isBlank(where))
-            throw new RuntimeException("For safety, WHERE condition can not be blank. (set where to * for deleting all records)");
-        if (where.equals("*")) where = "";
-        if (where != null && where.length() > 0) {
-            where = ProviderSupport.convertSql(where, entityAnnotation);
+        if (StringUtils.isBlank(condition))
+            throw new RuntimeException("For safety, WHERE condition can not be blank. (set condition to * for deleting all records)");
+        if (condition.equals("*")) condition = "";
+        if (condition.trim().startsWith("where ")) {
+            condition = condition.trim().substring(5);
+
+        }
+        if (condition != null && condition.length() > 0) {
+            condition = ProviderSupport.convertSql(condition, entityAnnotation);
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_DELETE);
         queryDefine.setTables(entityAnnotation.getTable());
-        queryDefine.setWhere(where);
+        queryDefine.setWhere(condition);
         return queryDefine.toSQL();
 
     }
 
-    public String getValueByWhere(ProviderContext context, @Param(Const.WHERE) String where, @Param(Const.PARAMS) Object params,
-                                  @Param(Const.COLUMN) String column) {
+    public String getValueByCondition(ProviderContext context, @Param(Const.CONDITION) String condition, @Param(Const.PARAMS) Object params,
+                                      @Param(Const.COLUMN) String column) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         //String sql = ProviderSupport.SQL_SELECT;
 
         column = ProviderSupport.convertColumn(column, propertyColumnMap);
-        if(where==null) where="";
-        if (where.length() > 0) {
-            where =ProviderSupport.convertSql(where, entityAnnotation);
+        if(condition==null) condition="";
+        if (condition.trim().startsWith("where ")) {
+            condition = condition.trim().substring(5);
+
+        }
+        if (condition.length() > 0) {
+            condition =ProviderSupport.convertSql(condition, entityAnnotation);
 
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_SELECT);
         queryDefine.setColumns(column);
         queryDefine.setTables(entityAnnotation.getTable());
-        queryDefine.setWhere(where);
+        queryDefine.setWhere(condition);
         return queryDefine.toSQL();
 
 

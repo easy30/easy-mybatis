@@ -214,6 +214,15 @@ public class ProviderSupport {
         }
     }
 
+    public static String conditionComplete(String condition){
+        if (StringUtils.isBlank(condition) || condition.startsWith("where ") || condition.startsWith("order ") || condition.startsWith("group ") || condition.startsWith("limit ")) {
+            return condition;
+        } else {
+            return  " where " + condition;
+        }
+    }
+
+
     public static String convertSqlAddParamPrefix(String sql, String prefix) {
         return Utils.regularReplace(sql, "[#\\$]\\{(\\w+)\\}", "#'{'" + prefix + ".{1}'}'");
     }
@@ -326,7 +335,8 @@ public class ProviderSupport {
                             //-- user QueryColumn
                             QueryColumn queryColumn = ObjectSupport.getAnnotation(QueryColumn.class, params.getClass(), prop);
                             if (queryColumn != null) {
-                                String column = StringUtils.isNotBlank(queryColumn.column()) ? queryColumn.column() : entityAnnotation.getColumnName(prop);
+                                String propOrColumn = StringUtils.isNotBlank(queryColumn.column()) ? queryColumn.column() : prop;
+                                String column=convertColumn(propOrColumn,entityAnnotation.getPropertyColumnMap());
                                 condition = QueryColumnSupport.doQueryColumn(entityAnnotation, column, queryColumn.operator(), fullProp, value);
 
                             }

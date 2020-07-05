@@ -70,6 +70,7 @@ public class MapperTest1 {
         pageBySQL();
         queryItem();
         queryColumn();
+        queryColumnRange();
     }
 
     @Test
@@ -198,7 +199,7 @@ public class MapperTest1 {
     public void updateByWhere()   {
 
         User user=new User();
-        user.setCreateTime(new Date());
+        user.setCreateTime(new Date(new Date().getTime()-1000000));
 
 
         String where="{id}=#{id} and {realName}=#{realName}";
@@ -206,7 +207,7 @@ public class MapperTest1 {
         map.put("id",id);
         map.put("realName",realName);
 
-        int row= userMapper1.updateByWhere(user,where,map);
+        int row= userMapper1.updateByCondition(user,where,map);
         System.out.println(row);
 
     }
@@ -240,13 +241,13 @@ public class MapperTest1 {
         map.put("name",name);
         map.put("realName",realName);
 
-        int row= userMapper1.deleteByWhere(where,map);
+        int row= userMapper1.deleteByCondition(where,map);
         Assert.assertEquals(1,row);
 
     }
 
     private void setId(){
-        id = userMapper1.getValueByWhere( null, null,"max(id)");
+        id = userMapper1.getValueByCondition( null, null,"max(id)");
     }
 
 
@@ -317,7 +318,7 @@ public class MapperTest1 {
 
             User params = new User();
             params.setId(id);
-            Object value = userMapper1.getValueByWhere( "{id}=#{id}", params,"name");
+            Object value = userMapper1.getValueByCondition( "{id}=#{id}", params,"name");
             System.out.println(JSON.toJSONString(value));
             Assert.assertNotNull(value);
 
@@ -394,13 +395,28 @@ public class MapperTest1 {
     @Test
     public void queryItem(){
         insert();
-        User user= userMapper1.getById(id,null);
-        UserParams2 params=new UserParams2();
-        params.setId(id);
-        params.setCreateTimeStart(user.getCreateTime());
-        User user1=userMapper1.getByParams(params,null,null);
-        Assert.assertEquals(user1.getId(),id);
-        deleteById();
+        try {
+            User user = userMapper1.getById(id, null);
+            System.out.println(id+","+user.getCreateTime());
+            UserParams2 params = new UserParams2();
+            params.setId(id);
+            params.setCreateTimeStart(user.getCreateTime());
+            User user1 = userMapper1.getByParams(params, "id desc", null);
+            Assert.assertEquals(id,user1.getId());
+
+            params = new UserParams2();
+            params.setCreateTimeStart2(user.getCreateTime());
+            Assert.assertNull(userMapper1.getByParams(params, null, null));
+
+            params = new UserParams2();
+            params.setCreateTimeEnd(user.getCreateTime());
+            User user2 = userMapper1.getByParams(params, "id desc", null);
+            Assert.assertEquals(id,user2.getId());
+
+        }finally {
+            deleteById();
+        }
+
     }
 
     @Test
@@ -438,16 +454,19 @@ public class MapperTest1 {
         User user2=createUser();
         user2.setAge(90);
         userMapper1.insert(user2);
+        try {
+            UserParams2 userParams2 = new UserParams2();
+            Range range = Range.inRange(70, 95, true, true);
+            userParams2.setAgeRange(range);
 
-        UserParams2 userParams2=new UserParams2();
-        Range range=Range.inRange(70,95,true,true);
-        userParams2.setAgeRange(range);
+            long count = userMapper1.getValueByParams(userParams2, null, "count(*)");
+            Assert.assertEquals(2,count);
 
-        int count=userMapper1.getValueByParams(userParams2,null,"count(*)");
-        Assert.assertEquals(2,count);
+        }finally {
+            userMapper1.deleteById(user1.getId());
+            userMapper1.deleteById(user2.getId());
+        }
 
-        userMapper1.deleteById(user1.getId());
-        userMapper1.deleteById(user2.getId());
 
 
     }

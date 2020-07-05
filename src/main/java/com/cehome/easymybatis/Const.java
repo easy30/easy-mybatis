@@ -7,6 +7,7 @@ public interface Const {
     String ENTITY = "e";
     String PARAMS = "params";
     String WHERE = "w";
+    String CONDITION="condition";
     String COLUMN = "c";
     String COLUMNS = "cs";
     String PAGE="page";
