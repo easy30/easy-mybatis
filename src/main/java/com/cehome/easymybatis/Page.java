@@ -22,9 +22,9 @@ public class Page<E> implements Serializable {
     /**
      *  record start row
      */
-    private int recordStart;
+    //private int recordStart;
 
-    private int recordEnd;
+    //private int recordEnd;
 
 
     private int recordCount;
@@ -43,8 +43,8 @@ public class Page<E> implements Serializable {
     public Page(int pageIndex,int pageSize) {
         setPageIndex(pageIndex);
         setPageSize(pageSize);
-        setRecordStart((pageIndex-1)*pageSize);
-        setRecordEnd(pageIndex*pageIndex-1);//
+        //setRecordStart((pageIndex-1)*pageSize);
+        //setRecordEnd(pageIndex*pageIndex-1);//
     }
 
 
@@ -89,20 +89,21 @@ public class Page<E> implements Serializable {
     }
 
     public int getRecordStart() {
-        return recordStart;
+        return (pageIndex-1)*pageSize;
     }
 
-    public void setRecordStart(int recordStart) {
+    /*public void setRecordStart(int recordStart) {
         this.recordStart = recordStart;
-    }
+    }*/
 
     public int getRecordEnd() {
-        return recordEnd;
+        return pageIndex*pageIndex-1;
     }
 
-    public void setRecordEnd(int recordEnd) {
+    /*   public void setRecordEnd(int recordEnd) {
         this.recordEnd = recordEnd;
-    }
+    }*/
+
 
     public boolean isQueryCount() {
         return queryCount;
