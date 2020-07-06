@@ -62,7 +62,7 @@ public class MapperTest1 {
         getByParamsReturnFirst();
         getById();
         getValueByParams();
-        getValueByWhere();
+        getValueByCondition();
         listByParams();
         listBySQL();
         pageByParams();
@@ -78,7 +78,7 @@ public class MapperTest1 {
         insert();
         update();
         updateByEntity();
-        updateByWhere();
+        updateByCondition();
 
     }
 
@@ -87,7 +87,7 @@ public class MapperTest1 {
 
         insert();deleteById();
         insert();deleteByEntity();
-        insert();deleteByWhere();
+        insert();deleteByCondition();
 
     }
 
@@ -196,7 +196,7 @@ public class MapperTest1 {
 
     }
     @Test
-    public void updateByWhere()   {
+    public void updateByCondition()   {
 
         User user=new User();
         user.setCreateTime(new Date(new Date().getTime()-1000000));
@@ -233,7 +233,7 @@ public class MapperTest1 {
 
     }
     @Test
-    public void deleteByWhere()   {
+    public void deleteByCondition()   {
 
 
         String where="{name}=#{name} and {realName}=#{realName}";
@@ -314,7 +314,7 @@ public class MapperTest1 {
 
     }
     @Test
-    public void getValueByWhere()   {
+    public void getValueByCondition()   {
 
             User params = new User();
             params.setId(id);

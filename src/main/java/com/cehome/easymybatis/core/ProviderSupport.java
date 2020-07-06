@@ -284,10 +284,10 @@ public class ProviderSupport {
                 }
 
                 //-- set base conditions
-                where = convertSql(arrayToString(query.where()), entityAnnotation);
+                where = sqlConvert(arrayToString(query.where()), entityAnnotation);
                 groupBy=convertPropsToColumns(arrayToString(query.groupBy()), entityAnnotation);
                 orderBy = findFirstNotBlank(orderBy, arrayToString(query.orderBy()));
-                other=convertSql(arrayToString(query.other()), entityAnnotation);
+                other= sqlConvert(arrayToString(query.other()), entityAnnotation);
 
                 queryPropertyEnable = query.queryPropertyEnable();
                 if (queryPropertyEnable) {
@@ -329,7 +329,7 @@ public class ProviderSupport {
                         //-- use queryItem
                         if (queryItem != null) {
 
-                            condition = convertSql(Utils.toString(queryItem.value(), System.lineSeparator(), null), entityAnnotation);
+                            condition = sqlConvert(Utils.toString(queryItem.value(), System.lineSeparator(), null), entityAnnotation);
                         } else {
                             //Class valueType= ((ObjectProperties)sp).getType(prop);
                             //-- user QueryColumn
@@ -411,7 +411,7 @@ public class ProviderSupport {
 
     }
 
-    public static String convertSql(String sql, EntityAnnotation entityAnnotation) {
+    public static String sqlConvert(String sql, EntityAnnotation entityAnnotation) {
         if (StringUtils.isBlank(sql)) return sql;
         sql = convertSqlPropsToColumns(sql, entityAnnotation);
         //convert  #{id}==> #{params.id}

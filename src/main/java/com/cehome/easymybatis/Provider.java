@@ -165,15 +165,11 @@ public class Provider<E> {
         if (StringUtils.isBlank(condition))
             throw new RuntimeException("because of safety, where condition can not be blank. (set where to * for updating all records)");
         if (condition.equals("*")) condition = "";//update all
-        if (condition.trim().startsWith("where ")) {
-            condition = condition.trim().substring(5);
-
-        }
         if (condition.length() > 0) {
-            condition = ProviderSupport.convertSql(condition, entityAnnotation);
+            condition = ProviderSupport.sqlConvert(condition, entityAnnotation);
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_UPDATE);
-        queryDefine.setWhere(condition);
+        queryDefine.setCondition( ProviderSupport.conditionComplete(condition));
         queryDefine.setSet(set);
         queryDefine.setTables(entityAnnotation.getTable());
         return queryDefine.toSQL();
@@ -269,16 +265,12 @@ public class Provider<E> {
         if (StringUtils.isBlank(condition))
             throw new RuntimeException("For safety, WHERE condition can not be blank. (set condition to * for deleting all records)");
         if (condition.equals("*")) condition = "";
-        if (condition.trim().startsWith("where ")) {
-            condition = condition.trim().substring(5);
-
-        }
         if (condition != null && condition.length() > 0) {
-            condition = ProviderSupport.convertSql(condition, entityAnnotation);
+            condition = ProviderSupport.sqlConvert(condition, entityAnnotation);
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_DELETE);
         queryDefine.setTables(entityAnnotation.getTable());
-        queryDefine.setWhere(condition);
+        queryDefine.setCondition( ProviderSupport.conditionComplete(condition));
         return queryDefine.toSQL();
 
     }
@@ -291,18 +283,14 @@ public class Provider<E> {
 
         column = ProviderSupport.convertColumn(column, propertyColumnMap);
         if(condition==null) condition="";
-        if (condition.trim().startsWith("where ")) {
-            condition = condition.trim().substring(5);
-
-        }
         if (condition.length() > 0) {
-            condition =ProviderSupport.convertSql(condition, entityAnnotation);
+            condition =ProviderSupport.sqlConvert(condition, entityAnnotation);
 
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_SELECT);
         queryDefine.setColumns(column);
         queryDefine.setTables(entityAnnotation.getTable());
-        queryDefine.setWhere(condition);
+        queryDefine.setCondition( ProviderSupport.conditionComplete(condition));
         return queryDefine.toSQL();
 
 
@@ -319,7 +307,7 @@ public class Provider<E> {
 
         if (sql != null && sql.length() > 0) {
 
-            sql = ProviderSupport.convertSql(sql, entityAnnotation);
+            sql = ProviderSupport.sqlConvert(sql, entityAnnotation);
             sql = ProviderSupport.sqlComplete(sql, entityAnnotation);
         }
 

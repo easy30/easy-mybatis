@@ -4,9 +4,13 @@ import com.cehome.easymybatis.MapperException;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ *  condition= where +groupBy+ orderBy +other
+ */
 public class QueryDefine {
     private String columns;
     private String tables;
+    private String condition;
     private String where;
     private String groupBy;
     private String orderBy;
@@ -34,6 +38,14 @@ public class QueryDefine {
 
     public void setTables(String tables) {
         this.tables = tables;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
     }
 
     public String getWhere() {
@@ -77,25 +89,29 @@ public class QueryDefine {
     }
 
     private String toSelect(){
-        String condition="";
-        if(StringUtils.isNotBlank(getWhere())){
-            condition+=" where "+getWhere();
-        }
-        if(StringUtils.isNotBlank(getGroupBy())){
-            condition+=" group by "+getGroupBy();
-        }
-        if(StringUtils.isNotBlank(getOrderBy())){
-            condition+=" order by "+getOrderBy();
-        }
-        if(StringUtils.isNotBlank(getOther())){
-            condition+=" "+getOther();
+        String condition=StringUtils.trimToEmpty(this.condition);
+        if(StringUtils.isBlank(condition)) {
+            if (StringUtils.isNotBlank(getWhere())) {
+                condition += " where " + getWhere();
+            }
+            if (StringUtils.isNotBlank(getGroupBy())) {
+                condition += " group by " + getGroupBy();
+            }
+            if (StringUtils.isNotBlank(getOrderBy())) {
+                condition += " order by " + getOrderBy();
+            }
+            if (StringUtils.isNotBlank(getOther())) {
+                condition += " " + getOther();
+            }
         }
         return Utils.format(Global.SQL_SELECT, getColumns(), getTables(), condition);
     }
     private String toDelete(){
-        String condition="";
-        if(StringUtils.isNotBlank(getWhere())){
-            condition+=" where "+getWhere();
+        String condition=StringUtils.trimToEmpty(this.condition);
+        if(StringUtils.isBlank(condition)) {
+            if (StringUtils.isNotBlank(getWhere())) {
+                condition += " where " + getWhere();
+            }
         }
 
      /*   if(StringUtils.isNotBlank(getOrderBy())){
@@ -107,9 +123,11 @@ public class QueryDefine {
         return Utils.format(Global.SQL_DELETE, "", getTables(), condition);
     }
     private String toUpdate(){
-        String condition="";
-        if(StringUtils.isNotBlank(getWhere())){
-            condition+=" where "+getWhere();
+        String condition=StringUtils.trimToEmpty(this.condition);
+        if(StringUtils.isBlank(condition)) {
+            if (StringUtils.isNotBlank(getWhere())) {
+                condition += " where " + getWhere();
+            }
         }
         if(StringUtils.isBlank(set)) throw new MapperException("set values condition need");
 
