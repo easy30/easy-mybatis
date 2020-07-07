@@ -6,6 +6,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * coolma 2019/10/24
@@ -64,5 +65,20 @@ public class Utils {
         }
        return rr.getResult();
 
+    }
+
+    public static boolean startWithTokens(String s, String... tokens){
+        if(s==null || tokens==null || tokens.length==0) return false;
+        s=s.trim().toLowerCase();
+
+        StringTokenizer st=new StringTokenizer(s);
+        for(String token :tokens){
+            if(st.hasMoreElements()){
+                if(!st.nextToken().equalsIgnoreCase(token)) return false;
+            }else{
+                return false;
+            }
+        }
+        return true;
     }
 }

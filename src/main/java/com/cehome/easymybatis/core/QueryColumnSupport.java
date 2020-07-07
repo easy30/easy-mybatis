@@ -15,6 +15,7 @@ public class QueryColumnSupport {
         }
         String[] operatorValue = entityAnnotation.getDialect().getColumnOperatorValue(operator);
 
+        //-- do with range
         if(value instanceof Range){
             Range range=(Range)value;
             return doWithRange(  range, column, prop);

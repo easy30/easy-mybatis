@@ -169,7 +169,7 @@ public class Provider<E> {
             condition = ProviderSupport.sqlConvert(condition, entityAnnotation);
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_UPDATE);
-        queryDefine.setCondition( ProviderSupport.conditionComplete(condition));
+        queryDefine.setCondition( entityAnnotation.getDialect().addWhereIfNeed(condition));
         queryDefine.setSet(set);
         queryDefine.setTables(entityAnnotation.getTable());
         return queryDefine.toSQL();
@@ -270,7 +270,7 @@ public class Provider<E> {
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_DELETE);
         queryDefine.setTables(entityAnnotation.getTable());
-        queryDefine.setCondition( ProviderSupport.conditionComplete(condition));
+        queryDefine.setCondition( entityAnnotation.getDialect().addWhereIfNeed(condition));
         return queryDefine.toSQL();
 
     }
@@ -290,7 +290,7 @@ public class Provider<E> {
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_SELECT);
         queryDefine.setColumns(column);
         queryDefine.setTables(entityAnnotation.getTable());
-        queryDefine.setCondition( ProviderSupport.conditionComplete(condition));
+        queryDefine.setCondition(entityAnnotation.getDialect().addWhereIfNeed(condition));
         return queryDefine.toSQL();
 
 

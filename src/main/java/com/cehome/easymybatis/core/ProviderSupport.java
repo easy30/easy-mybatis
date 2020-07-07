@@ -197,31 +197,19 @@ public class ProviderSupport {
     public static String sqlComplete(String sql, EntityAnnotation entityAnnotation) {
         if (sql == null) sql = "";
         String sql2 = sql.length() == 0 ? "" : sql.trim().toLowerCase();
-        if (sql2.startsWith("select ")) {
+        if (Utils.startWithTokens(sql2,"select")) {
             return sql;
-        } else if (sql2.startsWith("from ")) {
+        } else if (Utils.startWithTokens(sql2,"from")) {
             return "select * " + sql;
         } else {
             if (entityAnnotation == null) return sql;
 
             String table = entityAnnotation.getTable();
             if (table == null) return sql;
-            if (sql2.length() == 0 || sql2.startsWith("where ") || sql2.startsWith("order ") || sql2.startsWith("group ") || sql2.startsWith("limit ")) {
-                return "select * from " + table + " " + sql;
-            } else {
-                return "select * from " + table + " where " + sql;
-            }
+            return "select * from " + table + " " + entityAnnotation.getDialect().addWhereIfNeed(sql);
+
         }
     }
-
-    public static String conditionComplete(String condition){
-        if (StringUtils.isBlank(condition) || condition.startsWith("where ") || condition.startsWith("order ") || condition.startsWith("group ") || condition.startsWith("limit ")) {
-            return condition;
-        } else {
-            return  " where " + condition;
-        }
-    }
-
 
     public static String convertSqlAddParamPrefix(String sql, String prefix) {
         return Utils.regularReplace(sql, "[#\\$]\\{(\\w+)\\}", "#'{'" + prefix + ".{1}'}'");
@@ -342,6 +330,8 @@ public class ProviderSupport {
                             }
                             //-- use default: a=b   or in []
                             else {
+                                String column=entityAnnotation.getColumnName(prop);
+                                if(StringUtils.isBlank(column)) throw  new MapperException("can not find column name for property "+prop+". You can use @QueryColumn on property");
                                 condition = QueryColumnSupport.doQueryColumn(entityAnnotation, entityAnnotation.getColumnName(prop), null, fullProp, value);
 
                             }

@@ -1,6 +1,7 @@
 package com.cehome.easymybatis.dialect;
 
 import com.cehome.easymybatis.enums.ColumnOperator;
+import com.cehome.easymybatis.utils.Utils;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.session.Configuration;
 
@@ -57,6 +58,16 @@ public abstract class AbstractDialect implements Dialect{
     public String[] getColumnOperatorValue(ColumnOperator columnOperator){
         return columnOperator.getValue();
     }
+
+    public String addWhereIfNeed(String condition){
+        if (condition.length() == 0 || Utils.startWithTokens(condition,"where")|| Utils.startWithTokens(condition,"order","by")
+                ||Utils.startWithTokens(condition,"group","by")||Utils.startWithTokens(condition,"limit")) {
+            return condition;
+        } else {
+            return  " where " + condition;
+        }
+    }
+
 
     public abstract List<ParameterMapping> getPageParameterMapping(Configuration configuration, List<ParameterMapping> source);
     public abstract String getPageSql(String sql);

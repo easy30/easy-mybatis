@@ -11,4 +11,5 @@ public interface Dialect {
     List<ParameterMapping> getPageParameterMapping(Configuration configuration, List<ParameterMapping> source);
     String getPageSql(String sql);
     String[] getColumnOperatorValue(ColumnOperator columnOperator);
+    String addWhereIfNeed(String condition);
 }

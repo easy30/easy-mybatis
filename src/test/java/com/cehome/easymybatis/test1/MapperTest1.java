@@ -314,14 +314,27 @@ public class MapperTest1 {
 
     }
     @Test
-    public void getValueByCondition()   {
+    public void getValueByCondition() {
 
-            User params = new User();
-            params.setId(id);
-            Object value = userMapper1.getValueByCondition( "{id}=#{id}", params,"name");
-            System.out.println(JSON.toJSONString(value));
-            Assert.assertNotNull(value);
+        User params = new User();
+        params.setId(id);
+        Object value = userMapper1.getValueByCondition("{id}=#{id}", params, "name");
+        System.out.println(JSON.toJSONString(value));
+        Assert.assertNotNull(value);
 
+        value = userMapper1.getValueByCondition("where {id}=#{id}", params, "name");
+        System.out.println(JSON.toJSONString(value));
+        Assert.assertNotNull(value);
+        value = userMapper1.getValueByCondition("order by id desc", null, "name");
+        Assert.assertNotNull(value);
+        value = userMapper1.getValueByCondition("ORDER by id desc", null, "name");
+        Assert.assertNotNull(value);
+        value = userMapper1.getValueByCondition("group by id order by id desc", null, "name");
+        Assert.assertNotNull(value);
+        value = userMapper1.getValueByCondition(null, null, "name");
+        Assert.assertNotNull(value);
+        value = userMapper1.getValueByCondition("", null, "name");
+        Assert.assertNotNull(value);
 
     }
 
