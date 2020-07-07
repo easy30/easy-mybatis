@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.cehome.easymybatis.test2.UserMapper2">
+<mapper namespace="com.cehome.easymybatis.test1.UserMapper">
 
-    <select id="getByIdXml" parameterType="long"  resultType="com.cehome.easymybatis.test2.User">
+    <select id="getByIdWithXml" parameterType="long"  resultType="com.cehome.easymybatis.test1.User">
        select * from user where id = #{id}
     </select>
 
+    <select id="listWithXml"  resultType="com.cehome.easymybatis.test1.User">
+       select * from user where  name=#{name} and age>=#{age}
+    </select>
 </mapper>

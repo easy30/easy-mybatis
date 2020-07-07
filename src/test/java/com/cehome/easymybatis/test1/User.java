@@ -20,4 +20,7 @@ public class User {
     @ColumnDefault(insertValue = "now()")
     private Date createTime;
 
+    @ColumnDefault("now()")
+    private Date updateTime;
+
 }

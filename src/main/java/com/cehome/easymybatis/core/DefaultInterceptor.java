@@ -66,7 +66,6 @@ public class DefaultInterceptor implements Interceptor {
         MappedStatement statement = (MappedStatement) args[0];
 
         Method m = getMethod(statement.getId());
-        System.out.println(m.getAnnotations()[0]);
         // -- do with select
         if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
 
