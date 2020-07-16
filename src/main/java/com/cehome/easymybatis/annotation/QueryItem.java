@@ -15,4 +15,10 @@ public @interface QueryItem {
      */
     String[] value() default "";
 
+    /**
+     *
+     * @return
+     */
+    boolean ignore() default false;
+
 }

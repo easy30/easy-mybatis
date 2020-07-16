@@ -316,8 +316,17 @@ public class ProviderSupport {
                         QueryItem queryItem = ObjectSupport.getAnnotation(QueryItem.class, params.getClass(), prop);
                         //-- use queryItem
                         if (queryItem != null) {
+                            if(queryItem.ignore()) {
+                                continue;
+                            }
+                            String queryItemValue=Utils.toString(queryItem.value(), System.lineSeparator(), null);
+                            if(StringUtils.isBlank(queryItemValue)){
+                                condition =doColumnDefault( entityAnnotation, prop, fullProp, value);
+                            }else{
+                                condition = sqlConvert(Utils.toString(queryItem.value(), System.lineSeparator(), null), entityAnnotation);
+                            }
 
-                            condition = sqlConvert(Utils.toString(queryItem.value(), System.lineSeparator(), null), entityAnnotation);
+
                         } else {
                             //Class valueType= ((ObjectProperties)sp).getType(prop);
                             //-- user QueryColumn
@@ -330,24 +339,21 @@ public class ProviderSupport {
                             }
                             //-- use default: a=b   or in []
                             else {
-                                String column=entityAnnotation.getColumnName(prop);
-                                if(StringUtils.isBlank(column)) throw  new MapperException("can not find column name for property "+prop+". You can use @QueryColumn on property");
-                                condition = QueryColumnSupport.doQueryColumn(entityAnnotation, entityAnnotation.getColumnName(prop), null, fullProp, value);
+                                condition =doColumnDefault( entityAnnotation, prop, fullProp, value);
 
                             }
                         }
 
-
-                        if (propertyConditions.length() > 0) {
-                            propertyConditions.append(" " + innerOperator + " ");
+                        if(StringUtils.isNotBlank(condition)) {
+                            if (propertyConditions.length() > 0) {
+                                propertyConditions.append(" " + innerOperator + " ");
+                            }
+                            propertyConditions.append(condition);
                         }
-                        propertyConditions.append(condition);
-
-
                         //propertyConditions.append(Utils.format(Const.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
                     }
 
-                } else { //@Deprecated 使用@QueryCondition后，此功能可以去掉
+                } else { //@Deprecated 使用@QueryItem，此功能可以去掉
                     value = entityAnnotation.getDialectParam(params, prop);
                     if (value != null) {
                         propertyConditions.append(Utils.format(Global.SQL_AND_DIALECT, entityAnnotation.getColumnName(prop), value));
@@ -385,6 +391,12 @@ public class ProviderSupport {
         return queryDefine;//new String[]{columns, tables, conditions};
         //SQL_SELECT="<script>\r\n select {} from {} <propertyConditions>{}</propertyConditions>\r\n</script>";
         //return Utils.format(sqlFormat,columns,tables,propertyConditions);
+
+    }
+    private static String doColumnDefault(EntityAnnotation entityAnnotation, String prop, String fullProp, Object value){
+        String column=entityAnnotation.getColumnName(prop);
+        if(StringUtils.isBlank(column)) throw  new MapperException("can not find column name for property "+prop+". You can use @QueryColumn on property");
+        return QueryColumnSupport.doQueryColumn(entityAnnotation, entityAnnotation.getColumnName(prop), null, fullProp, value);
 
     }
 

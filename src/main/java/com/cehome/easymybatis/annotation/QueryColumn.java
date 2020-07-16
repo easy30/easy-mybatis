@@ -13,6 +13,7 @@ public @interface QueryColumn {
 
     /**
      * query column/property
+     * if not set, use property as default
      * @return
      */
     String column() default "";
