@@ -6,6 +6,7 @@ package com.cehome.easymybatis;
 public interface Const {
     String ENTITY = "e";
     String PARAMS = "params";
+    String PARAM_NAEMS = "paramNames";
     String WHERE = "w";
     String CONDITION="condition";
     String COLUMN = "c";

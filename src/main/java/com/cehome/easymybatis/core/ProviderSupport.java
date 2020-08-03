@@ -6,10 +6,12 @@ import com.cehome.easymybatis.MapperException;
 import com.cehome.easymybatis.annotation.*;
 import com.cehome.easymybatis.enums.RelatedOperator;
 import com.cehome.easymybatis.utils.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.builder.annotation.ProviderContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -241,7 +243,7 @@ public class ProviderSupport {
         return s;
     }
 
-    public static QueryDefine parseParams(EntityAnnotation entityAnnotation, Object params, int sqlType, String columns, String orderBy, String prefix) {
+    public static QueryDefine parseParams(EntityAnnotation entityAnnotation, Object params, String[] paramNames, int sqlType, String columns, String orderBy, String prefix) {
 
 
         QueryDefine queryDefine=new QueryDefine(sqlType);
@@ -254,7 +256,7 @@ public class ProviderSupport {
         RelatedOperator outerOperator = RelatedOperator.AND;
         boolean bSelect = sqlType == Global.SQL_TYPE_SELECT;
         boolean queryPropertyEnable = true;
-        //-- load Query Anno
+        //-- load @Query Anno
         if (params != null) {
             Query query = params.getClass().getAnnotation(Query.class);
             //-- Query found
@@ -303,13 +305,18 @@ public class ProviderSupport {
         LineBuilder propertyConditions = new LineBuilder();
         if (queryPropertyEnable && params!=null)  {
             SimpleProperties sp = SimpleProperties.create(params);
-            for (String prop : sp.getProperties()) {
+            //for updateByParams deleteByParams
+            boolean needValue= ArrayUtils.isNotEmpty(paramNames);
+            boolean paramsIsMap=params instanceof Map;
+            String[] props=needValue?paramNames:sp.getProperties();
+            for (String prop : props) {
                 Object value = sp.getValue(prop);
+
                 if (value != null) {
                     String fullProp = prefix == null || prefix.length() == 0 ? prop : prefix + "." + prop;
                     // map params
-                    if (params instanceof Map) {
-                        propertyConditions.append(Utils.format(Global.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
+                    if (paramsIsMap) {
+                        addCondition(propertyConditions,innerOperator,Utils.format(Global.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
                     } else { // object params
                         String condition = "";
 
@@ -345,10 +352,7 @@ public class ProviderSupport {
                         }
 
                         if(StringUtils.isNotBlank(condition)) {
-                            if (propertyConditions.length() > 0) {
-                                propertyConditions.append(" " + innerOperator + " ");
-                            }
-                            propertyConditions.append(condition);
+                            addCondition(propertyConditions,innerOperator,condition);
                         }
                         //propertyConditions.append(Utils.format(Const.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
                     }
@@ -356,9 +360,10 @@ public class ProviderSupport {
                 } else { //@Deprecated 使用@QueryItem，此功能可以去掉
                     value = entityAnnotation.getDialectParam(params, prop);
                     if (value != null) {
-                        propertyConditions.append(Utils.format(Global.SQL_AND_DIALECT, entityAnnotation.getColumnName(prop), value));
+                        addCondition(propertyConditions,innerOperator,Utils.format(Global.SQL_AND_DIALECT, entityAnnotation.getColumnName(prop), value));
                     }
                 }
+                if(needValue && value==null) throw new MapperException("property "+prop+" of params can not be null");
             }
 
         }
@@ -393,6 +398,12 @@ public class ProviderSupport {
         //return Utils.format(sqlFormat,columns,tables,propertyConditions);
 
     }
+    private static void addCondition( LineBuilder lineBuilder,RelatedOperator oper,String condition){
+        if (lineBuilder.length() > 0) {
+            lineBuilder.append(" " + oper + " ");
+        }
+        lineBuilder.append(condition);
+    }
     private static String doColumnDefault(EntityAnnotation entityAnnotation, String prop, String fullProp, Object value){
         String column=entityAnnotation.getColumnName(prop);
         if(StringUtils.isBlank(column)) throw  new MapperException("can not find column name for property "+prop+". You can use @QueryColumn on property");
@@ -405,9 +416,9 @@ public class ProviderSupport {
     }
 
 
-    public static String sqlByParams(EntityAnnotation entityAnnotation, Object params, int sqlType, String columns, String orderBy, String prefix) {
+    public static String sqlByParams(EntityAnnotation entityAnnotation, Object params, String[] paramNames,int sqlType, String columns, String orderBy, String prefix) {
 
-        QueryDefine define = parseParams(entityAnnotation, params, sqlType, columns, orderBy, prefix);
+        QueryDefine define = parseParams(entityAnnotation, params,paramNames, sqlType, columns, orderBy, prefix);
         return define.toSQL();
 
 

@@ -153,7 +153,7 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         for (Method method : mapperClass.getMethods()) {
             //AbstractMethodBuilder methodBuilder= methodBuilderMap.get(method.getName());
             //if(methodBuilder!=null) methodBuilder.add(assistant,mapperClass,entityClass,entityAnnotation);
-
+            if(method.isDefault() || Object.class.equals(method.getDeclaringClass())) continue;
             MappedStatement ms = configuration.getMappedStatement(namespace + "." + method.getName());
             if (ms != null) {
                 if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {

@@ -19,7 +19,6 @@ public interface Mapper<E,R> {
     @InsertProvider(type = Provider.class, method = "insert")
     int insert(E entity);
 
-
     /**
      * update entity
      * @param entity
@@ -33,11 +32,14 @@ public interface Mapper<E,R> {
      *
      * @param entity  entity need to update
      * @param params  update conditions (equal condition).   entity , similar Object, Map
+     * @param paramNames properties of params used for query. Using paramNames can avoid updating by mistake
+     *                   - at least one param name need.
      * @return
      */
     @UpdateProvider(type = Provider.class, method = "updateByParams")
     int updateByParams(@Param(Const.ENTITY) E entity,
-                       @Param(Const.PARAMS) Object params);
+                       @Param(Const.PARAMS) Object params,
+                       @Param(Const.PARAM_NAEMS) String... paramNames);
 
 
     /**
@@ -52,8 +54,6 @@ public interface Mapper<E,R> {
                           @Param(Const.CONDITION) String condition,
                           @Param(Const.PARAMS) Object params);
 
-
-
     /**
      * delete by id
      * @param id
@@ -65,10 +65,11 @@ public interface Mapper<E,R> {
     /**
      * delete by entity params (with properties equals)
      * @param params
+     * @param paramNames
      * @return
      */
     @DeleteProvider(type = Provider.class, method = "deleteByParams")
-    int deleteByParams(Object params);
+    int deleteByParams(@Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String... paramNames);
 
     /**
      *

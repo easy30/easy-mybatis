@@ -2,6 +2,7 @@ package com.cehome.easymybatis;
 
 import com.cehome.easymybatis.core.*;
 import com.cehome.easymybatis.utils.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.builder.annotation.ProviderContext;
@@ -114,7 +115,8 @@ public class Provider<E> {
                 ProviderSupport.sqlWhereById(entity, entityAnnotation));
     }*/
 
-    public String updateByParams(@Param(Const.ENTITY) E entity, @Param(Const.PARAMS) Object params) {
+    public String updateByParams(@Param(Const.ENTITY) E entity, @Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String... paramNames) {
+        if(ArrayUtils.isEmpty(paramNames)) throw new MapperException("paramNames can not be empty");
         Class entityClass = entity.getClass();
         if (entity == null || params == null) throw new RuntimeException("entity or params can not be null");
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
@@ -124,7 +126,7 @@ public class Provider<E> {
         String set = ProviderSupport.sqlSetValues(entity, Const.ENTITY);
 
 
-        QueryDefine result= ProviderSupport.parseParams(entityAnnotation,params, Global.SQL_TYPE_UPDATE,"",null,Const.PARAMS );
+        QueryDefine result= ProviderSupport.parseParams(entityAnnotation,params, paramNames,Global.SQL_TYPE_UPDATE,"",null,Const.PARAMS );
         result.setSet(set);
         return result.toSQL();
         /*LineBuilder whereBuilder = new LineBuilder();
@@ -213,7 +215,7 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
 
         }*/
-        return ProviderSupport.sqlByParams(entityAnnotation,params, Global.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS);
+        return ProviderSupport.sqlByParams(entityAnnotation,params,null, Global.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS);
 
     }
 
@@ -224,7 +226,7 @@ public class Provider<E> {
       /*  if (StringUtils.isBlank(column)) {
             column = "*";
         }*/
-        return ProviderSupport.sqlByParams(entityAnnotation,params, Global.SQL_TYPE_SELECT, column, orderBy, Const.PARAMS);
+        return ProviderSupport.sqlByParams(entityAnnotation,params,null, Global.SQL_TYPE_SELECT, column, orderBy, Const.PARAMS);
 
     }
 
@@ -239,7 +241,7 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertColumns(selectColumns, propertyColumnMap);
         }*/
 
-        return ProviderSupport.sqlByParams(entityAnnotation,params,  Global.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS);
+        return ProviderSupport.sqlByParams(entityAnnotation,params, null, Global.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS);
 
     }
 
@@ -249,10 +251,10 @@ public class Provider<E> {
 
     }
 
-
-    public String deleteByParams(ProviderContext context,E params) {
+    public String deleteByParams(ProviderContext context, @Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String... paramNames) {
+        if(ArrayUtils.isEmpty(paramNames)) throw new MapperException("paramNames can not be empty");
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-        return ProviderSupport.sqlByParams(entityAnnotation,params, Global.SQL_TYPE_DELETE, "", null,  "");
+        return ProviderSupport.sqlByParams(entityAnnotation,params,paramNames, Global.SQL_TYPE_DELETE, "", null,  Const.PARAMS);
 
     }
 

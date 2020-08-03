@@ -77,7 +77,7 @@ public class MapperTest {
     public void testUpdate()   {
         insert();
         update();
-        updateByEntity();
+        updateByParams();
         updateByCondition();
 
     }
@@ -86,8 +86,8 @@ public class MapperTest {
     public void testDelete()   {
 
         insert();deleteById();
-        insert();deleteByEntity();
         insert();deleteByCondition();
+        deleteByParams();
 
     }
 
@@ -181,20 +181,16 @@ public class MapperTest {
         //user.setValue("createTime","now()");
         Assert.assertEquals(1, userMapper.update(user));
     }
+
     @Test
-    public void updateByEntity()   {
-
-        User user=new User();
-        user.setName("updateByEntity");
-        //user.setCreateTime(new Date());
-        //user.setEmail("ube@a.com");
-
-        User where=new User();
-        where.setId(id);
-        where.setAge(age);
-        Assert.assertEquals(1, userMapper.updateByParams(user,where));
-
+    public void updateByParams(){
+        User params=doInsert();
+        User user = new User();
+        user.setRealName("tom");
+        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id","age"));
+        Assert.assertEquals(1,  userMapper.deleteByParams(params,"id","age"));
     }
+
     @Test
     public void updateByCondition()   {
 
@@ -222,16 +218,7 @@ public class MapperTest {
         Assert.assertEquals(1, userMapper.deleteById(id));
 
     }
-    @Test
-    public void deleteByEntity()   {
 
-        User params=new User();
-        params.setName(name);
-        params.setAge(age);
-        Assert.assertEquals(1, userMapper.deleteByParams(params));
-
-
-    }
     @Test
     public void deleteByCondition()   {
 
@@ -244,6 +231,12 @@ public class MapperTest {
         int row= userMapper.deleteByCondition(where,map);
         Assert.assertEquals(1,row);
 
+    }
+
+    @Test
+    public void deleteByParams(){
+        User params=doInsert();
+        Assert.assertEquals(1,userMapper.deleteByParams( params,"id","age"));
     }
 
     private void setId(){
@@ -341,7 +334,7 @@ public class MapperTest {
     @Test
     public void listByParams()   {
         User params=new User();
-        params.setAge(20);
+        params.setAge(age);
         List<UserDto> list= userMapper.listByParams(params," name asc, createTime desc","age,createTime");
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
@@ -362,7 +355,7 @@ public class MapperTest {
     @Test
     public void pageByParams()   {
         User params=new User();
-        params.setAge(20);
+        params.setAge(age);
         Page<User> page=new Page(1,3);
         List<UserDto> list= userMapper.pageByParams(params,page," name asc, createTime desc","age,createTime");
         System.out.println(page.getData().size()+"\r\n"+JSON.toJSONString(page));
@@ -373,7 +366,7 @@ public class MapperTest {
     @Test
     public void listBySQL()   {
         User params=new User();
-        params.setAge(20);
+        params.setAge(age-1);
         List<UserDto> list= userMapper.listBySQL(" age>#{age} order by {createTime} desc",params);
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
@@ -398,7 +391,7 @@ public class MapperTest {
     @Test
     public void listByParams2()   {
         UserParams params=new UserParams();
-        params.setAge(20);
+        params.setAge(age);
         List<UserDto> list= userMapper.listByParams(params," name asc, createTime desc","age,createTime");
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
