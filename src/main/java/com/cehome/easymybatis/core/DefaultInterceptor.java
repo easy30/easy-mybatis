@@ -86,6 +86,7 @@ public class DefaultInterceptor implements Interceptor {
                     List<ParameterMapping> pms = dialect.getPageParameterMapping(statement.getConfiguration(), boundSql.getParameterMappings());
 
                     BoundSql pageBoundSql = new BoundSql(statement.getConfiguration(), pageSql, pms, parameterObject);
+                    copyAdditionalParameter(boundSql,pageBoundSql);
                     CacheKey cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, pageBoundSql);
                     //Class entityClass= EntityAnnotation.getInstanceByMapper(getMapperClass(statement.getId())).getEntityClass();
                     List list = executor.query(statement, parameterObject, rowBounds, null, cacheKey, pageBoundSql);
@@ -94,6 +95,7 @@ public class DefaultInterceptor implements Interceptor {
                     if (page.isQueryCount()) {
                         String countSql = dialect.getCountSql(sql);
                         BoundSql countBoundSql = new BoundSql(statement.getConfiguration(), countSql, boundSql.getParameterMappings(), parameterObject);
+                        copyAdditionalParameter(boundSql,countBoundSql);
                         cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, countBoundSql);
                         int total = (Integer) executor.query(createMappedStatement(statement, Integer.class), parameterObject, rowBounds, null, cacheKey, countBoundSql).get(0);
                         page.setRecordCount(total);
@@ -122,6 +124,20 @@ public class DefaultInterceptor implements Interceptor {
         }
 
 
+    }
+
+    /**
+     * for  <foreach></foreach>  auto generate AdditionalParameter such as '__frch_item_0' '__frch_item_1'
+     * so need to copy from source to target
+     * @param source
+     * @param target
+     */
+    private void copyAdditionalParameter( BoundSql source , BoundSql  target){
+        for(ParameterMapping pm:source.getParameterMappings()){
+            if(!target.hasAdditionalParameter(pm.getProperty())){
+                target.setAdditionalParameter(pm.getProperty(),source.getAdditionalParameter(pm.getProperty()));
+            }
+        }
     }
 
     private Page getPage(Object arg) {

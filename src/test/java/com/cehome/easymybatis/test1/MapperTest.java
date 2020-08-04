@@ -435,6 +435,10 @@ public class MapperTest {
 
         UserParams2 params=new UserParams2();
         params.setIds(ids.toArray(new Long[0]));
+        Page page=new Page(1,2);
+        userMapper.pageByParams(params,page,"id",null);
+        Assert.assertEquals(2,page.getData().size());
+
         List<UserDto> list= userMapper.listByParams(params,"id",null);
         Assert.assertEquals(2,list.size());
         Assert.assertEquals(list.get(0).getId(),ids.get(0));

@@ -33,6 +33,9 @@ public class UserParams2 extends User {
     @QueryColumn(column ="id")
     private Long[] ids;
 
+    @QueryColumn(column ="name")
+    private String[] names;
+
     //-- between
     @QueryColumn(column ="id",operator = ColumnOperator.BETWEEN)
     private Long[] idBetween;
