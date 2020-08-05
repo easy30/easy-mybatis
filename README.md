@@ -70,13 +70,15 @@ public class User {
 ```
 ### column default value (for insert or update)
 
-Directly define with @ColumnDefault on the fields.
+Directly define with @ColumnDefault on the fields of java entity.
 
 ```java
+public class User {
     @ColumnDefault(insertValue = "now()")
-        private Date createTime;
-        @ColumnDefault("now()")
-        private Date updateTime;
+    private Date createTime;
+    @ColumnDefault("now()")
+    private Date updateTime;
+}
 
 ```
 ### query with params Object (no or few sql)
@@ -85,23 +87,26 @@ Use params object, you can execute a query without sql or with few sql.
  
  **params Object = normal query object + sql**
  
- The params object contains the query column names and values. If a property of params is not null, then it will be used in query.
- The deault operator of property(column) is '='.
- You can use  @QueryItem to define a custom sql snippet, use @QueryColumn to define the column name and operator.
+ The params object contains the query column names and values. 
+ If a property of params is not null, then it will be used in query.
+ The default operator of property is '=' ( or 'in' for array property).
+ You can use  @QueryItem to define a custom sql snippet, use @QueryColumn to define the column name and other operator.
 
 ```sql
-  selete * from user where age=? and create_time>=? and create_time<? order by create_time desc
+  selete * from user where age=? and create_time>=? and create_time<? and id in (100,101,102) order by create_time desc
 ```
 
 ```java
-//-- define params object
+//define params object
 public class UserParams extends User {
-
     @QueryItem("create_time>= #{createTimeStart} ")
     private Date createTimeStart;
 
-    @QueryColumn(column ="createTime",operator = ColumnOperator.GT)
+    @QueryColumn(column ="createTime",operator = ColumnOperator.GT) //GT is great than '>'
     private Date createTimeEnd;
+
+    @QueryColumn(column ="id")
+    private Long[] ids;
 }
 
 // execute a query
@@ -109,6 +114,7 @@ UserParams params=new UserParams();
 params.setAge(20);
 params.setCreateTimeStart(date1);
 params.setCreateTimeEnd(date2);
+params.setIds(new Long[]{100,101,102})
 List<UserDto> list= userMapper.listByParams(params,"createTime desc",null);
 ```
 
