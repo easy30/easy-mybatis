@@ -1,10 +1,119 @@
 # easy-mybatis
 
-mybatis ORM framework base on mybatis mapper, but more easy to use which can reduce much sql. 
+Java database ORM framework base on mybatis mapper, but more easy to use with few sql. 
 
 No SQL need for insert, update and most select operations.
 
-## Quick start
+## Overview
+### Create a table and a java entity.
+```sql
+
+CREATE TABLE `user` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(30) DEFAULT NULL,
+  `age` int(11) DEFAULT NULL,
+  `email` varchar(50) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `real_name` varchar(45) DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) 
+
+```
+
+```java
+import lombok.Data;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.util.Date;
+
+@Data
+@Table(name = "user")
+public class User {
+    @Id
+    private Long id;
+    private String name;
+    private Integer age;
+    private String realName;
+    @ColumnDefault(insertValue = "now()")
+    private Date createTime;
+    @ColumnDefault("now()")
+    private Date updateTime;
+}
+
+```
+### insert without sql
+```sql
+ insert into user(name,age,real_name) values('coolma',20,'mike')
+
+```
+```java
+    user = new User();
+    user.setName("coolma");
+    user.setAge(20);
+    user.setRealName("mike");
+    userMapper1.insert(user);
+    Long id = user.getId(); //return id
+
+```
+### update without sql
+```sql
+ update user set real_name='michael' where id=100
+
+```
+```java
+    user = new User();
+    user.setRealName("michael");
+    user.setId(100L);
+    userMapper1.update(user);
+
+```
+### column default value (for insert or update)
+
+Directly define with @ColumnDefault on the fields.
+
+```java
+    @ColumnDefault(insertValue = "now()")
+        private Date createTime;
+        @ColumnDefault("now()")
+        private Date updateTime;
+
+```
+### query with params Object (no or few sql)
+
+Use params object, you can execute a query without sql or with few sql. 
+ 
+ **params Object = normal query object + sql**
+ 
+ The params object contains the query column names and values. If a property of params is not null, then it will be used in query.
+ The deault operator of property(column) is '='.
+ You can use  @QueryItem to define a custom sql snippet, use @QueryColumn to define the column name and operator.
+
+```sql
+  selete * from user where age=? and create_time>=? and create_time<? order by create_time desc
+```
+
+```java
+//-- define params object
+public class UserParams extends User {
+
+    @QueryItem("create_time>= #{createTimeStart} ")
+    private Date createTimeStart;
+
+    @QueryColumn(column ="createTime",operator = ColumnOperator.GT)
+    private Date createTimeEnd;
+}
+
+// execute a query
+UserParams params=new UserParams();
+params.setAge(20);
+params.setCreateTimeStart(date1);
+params.setCreateTimeEnd(date2);
+List<UserDto> list= userMapper.listByParams(params,"createTime desc",null);
+```
+
+
+## Quick instruction
 
 ### Create table
 ```sql
@@ -151,7 +260,7 @@ public class MapperTest {
             User params = new User();
             params.setId(100L);
             params.setAge(20);
-            userMapper1.updateByParams(user, params);
+            userMapper1.updateByParams(user, params,"id","age");
     
             //-- delete from user where id=100
             userMapper1.deleteById(100L);
@@ -183,58 +292,6 @@ public class MapperTest {
 ```
 
 ## Advance 
-
-### DialectEntity
-
-Entity inheriting DialectEntity can set sql value or function, such as user.setValue("updateTime","now()").
-
-Add properties createTime,updateTime to entity.
-
-```java
-import com.cehome.easymybatis.DialectEntity;
-import lombok.Data;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.util.Date;
-
-@Data
-@Table(name = "user")
-public class User extends DialectEntity {
-    @Id
-    private Long id;
-    private String name;
-    private Integer age;
-    private String realName;
-    private String email;
-    private Date createTime;
-    private Date updateTime;
-
-
-}
-
-```
-
-Invoke setValue to set database time for updateTime property, not application time.
-
-```java
-class MapperTest1{
-    @Autowired
-    UserMapper2 userMapper2;
-    @Test
-    public void test() throws SQLException {
-        User user=null;
-        
-        //-- update user set name='coolma', update_time=now() where id=100
-        user=new User();
-        user.setName("coolma");
-        user.setId(100L);
-        user.setValue("updateTime","now()");
-        userMapper2.update(user);
-        
-        
-    }
-}
-```
 
 ###  Column default value
 @ColumnDefault - When insert or update, set cloumn default value by sql value or function. 
@@ -300,6 +357,39 @@ class MapperTest1{
 }
 ``` 
 
+### Simple query
+```java
+//--- Mapper method
+List<R> listByParams(@Param(Const.PARAMS) Object params,
+                         @Param(Const.ORDER) String orderBy,
+                         @Param(Const.COLUMNS) String selectColumns);
+List<R> pageByParams(@Param(Const.PARAMS) Object params,
+                         @Param(Const.PAGE) Page page,
+                         @Param(Const.ORDER)String orderBy,
+                         @Param(Const.COLUMNS) String selectColumns);
+//-- define params object 
+
+public class UserParams extends User {
+
+    @QueryItem("create_time>= #{createTimeStart} ")
+    private Date createTimeStart;
+
+    @QueryColumn(column ="createTime",operator = ColumnOperator.GT)
+    private Date createTimeEnd;
+}
+
+// execute a query
+// -- selete * from user where age=? and create_time>=? and create_time<? order by create_time desc
+UserParams params=new UserParams();
+params.setAge(20);
+params.setCreateTimeStart(date1);
+params.setCreateTimeEnd(date2);
+List<UserDto> list= userMapper.listByParams(params,"createTime desc",null);
+
+```
+The params object is the query conditions. If a property of params is not null, then it will be used in query.
+The deault operator of expression is '='. You can use  @QueryItem to define custom sql , use @QueryColumn to define a related column and operator.
+
 ### Complex Query 
 
 1) For executing  "select * from user where age>20 order by create_time desc", you can invoke listBySQL() with sql:
@@ -342,7 +432,7 @@ public interface UserMapper2 extends Mapper<User> {
 
 ```
 
-For findById2 without annotation, you need to define sql in xml file.
+For findById2 without annotation, you need to define a sql in xml file.
 
 First, set mapperLocations. 
 ```xml
@@ -384,4 +474,3 @@ public class MapperTest {
 }
 ```
 
-### Key Generator
