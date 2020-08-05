@@ -65,6 +65,7 @@ public class MapperTest {
         getValueByCondition();
         listByParams();
         listBySQL();
+        listWithXml();
         pageByParams();
         pageByParamsNullOrEmpty();
         pageBySQL();
@@ -491,6 +492,18 @@ public class MapperTest {
         List<UserDto> list= userMapper.pageByParams(params,page," name asc, createTime desc","age,createTime");
         System.out.println(page.getData().size()+"\r\n"+JSON.toJSONString(page));
         Assert.assertTrue(page.getData().size()>0);
+
+    }
+
+    @Test
+    public void listWithXml()   {
+        User user1=createUser();
+        user1.setName("ma"+System.currentTimeMillis());
+        userMapper.insert(user1);
+        List<User> list=userMapper.listWithXml(age,user1.getName());
+        Assert.assertEquals(1,list.size());
+        Assert.assertEquals(user1.getName(),list.get(0).getName());
+        userMapper.deleteById(user1.getId());
 
     }
 
