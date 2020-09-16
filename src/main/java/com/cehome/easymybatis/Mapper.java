@@ -1,6 +1,7 @@
 package com.cehome.easymybatis;
 
 import com.cehome.easymybatis.annotation.ReturnFirst;
+import com.cehome.easymybatis.core.EntityAnnotation;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -195,6 +196,16 @@ public interface Mapper<E,R> {
     List<R> pageBySQL(@Param(Const.SQL) String sql,
                       @Param(Const.PARAMS) Object params,
                       @Param(Const.PAGE) Page page);
+
+    default TableContext useTable(String table){
+        EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(this.getClass());
+        entityAnnotation.setContextTable(table);
+        return new TableContext(entityAnnotation);
+    }
+    default void removeTable(){
+        EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(this.getClass());
+        entityAnnotation.removeContextTable();
+    }
 
 }
 

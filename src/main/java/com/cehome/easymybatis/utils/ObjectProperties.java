@@ -4,6 +4,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,12 +43,16 @@ public class ObjectProperties extends SimpleProperties {
     }
     public Object getValue(String prop){
         PropertyDescriptor pd=map.get(prop);
-        if(pd==null) return null;
-        try {
-            return pd.getReadMethod().invoke(source);
-        } catch ( Exception e) {
-            throw new RuntimeException(e);
+        if(pd!=null) {
+            try {
+
+                Method m = pd.getReadMethod();
+                if (m != null) return m.invoke(source);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
+        return null;
 
     }
 

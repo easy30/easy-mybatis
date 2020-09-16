@@ -139,13 +139,21 @@ public class ObjectSupport {
 
 
 	public static  <T extends Annotation> T getAnnotation(Class<T> annotationClass, Field field, Method method){
-		T  t=field.getAnnotation(annotationClass);
-		if(t==null)  t=method.getAnnotation(annotationClass);
+		T  t=null;
+		if(field!=null) {
+			t=field.getAnnotation(annotationClass);
+		}
+		if(t==null && method!=null)  {
+			t=method.getAnnotation(annotationClass);
+		}
 		return t;
 	}
 	public static  <T extends Annotation> T getAnnotation(Class<T> annotationClass,Class clazz, String prop){
 		Field field = ObjectSupport.getField(clazz, prop);
-		T  t=field.getAnnotation(annotationClass);
+		T  t=null;
+		if(field!=null) {
+			t = field.getAnnotation(annotationClass);
+		}
 		if(t==null) {
 			Method method=null;
 			BeanInfo beanInfo = null;
