@@ -106,7 +106,7 @@ public class RandomObjectUtil {
             else if (fields[i].getType() == long.class || fields[i].getType() == Long.class) {
                 try {
                     //为属性赋值
-                    method.invoke(object, RandomValueUtil.getDoubleValue());
+                    method.invoke(object, RandomValueUtil.getLongValue());
                 } catch (InvocationTargetException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
