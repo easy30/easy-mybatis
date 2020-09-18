@@ -13,9 +13,9 @@ import java.util.Map;
  * coolma 2019/11/4
  **/
 public class Provider<E> {
-    public String insert(E entity) {
-        Class entityClass = entity.getClass();
-        EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
+    public String insert(ProviderContext context,E entity) {
+        //Class entityClass = entity.getClass();
+        EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
 
         LineBuilder sql = new LineBuilder();
         sql.append("<script>")
@@ -95,10 +95,10 @@ public class Provider<E> {
 
     }
 
-    public String update(E entity) {
+    public String update(ProviderContext context,E entity) {
         if (entity == null) throw new RuntimeException("entity can not be null");
-        Class entityClass = entity.getClass();
-        EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
+        //Class entityClass = entity.getClass();
+        EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         String set = ProviderSupport.sqlSetValues(entity, "");
         String where= ProviderSupport.sqlWhereById(entity, entityAnnotation);
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_UPDATE);
@@ -115,11 +115,11 @@ public class Provider<E> {
                 ProviderSupport.sqlWhereById(entity, entityAnnotation));
     }*/
 
-    public String updateByParams(@Param(Const.ENTITY) E entity, @Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String... paramNames) {
+    public String updateByParams(ProviderContext context,@Param(Const.ENTITY) E entity, @Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String... paramNames) {
         if(ArrayUtils.isEmpty(paramNames)) throw new MapperException("paramNames can not be empty");
-        Class entityClass = entity.getClass();
+        //Class entityClass = entity.getClass();
         if (entity == null || params == null) throw new RuntimeException("entity or params can not be null");
-        EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
+        EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
 
         //String sql = ProviderSupport.SQL_UPDATE;
 
@@ -156,10 +156,10 @@ public class Provider<E> {
     }
 
 
-    public String updateByCondition(@Param(Const.ENTITY) E entity, @Param(Const.CONDITION) String condition, @Param(Const.PARAMS) Object params) {
+    public String updateByCondition(ProviderContext context,@Param(Const.ENTITY) E entity, @Param(Const.CONDITION) String condition, @Param(Const.PARAMS) Object params) {
 
-        Class entityClass = entity.getClass();
-        EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
+        //Class entityClass = entity.getClass();
+        EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
 
         //Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         String set = ProviderSupport.sqlSetValues(entity, Const.ENTITY);
