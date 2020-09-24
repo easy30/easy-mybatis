@@ -263,7 +263,12 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
 
         if(entitySelectKey==null) keyGenerator=Jdbc3KeyGenerator.INSTANCE;
         // set private field
-        ObjectSupport.setFieldValue(ms, "keyProperties",idPropertyNames.toArray(new String[0]));
+        String[] keyProperties=new String[idPropertyNames.size()];
+        for(int i=0;i<idPropertyNames.size();i++){
+            keyProperties[i]="e."+idPropertyNames.get(i);
+        }
+
+        ObjectSupport.setFieldValue(ms, "keyProperties",keyProperties);
         ObjectSupport.setFieldValue(ms, "keyColumns", idColumnNames.toArray(new String[0]));
         ObjectSupport.setFieldValue(ms, "keyGenerator", keyGenerator);
 

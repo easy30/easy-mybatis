@@ -16,5 +16,6 @@ public interface Global {
     String OPER_AND="AND";
     String OPER_LESS_THAN="&lt;";
     String OPER_LESS_EQUAL="&lt;=";
+    String OPER_NOT_EQ="&lt;>";
 
 }

@@ -1,7 +1,6 @@
 package com.cehome.easymybatis;
 
 import com.cehome.easymybatis.annotation.ReturnFirst;
-import com.cehome.easymybatis.core.EntityAnnotation;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -18,7 +17,7 @@ public interface Mapper<E,R> {
      * @return sql result ( usual is 1)
      */
     @InsertProvider(type = Provider.class, method = "insert")
-    int insert(E entity);
+    int insert(@Param(Const.ENTITY)E entity, @Param(Const.OPTIONS) UpdateOption... options);
 
     /**
      * update entity
@@ -26,21 +25,22 @@ public interface Mapper<E,R> {
      * @return update result, 0 or 1
      */
     @UpdateProvider(type = Provider.class, method = "update")
-    int update(E entity);
+    int update(@Param(Const.ENTITY)E entity, @Param(Const.OPTIONS) UpdateOption... options);
 
 
     /**
      *
      * @param entity  entity need to update
      * @param params  update conditions (equal condition).   entity , similar Object, Map
-     * @param paramNames properties of params used for query. Using paramNames can avoid updating by mistake
+     * @param paramNames properties of params used for query. Using paramNames can avoid updating by mistake.
      *                   - at least one param name need.
      * @return
      */
     @UpdateProvider(type = Provider.class, method = "updateByParams")
     int updateByParams(@Param(Const.ENTITY) E entity,
                        @Param(Const.PARAMS) Object params,
-                       @Param(Const.PARAM_NAEMS) String... paramNames);
+                       @Param(Const.PARAM_NAEMS) String paramNames,
+                       @Param(Const.OPTIONS) UpdateOption... options);
 
 
     /**
@@ -53,7 +53,8 @@ public interface Mapper<E,R> {
     @UpdateProvider(type = Provider.class, method = "updateByCondition")
     int updateByCondition(@Param(Const.ENTITY) E entity,
                           @Param(Const.CONDITION) String condition,
-                          @Param(Const.PARAMS) Object params);
+                          @Param(Const.PARAMS) Object params,
+                          @Param(Const.OPTIONS) UpdateOption... options);
 
     /**
      * delete by id
@@ -61,16 +62,16 @@ public interface Mapper<E,R> {
      * @return
      */
     @DeleteProvider(type = Provider.class, method = "deleteById")
-    int deleteById(Object id);
+    int deleteById(@Param(Const.ID)Object id,@Param(Const.OPTIONS) DeleteOption... options);
 
     /**
      * delete by entity params (with properties equals)
      * @param params
-     * @param paramNames
+     * @param paramNames, split by ,
      * @return
      */
     @DeleteProvider(type = Provider.class, method = "deleteByParams")
-    int deleteByParams(@Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String... paramNames);
+    int deleteByParams(@Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String paramNames,@Param(Const.OPTIONS) DeleteOption... options);
 
     /**
      *
@@ -80,7 +81,7 @@ public interface Mapper<E,R> {
      */
     @DeleteProvider(type = Provider.class, method = "deleteByCondition")
     int deleteByCondition(@Param(Const.CONDITION) String condition,
-                          @Param(Const.PARAMS) Object params);
+                          @Param(Const.PARAMS) Object params,@Param(Const.OPTIONS) DeleteOption... options);
 
 
     /**
@@ -91,7 +92,8 @@ public interface Mapper<E,R> {
      */
     @SelectProvider(type = Provider.class, method = "getById")
     R getById(@Param(Const.ID) Object id,
-              @Param(Const.COLUMNS) String selectColumns);
+              @Param(Const.COLUMNS) String selectColumns,
+              @Param(Const.OPTIONS) SelectOption... options);
 
     /**
      * get single entity
@@ -103,7 +105,7 @@ public interface Mapper<E,R> {
     @SelectProvider(type = Provider.class, method = "getByParams")
     R getByParams(@Param(Const.PARAMS) Object params,
                   @Param(Const.ORDER) String orderBy,
-                  @Param(Const.COLUMNS) String selectColumns);
+                  @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      * get one column
@@ -116,7 +118,7 @@ public interface Mapper<E,R> {
     @SelectProvider(type = Provider.class, method = "getValueByParams")
     <T> T getValueByParams(@Param(Const.PARAMS) Object params,
                            @Param(Const.ORDER) String orderBy,
-                           @Param(Const.COLUMN)  String column);
+                           @Param(Const.COLUMN)  String column,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      * get one column
@@ -130,7 +132,7 @@ public interface Mapper<E,R> {
     @SelectProvider(type = Provider.class, method = "getValueByCondition")
     <T> T getValueByCondition(@Param(Const.CONDITION) String condition,
                               @Param(Const.PARAMS) Object params,
-                              @Param(Const.COLUMN) String column);
+                              @Param(Const.COLUMN) String column,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      * get one column
@@ -154,7 +156,7 @@ public interface Mapper<E,R> {
     @SelectProvider(type = Provider.class, method = "listByParams")
     List<R> listByParams(@Param(Const.PARAMS) Object params,
                          @Param(Const.ORDER) String orderBy,
-                         @Param(Const.COLUMNS) String selectColumns);
+                         @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      *
@@ -183,7 +185,7 @@ public interface Mapper<E,R> {
     List<R> pageByParams(@Param(Const.PARAMS) Object params,
                          @Param(Const.PAGE) Page page,
                          @Param(Const.ORDER)String orderBy,
-                         @Param(Const.COLUMNS) String selectColumns);
+                         @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      *
@@ -197,7 +199,7 @@ public interface Mapper<E,R> {
                       @Param(Const.PARAMS) Object params,
                       @Param(Const.PAGE) Page page);
 
-    default TableContext useTable(String table){
+    /*default TableContext useTable(String table){
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(this.getClass());
         entityAnnotation.setContextTable(table);
         return new TableContext(entityAnnotation);
@@ -205,7 +207,7 @@ public interface Mapper<E,R> {
     default void removeTable(){
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(this.getClass());
         entityAnnotation.removeContextTable();
-    }
+    }*/
 
 }
 

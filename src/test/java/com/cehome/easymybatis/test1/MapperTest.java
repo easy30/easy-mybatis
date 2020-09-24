@@ -3,6 +3,7 @@ package com.cehome.easymybatis.test1;
 import com.alibaba.fastjson.JSON;
 import com.cehome.easymybatis.Page;
 import com.cehome.easymybatis.Range;
+import com.cehome.easymybatis.UpdateOption;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -147,7 +148,7 @@ public class MapperTest {
         User params = new User();
         params.setId(100L);
         params.setAge(20);
-        userMapper.updateByParams(user, params);
+        userMapper.updateByParams(user, params,"id,age");
 
         //-- delete from user where id=100
         userMapper.deleteById(100L);
@@ -187,9 +188,32 @@ public class MapperTest {
     public void updateByParams(){
         User params=doInsert();
         User user = new User();
+
         user.setRealName("tom");
-        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id","age"));
-        Assert.assertEquals(1,  userMapper.deleteByParams(params,"id","age"));
+        user.setName("mike");
+        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age"));
+        User user2=userMapper.getById(params.getId(),null);
+        Assert.assertEquals("tom",user2.getRealName());
+        Assert.assertEquals("mike",user2.getName());
+
+        logger.info("ignore realName");
+        user.setRealName("tom2");
+        user.setName("mike2");
+        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age", UpdateOption.ignoreColumns("realName")));
+        user2=userMapper.getById(params.getId(),null);
+        Assert.assertEquals("tom",user2.getRealName());
+        Assert.assertEquals("mike2",user2.getName());
+
+        logger.info("extra fields");
+        user.setRealName("tom3");
+        user.setName("mike3");
+        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age", UpdateOption.extraColVals("realName","'tom4'")));
+        user2=userMapper.getById(params.getId(),null);
+        Assert.assertEquals("tom4",user2.getRealName());
+        Assert.assertEquals("mike3",user2.getName());
+
+        Assert.assertEquals(1,  userMapper.deleteByParams(params,"id,age"));
+
     }
 
     @Test
@@ -237,7 +261,7 @@ public class MapperTest {
     @Test
     public void deleteByParams(){
         User params=doInsert();
-        Assert.assertEquals(1,userMapper.deleteByParams( params,"id","age"));
+        Assert.assertEquals(1,userMapper.deleteByParams( params,"id,age"));
     }
 
     private void setId(){

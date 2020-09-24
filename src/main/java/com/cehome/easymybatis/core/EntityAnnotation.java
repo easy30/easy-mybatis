@@ -39,8 +39,6 @@ public class EntityAnnotation {
 
     private String table = null;
 
-    private ThreadLocal<String> tableThreadLocal = new ThreadLocal();
-
 
     //private List<PropertyDescriptor>  idProperties=new ArrayList();
     private List<String> idPropertyNames = new ArrayList();
@@ -105,17 +103,7 @@ public class EntityAnnotation {
      * @return
      */
     public String getTable() {
-        String context = tableThreadLocal.get();
-        if (context != null) return context;
         return table;
-    }
-
-    public void setContextTable(String table) {
-        tableThreadLocal.set(table);
-    }
-
-    public void removeContextTable() {
-        tableThreadLocal.remove();
     }
 
 /*	public void setTable(String table)

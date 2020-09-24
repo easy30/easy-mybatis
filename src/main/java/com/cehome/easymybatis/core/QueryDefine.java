@@ -3,11 +3,14 @@ package com.cehome.easymybatis.core;
 import com.cehome.easymybatis.MapperException;
 import com.cehome.easymybatis.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *  condition= where +groupBy+ orderBy +other
  */
 public class QueryDefine {
+    private static Logger logger = LoggerFactory.getLogger(QueryDefine.class);
     private String columns;
     private String tables;
     private String condition;
@@ -136,13 +139,20 @@ public class QueryDefine {
 
     public String toSQL(){
         if(sqlType== Global.SQL_TYPE_SELECT){
-            return toSelect();
+            String sql= toSelect();
+            logger.debug("provider sql= {}",sql);
+            return sql;
         }else if(sqlType== Global.SQL_TYPE_UPDATE){
-            return toUpdate();
+            String sql= toUpdate();
+            logger.debug("provider sql= {}",sql);
+            return sql;
 
         }else if(sqlType== Global.SQL_TYPE_DELETE){
-            return toDelete();
+            String sql= toDelete();
+            logger.debug("provider sql= {}",sql);
+            return sql;
         }
+
         throw new MapperException("not support sqlType="+sqlType);
     }
 }

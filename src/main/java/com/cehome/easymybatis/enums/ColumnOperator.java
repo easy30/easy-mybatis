@@ -7,7 +7,7 @@ public enum ColumnOperator{
            DEFAULT will replace with "=" or "in" (array property)
         * */
         DEFAULT(""),
-        EQ("="),NOT_EQ("<>"), GT(">"),GE(">="),LT(Global.OPER_LESS_THAN),LE(Global.OPER_LESS_EQUAL),
+        EQ("="),NOT_EQ(Global.OPER_NOT_EQ), GT(">"),GE(">="),LT(Global.OPER_LESS_THAN),LE(Global.OPER_LESS_EQUAL),
         BETWEEN("BETWEEN"),
         NOT_BETWEEN("NOT BETWEEN"),
         LIKE("LIKE"),

@@ -17,6 +17,7 @@ public interface Const {
     String ORDER="order";
     String VALUE_MAP="valueMap";
     String PARAM_MAP="paramMap";
+    String OPTIONS ="options";
 
 
 }
