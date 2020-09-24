@@ -207,7 +207,7 @@ public class MapperTest {
         logger.info("extra fields");
         user.setRealName("tom3");
         user.setName("mike3");
-        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age", UpdateOption.extraColVals("realName","'tom4'")));
+        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age", UpdateOption.addColumnValues("realName","'tom4'")));
         user2=userMapper.getById(params.getId(),null);
         Assert.assertEquals("tom4",user2.getRealName());
         Assert.assertEquals("mike3",user2.getName());

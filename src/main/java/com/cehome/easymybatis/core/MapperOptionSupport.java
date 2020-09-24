@@ -18,10 +18,10 @@ public class MapperOptionSupport {
 
     public static Map<String,String> getExtraColVals(MapperOption... options){
         for(MapperOption option:options){
-            if(ArrayUtils.isNotEmpty(option.getExtraColVals())){
+            if(ArrayUtils.isNotEmpty(option.getColumnAndValues())){
                 Map<String,String> map=new HashMap<>();
-                for(int i=0;i<option.getExtraColVals().length;i+=2) {
-                    map.put(option.getExtraColVals()[i],""+option.getExtraColVals()[i+1]);// ""+null to "null"
+                for(int i = 0; i<option.getColumnAndValues().length; i+=2) {
+                    map.put(option.getColumnAndValues()[i],""+option.getColumnAndValues()[i+1]);// ""+null to "null"
                 }
                 return map;
 

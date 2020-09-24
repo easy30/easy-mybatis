@@ -6,10 +6,10 @@ public class UpdateOption extends MapperOption {
 
 
 
-   public static UpdateOption extraColVals(String... extraColVals){
+   public static UpdateOption addColumnValues(String... columnAndValues){
 
        UpdateOption option=   new UpdateOption();
-       option.extraColVals=extraColVals;
+       option.columnAndValues =columnAndValues;
        return option;
     }
 

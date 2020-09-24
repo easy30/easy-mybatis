@@ -2,13 +2,13 @@ package com.cehome.easymybatis.core;
 
 public class MapperOption {
 
-    protected String[] extraColVals;
+    protected String[] columnAndValues;
     protected String[] ignoreColumns;
     protected String table;
 
 
-    protected String[] getExtraColVals(){
-        return extraColVals;
+    protected String[] getColumnAndValues(){
+        return columnAndValues;
     }
     protected String[] getIgnoreColumns(){
         return ignoreColumns;
