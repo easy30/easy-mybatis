@@ -44,11 +44,14 @@ public class Provider<E> {
             if (!columnAnnotation.isInsertable()) continue;
             String prop = e.getKey();
 
-            if(ignoreColumnSet!=null && (ignoreColumnSet.contains(prop) || ignoreColumnSet.contains(columnAnnotation.getName())))continue;
 
             int valueType = 0;//0: none  1 value 2:dialect value
 
             Object value= MapperOptionSupport.getAndRemove(extraColVals,prop,columnAnnotation.getName());
+
+            if(ignoreColumnSet!=null && (ignoreColumnSet.contains(prop) || ignoreColumnSet.contains(columnAnnotation.getName())))continue;
+
+
             if(value!=null){
                 valueType = 2;
             }

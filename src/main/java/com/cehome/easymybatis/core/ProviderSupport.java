@@ -33,12 +33,14 @@ public class ProviderSupport {
             ColumnAnnotation columnAnnotation = e.getValue();
             if (!columnAnnotation.isUpdatable()) continue;
             String prop = e.getKey();
-            if(ignoreColumnSet!=null && (ignoreColumnSet.contains(prop) || ignoreColumnSet.contains(columnAnnotation.getName())))continue;
 
             int valueType = 0;//0: none  1 value 2:dialect value
 
-            //-- option extra value
+            //-- option: add extra value
             Object value= MapperOptionSupport.getAndRemove(extraColVals,prop,columnAnnotation.getName());
+
+            if(ignoreColumnSet!=null && (ignoreColumnSet.contains(prop) || ignoreColumnSet.contains(columnAnnotation.getName())))continue;
+
             if(value!=null){
                 valueType = 2;
             }
