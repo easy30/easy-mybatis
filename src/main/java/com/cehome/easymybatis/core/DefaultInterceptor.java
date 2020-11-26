@@ -129,12 +129,17 @@ public class DefaultInterceptor implements Interceptor {
     /**
      * for  <foreach></foreach>  auto generate AdditionalParameter such as '__frch_item_0' '__frch_item_1'
      * so need to copy from source to target
+     * BoundSql.parameterMappings :  all ? params in sql
+     * BoundSql .parameterObject : all params name and values ( not only ? params）
+     * BoundSql.additionalParameters ： temp  params by mybatis such as '__frch_item_0'... in <foreach></foreach>
+     *
      * @param source
      * @param target
      */
     private void copyAdditionalParameter( BoundSql source , BoundSql  target){
+        //parameterMappings include all ? params names(not value)
         for(ParameterMapping pm:source.getParameterMappings()){
-            if(!target.hasAdditionalParameter(pm.getProperty())){
+            if(source.hasAdditionalParameter(pm.getProperty()) && !target.hasAdditionalParameter(pm.getProperty())){
                 target.setAdditionalParameter(pm.getProperty(),source.getAdditionalParameter(pm.getProperty()));
             }
         }

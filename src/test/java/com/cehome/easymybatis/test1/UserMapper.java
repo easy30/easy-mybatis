@@ -1,6 +1,9 @@
 package com.cehome.easymybatis.test1;
 
+import com.cehome.easymybatis.Const;
 import com.cehome.easymybatis.Mapper;
+import com.cehome.easymybatis.Page;
+import com.cehome.easymybatis.SelectOption;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.session.RowBounds;
@@ -23,4 +26,6 @@ public interface UserMapper extends Mapper<User,UserDto> {
 
     //select * from user where  name=#{name} and age>=#{age}
     List<User> listWithXml(@Param("age") Integer age,@Param("name") String name);
+
+    List<User> pageInXML(@Param("age") Integer age, @Param(Const.PAGE) Page page);
 }

@@ -69,6 +69,8 @@ public class MapperTest {
         listWithXml();
         pageByParams();
         pageByParamsNullOrEmpty();
+        pageInXML();
+        pageByParamsIn();
         pageBySQL();
         queryItem();
         queryColumn();
@@ -387,6 +389,28 @@ public class MapperTest {
         Assert.assertTrue(page.getData().size()>0);
 
     }
+    @Test
+    public void pageByParamsIn()   {
+        List<Long> ids=new ArrayList<>();
+        insert();
+        ids.add(id);
+        insert();
+        ids.add(id);
+
+        UserParams2 params=new UserParams2();
+        params.setIds(ids.toArray(new Long[0]));
+        Page page=new Page(1,2);
+        userMapper.pageByParams(params,page,"id",null);
+        Assert.assertEquals(2,page.getData().size());
+
+    }
+    @Test
+    public void pageInXML()   {
+        Page page= new Page(1,3);
+        userMapper.pageInXML(2,page);
+        System.out.println( JSON.toJSONString(page));
+    }
+
 
     @Test
     public void listBySQL()   {
