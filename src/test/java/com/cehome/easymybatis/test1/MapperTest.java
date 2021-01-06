@@ -408,7 +408,7 @@ public class MapperTest {
     public void pageInXML()   {
         Page page= new Page(1,3);
         userMapper.pageInXML(2,page);
-        System.out.println( JSON.toJSONString(page));
+        Assert.assertEquals(2,page.getData().size());
     }
 
 
