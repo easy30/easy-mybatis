@@ -354,7 +354,7 @@ public class ProviderSupport {
                     String fullProp = prefix == null || prefix.length() == 0 ? prop : prefix + "." + prop;
                     // map params
                     if (paramsIsMap) {
-                        addCondition(propertyConditions,innerOperator,Utils.format(Global.SQL_AND, entityAnnotation.getColumnName(prop), fullProp));
+                        addCondition(propertyConditions,innerOperator,Utils.format(Global.SQL_EQ, entityAnnotation.getColumnName(prop), fullProp));
                     } else { // object params
                         String condition = "";
 
@@ -398,7 +398,7 @@ public class ProviderSupport {
                 } else { //@Deprecated 使用@QueryItem，此功能可以去掉
                     value = entityAnnotation.getDialectParam(params, prop);
                     if (value != null) {
-                        addCondition(propertyConditions,innerOperator,Utils.format(Global.SQL_AND_DIALECT, entityAnnotation.getColumnName(prop), value));
+                        addCondition(propertyConditions,innerOperator,Utils.format(Global.SQL_EQ_DIALECT, entityAnnotation.getColumnName(prop), value));
                     }
                 }
                 if(needValue && value==null) throw new MapperException("property "+prop+" of params can not be null");

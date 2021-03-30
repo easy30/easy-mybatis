@@ -1,8 +1,8 @@
 package com.cehome.easymybatis.core;
 
 public interface Global {
-    String SQL_AND = " and {}=#{{}} ";
-    String SQL_AND_DIALECT =" and {} = {}";
+    String SQL_EQ = " {}=#{{}} ";
+    String SQL_EQ_DIALECT =" {} = {} ";
     String SQL_UPDATE = "<script>\r\n update {} <set>{}</set> \r\n {} \r\n </script> ";
     String  SQL_SELECT = "<script>\r\n select {} from {} {}\r\n</script>";
     String SQL_DELETE = "<script>\r\n delete {} from {} {}\r\n</script>";

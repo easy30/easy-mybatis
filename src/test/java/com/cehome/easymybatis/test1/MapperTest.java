@@ -408,7 +408,7 @@ public class MapperTest {
     public void pageInXML()   {
         Page page= new Page(1,3);
         userMapper.pageInXML(2,page);
-        Assert.assertEquals(2,page.getData().size());
+        Assert.assertEquals(3,page.getData().size());
     }
 
 
