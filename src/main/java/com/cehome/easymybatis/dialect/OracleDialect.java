@@ -29,4 +29,12 @@ public class OracleDialect extends AbstractDialect {
         sb.append(" ) WHERE ROW_ID > ? ");
         return sb.toString();
     }
+
+    @Override
+    public String getQuotedColumn(String column) {
+        if(column!=null && column.indexOf('"')>=0) return column;
+        return "\""+column.toUpperCase()+"\"";
+    }
+
+
 }

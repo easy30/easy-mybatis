@@ -12,6 +12,7 @@ import com.cehome.easymybatis.Const;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
 
 import javax.persistence.*;
@@ -44,6 +45,7 @@ public class EntityAnnotation {
     private List<String> idPropertyNames = new ArrayList();
     private List<String> idColumnNames = new ArrayList();
     private Map<String, ColumnAnnotation> propertyColumnMap = new HashMap<String, ColumnAnnotation>();
+    private Map<String, ColumnAnnotation> columnMap = new LinkedCaseInsensitiveMap<ColumnAnnotation>();
 
     //private PropertyDescriptor[] properties =null;
     private Map<String, PropertyDescriptor> propertyDescriptorMap = new HashMap<String, PropertyDescriptor>();
@@ -111,9 +113,20 @@ public class EntityAnnotation {
 		this.table = table;
 	}*/
 
-
+    /**
+     * prop,ColumnAnnotation  map
+     * @return
+     */
     public Map<String, ColumnAnnotation> getPropertyColumnMap() {
         return propertyColumnMap;
+    }
+
+    /**
+     *  column,ColumnAnnotation  map
+     * @return
+     */
+    public Map<String, ColumnAnnotation> getColumnMap() {
+        return columnMap;
     }
 
     public Map<String, PropertyDescriptor> getPropertyDescriptorMap() {
@@ -186,13 +199,16 @@ public class EntityAnnotation {
 
                 //--@Column
                 ColumnAnnotation ca = new ColumnAnnotation();
+                ca.setPropName(prop);
                 propertyColumnMap.put(pd.getName(), ca);
+
 
 
                 doWithColumn(field, method, ca, prop, columnUnderscoreSupport);
                 doWithId(pd, field, method, ca);
                 doWithColumnGenerator(field, method, ca);
                 doWithColumnDefault(field, method, ca);
+                columnMap.put(ca.getName(),ca);
 
                 //--@Transient
                 Transient trans = getAnnotation(Transient.class, field, method);

@@ -68,8 +68,13 @@ public abstract class AbstractDialect implements Dialect{
         }
     }
 
+    @Override
+    public String getQuotedColumn(String column) {
+        return column;
+    }
 
     public abstract List<ParameterMapping> getPageParameterMapping(Configuration configuration, List<ParameterMapping> source);
     public abstract String getPageSql(String sql);
+
 
 }

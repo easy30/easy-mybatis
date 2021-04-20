@@ -1,6 +1,7 @@
 package com.cehome.easymybatis;
 
 import com.cehome.easymybatis.core.*;
+import com.cehome.easymybatis.dialect.Dialect;
 import com.cehome.easymybatis.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
@@ -19,7 +20,7 @@ public class Provider<E> {
     public String insert(ProviderContext context,@Param(Const.ENTITY) E entity,@Param(Const.OPTIONS) UpdateOption... options) {
         //Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-
+        Dialect dialect=entityAnnotation.getDialect();
         LineBuilder sql = new LineBuilder();
         sql.append("<script>")
                 .append("{}")
@@ -101,10 +102,10 @@ public class Provider<E> {
             }
 
             if (valueType == 1) {
-                columnBuilder.append(columnAnnotation.getName() + ",");
+                columnBuilder.append( dialect.getQuotedColumn(columnAnnotation.getName()) + ",");
                 valueBuilder.append(Utils.format("#{{}},", Const.ENTITY+"."+prop));
             } else if (valueType == 2) {
-                columnBuilder.append(Utils.format("{},", columnAnnotation.getName()));
+                columnBuilder.append(Utils.format("{},", dialect.getQuotedColumn(columnAnnotation.getName())));
                 valueBuilder.append(Utils.format("{},", value));
 
             }
@@ -114,13 +115,13 @@ public class Provider<E> {
         //-- 剩下的
         if(extraColVals!=null){
             extraColVals.forEach((k,v)->{
-                columnBuilder.append(Utils.format("{},", ProviderSupport.convertColumn(k,columnMap)));
+                columnBuilder.append(Utils.format("{},", ProviderSupport.convertColumn(k,entityAnnotation)));
                 valueBuilder.append(Utils.format("{},", v));
             });
 
         }
 
-        String result= Utils.format(sql.toString(), selectKeys, table, columnBuilder, valueBuilder);
+        String result= Utils.format(sql.toString(), selectKeys, dialect.getQuotedColumn(table), columnBuilder, valueBuilder);
         logger.debug("provider sql= {}",result);
         return result;
     }
@@ -135,7 +136,7 @@ public class Provider<E> {
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_UPDATE);
         queryDefine.setWhere(where);
         queryDefine.setSet(set);
-        queryDefine.setTables(table);
+        queryDefine.setTables(entityAnnotation.getDialect().getQuotedColumn(table));
         return queryDefine.toSQL();
     }
 
@@ -184,7 +185,7 @@ public class Provider<E> {
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_UPDATE);
         queryDefine.setCondition( entityAnnotation.getDialect().addWhereIfNeed(condition));
         queryDefine.setSet(set);
-        queryDefine.setTables(MapperOptionSupport.getTable(entityAnnotation,options));
+        queryDefine.setTables(entityAnnotation.getDialect().getQuotedColumn(MapperOptionSupport.getTable(entityAnnotation,options)));
         return queryDefine.toSQL();
 
     }
@@ -290,7 +291,7 @@ public class Provider<E> {
             condition = ProviderSupport.sqlConvert(condition, entityAnnotation,table);
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_DELETE);
-        queryDefine.setTables(table);
+        queryDefine.setTables(entityAnnotation.getDialect().getQuotedColumn(table));
         queryDefine.setCondition( entityAnnotation.getDialect().addWhereIfNeed(condition));
         return queryDefine.toSQL();
 
@@ -302,7 +303,7 @@ public class Provider<E> {
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         //String sql = ProviderSupport.SQL_SELECT;
         String table= MapperOptionSupport.getTable(entityAnnotation,options);
-        column = ProviderSupport.convertColumn(column, propertyColumnMap);
+        column = ProviderSupport.convertColumn(column, entityAnnotation);
         if(condition==null) condition="";
         if (condition.length() > 0) {
             condition =ProviderSupport.sqlConvert(condition, entityAnnotation,table);
@@ -310,7 +311,7 @@ public class Provider<E> {
         }
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_SELECT);
         queryDefine.setColumns(column);
-        queryDefine.setTables(table);
+        queryDefine.setTables(entityAnnotation.getDialect().getQuotedColumn(table));
         queryDefine.setCondition(entityAnnotation.getDialect().addWhereIfNeed(condition));
         return queryDefine.toSQL();
 

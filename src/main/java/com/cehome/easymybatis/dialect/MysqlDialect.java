@@ -28,4 +28,10 @@ public class MysqlDialect extends AbstractDialect {
         sb.append(" limit ? offset ? ");
         return sb.toString();
     }
+
+    @Override
+    public String getQuotedColumn(String column) {
+        if(column!=null && column.indexOf('`')>=0) return column;
+        return "`"+column+"`";
+    }
 }

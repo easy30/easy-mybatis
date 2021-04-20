@@ -10,7 +10,8 @@ import com.cehome.easymybatis.Generation;
 public class ColumnAnnotation
 {
 
-	private String name;
+	private String name;//column name
+	private String propName;//property Name;
 	private boolean insertable=true;
 	private boolean updatable=true;
 	private boolean transient_=false;
@@ -186,5 +187,13 @@ public class ColumnAnnotation
 
 	public void setGeneratorArg(String generatorArg) {
 		this.generatorArg = generatorArg;
+	}
+
+	public String getPropName() {
+		return propName;
+	}
+
+	public void setPropName(String propName) {
+		this.propName = propName;
 	}
 }

@@ -5,6 +5,7 @@ import com.cehome.easymybatis.DialectEntity;
 import com.cehome.easymybatis.MapperException;
 import com.cehome.easymybatis.UpdateOption;
 import com.cehome.easymybatis.annotation.*;
+import com.cehome.easymybatis.dialect.Dialect;
 import com.cehome.easymybatis.enums.RelatedOperator;
 import com.cehome.easymybatis.utils.*;
 import org.apache.commons.lang3.ArrayUtils;
@@ -25,6 +26,7 @@ public class ProviderSupport {
         if (prefix == null) prefix = "";
         if (prefix.length() > 0) prefix += ".";
         //Class entityClass = entity.getClass();
+        Dialect dialect=entityAnnotation.getDialect();
         Set ignoreColumnSet= MapperOptionSupport.getIgnoreColumnSet(updateOptions);
         Map<String,String> extraColVals= MapperOptionSupport.getExtraColVals(updateOptions);
         Map<String, ColumnAnnotation> columnMap= entityAnnotation.getPropertyColumnMap();
@@ -72,9 +74,9 @@ public class ProviderSupport {
             }
 
             if(valueType==1){
-                lb.append(Utils.format(" {}=#{{}}, ", columnAnnotation.getName(), prefix + prop));
+                lb.append(Utils.format(" {}=#{{}}, ", dialect.getQuotedColumn(columnAnnotation.getName()), prefix + prop));
             }else if(valueType==2){
-                lb.append(Utils.format(" {}={}, ", columnAnnotation.getName(), value));
+                lb.append(Utils.format(" {}={}, ", dialect.getQuotedColumn(columnAnnotation.getName()), value));
             }
 
         }
@@ -82,7 +84,7 @@ public class ProviderSupport {
         //-- 剩下的
         if(extraColVals!=null){
             extraColVals.forEach((k,v)->{
-                lb.append(Utils.format(" {}={}, ", ProviderSupport.convertColumn(k,columnMap), v));
+                lb.append(Utils.format(" {}={}, ", ProviderSupport.convertColumn(k,entityAnnotation), v));
             });
 
         }
@@ -129,6 +131,7 @@ public class ProviderSupport {
         if (prefix == null) prefix = "";
         if (prefix.length() > 0) prefix += ".";
         String where = "";
+        Dialect dialect=entityAnnotation.getDialect();
         List<String> props = entityAnnotation.getIdPropertyNames();
         List<String> columns = entityAnnotation.getIdColumnNames();
         if (props.size() == 0) throw new MapperException("no primary keys found");
@@ -137,11 +140,11 @@ public class ProviderSupport {
             String prop = props.get(i);
             Object value = entityAnnotation.getProperty(entity, prop);
             if (value != null) {
-                where += columns.get(i) + " = #{" + prefix+prop + "}";
+                where += dialect.getQuotedColumn(columns.get(i)) + " = #{" + prefix+prop + "}";
             } else {
                 value = entityAnnotation.getDialectParam(entity, prop);
                 if (value == null) throw new MapperException("property " + prop + " can not be null");
-                where += columns.get(i) + " = " + value;
+                where += dialect.getQuotedColumn(columns.get(i)) + " = " + value;
             }
 
 
@@ -165,14 +168,14 @@ public class ProviderSupport {
         while (rr.find()) {
             String prop = rr.group(2);
             if ("TABLE".equalsIgnoreCase(prop)) {
-                rr.replace(table);
+                rr.replace(entityAnnotation.getDialect().getQuotedColumn(table));
                 continue;
             }
             ColumnAnnotation ca = propertyColumnMap.get(prop);
             String column = null;
             if (ca != null) {
-                column = ca.getName();
-                if (rr.group().charAt(1) == '{') column = rr.group().charAt(0) + column;
+                column = entityAnnotation.getDialect().getQuotedColumn(ca.getName());
+                if (rr.group().charAt(1) == '{') column = rr.group().charAt(0) + column;//todo: what's this?
             } else {
                 column = prop;
             }
@@ -211,9 +214,9 @@ public class ProviderSupport {
 
                 ColumnAnnotation ca = propertyColumnMap.get(prop);
                 if (ca == null) {
-                    logger.warn("can't find prop {} in entity ", prop);
+                    logger.debug("can't find prop {} in entity ", prop);
                 }
-                String column = ca != null ? ca.getName() : prop;
+                String column = ca != null ? entityAnnotation.getDialect().getQuotedColumn(ca.getName()) : prop;
                 if (n == -1)
                     result += column + " ";
                 else
@@ -225,10 +228,22 @@ public class ProviderSupport {
         return result;
     }
 
-    public static String convertColumn(String propertyOrColumn, Map<String, ColumnAnnotation> propertyColumnMap) {
+    /**
+     *
+     * @param propertyOrColumn
+     * @param entityAnnotation
+     * @return column with quote
+     */
+    public static String convertColumn(String propertyOrColumn, EntityAnnotation entityAnnotation) {
         propertyOrColumn = trimBrace(propertyOrColumn);
-        ColumnAnnotation ca = propertyColumnMap.get(propertyOrColumn);
-        return (ca != null) ? ca.getName() : propertyOrColumn;
+        ColumnAnnotation ca = entityAnnotation.getPropertyColumnMap().get(propertyOrColumn);
+        if(ca!=null){
+            return entityAnnotation.getDialect().getQuotedColumn(ca.getName());
+        }
+        if(entityAnnotation.getColumnMap().containsKey(propertyOrColumn)){
+            return entityAnnotation.getDialect().getQuotedColumn(propertyOrColumn);
+        }
+        return propertyOrColumn;
     }
 
 
@@ -282,9 +297,9 @@ public class ProviderSupport {
     public static QueryDefine parseParams(EntityAnnotation entityAnnotation, Object params, String[] paramNames, int sqlType,
                                           String columns, String orderBy, String prefix,MapperOption[] mapperOptions) {
 
-
+        Dialect dialect=entityAnnotation.getDialect();
         QueryDefine queryDefine=new QueryDefine(sqlType);
-        String tables = MapperOptionSupport.getTable(entityAnnotation,mapperOptions);
+        String tables =dialect.getQuotedColumn(MapperOptionSupport.getTable(entityAnnotation,mapperOptions));
         String where="";
         String groupBy="";
 
@@ -378,7 +393,7 @@ public class ProviderSupport {
                             QueryColumn queryColumn = ObjectSupport.getAnnotation(QueryColumn.class, params.getClass(), prop);
                             if (queryColumn != null) {
                                 String propOrColumn = StringUtils.isNotBlank(queryColumn.column()) ? queryColumn.column() : prop;
-                                String column=convertColumn(propOrColumn,entityAnnotation.getPropertyColumnMap());
+                                String column=convertColumn(propOrColumn,entityAnnotation);
                                 condition = QueryColumnSupport.doQueryColumn(entityAnnotation, column, queryColumn.operator(), fullProp, value);
 
                             }
@@ -398,7 +413,7 @@ public class ProviderSupport {
                 } else { //@Deprecated 使用@QueryItem，此功能可以去掉
                     value = entityAnnotation.getDialectParam(params, prop);
                     if (value != null) {
-                        addCondition(propertyConditions,innerOperator,Utils.format(Global.SQL_EQ_DIALECT, entityAnnotation.getColumnName(prop), value));
+                        addCondition(propertyConditions,innerOperator,Utils.format(Global.SQL_EQ_DIALECT, dialect.getQuotedColumn(entityAnnotation.getColumnName(prop)), value));
                     }
                 }
                 if(needValue && value==null) throw new MapperException("property "+prop+" of params can not be null");
@@ -445,7 +460,7 @@ public class ProviderSupport {
     private static String doColumnDefault(EntityAnnotation entityAnnotation, String prop, String fullProp, Object value){
         String column=entityAnnotation.getColumnName(prop);
         if(StringUtils.isBlank(column)) throw  new MapperException("can not find column name for property "+prop+". You can use @QueryColumn on property");
-        return QueryColumnSupport.doQueryColumn(entityAnnotation, entityAnnotation.getColumnName(prop), null, fullProp, value);
+        return QueryColumnSupport.doQueryColumn(entityAnnotation, entityAnnotation.getDialect().getQuotedColumn(entityAnnotation.getColumnName(prop)), null, fullProp, value);
 
     }
 
@@ -478,11 +493,11 @@ public class ProviderSupport {
         if (props.size() == 0) throw new MapperException("primary key not found");
         if (props.size() > 1) throw new MapperException("multi primary keys not supported for GetById");
 
-        String where = columns.get(0) + " = #{" + props.get(0) + "}";
+        String where =entityAnnotation.getDialect().getQuotedColumn( columns.get(0) )+ " = #{" + props.get(0) + "}";
 
          QueryDefine queryDefine=new QueryDefine(sqlType);
         queryDefine.setColumns(select);
-        queryDefine.setTables(table);
+        queryDefine.setTables(entityAnnotation.getDialect().getQuotedColumn(table));
         queryDefine.setWhere(where);
         return queryDefine.toSQL();
 
