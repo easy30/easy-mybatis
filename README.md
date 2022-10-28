@@ -193,12 +193,12 @@ Add MapperFactory(easy-mybatis core bean).
 ```xml
 
 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-    <property name="basePackage" value="com.cehome.easymybatis"></property>
-    <property name="markerInterface" value="com.github.easymybatis.Mapper"></property>
-    <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+ <property name="basePackage" value="com.cehome.easymybatis"></property>
+ <property name="markerInterface" value="com.github.easy30.easymybatis.Mapper"></property>
+ <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
 </bean>
 
-<bean class="com.github.easymybatis.MapperFactory">
+<bean class="com.github.easy30.easymybatis.MapperFactory">
 <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
 </bean>
 

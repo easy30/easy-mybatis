@@ -4,10 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.easy-ware</groupId>
+    <groupId>com.github.easy30</groupId>
     <artifactId>easy-mybatis</artifactId>
     <version>1.1.4</version>
-    <url>https://github.com/easy-ware/easy-mybatis</url>
+    <url>https://github.com/easy30/easy-mybatis</url>
     <description>easy mybatis</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -110,9 +110,9 @@
     </developers>
 
     <scm>
-        <connection>git@github.com:easy-ware/easy-mybatis.git</connection>
-        <developerConnection>git@github.com:easy-ware/easy-mybatis.git</developerConnection>
-        <url>https://github.com/easy-ware/easy-mybatis</url>
+        <connection>git@github.com:easy30/easy-mybatis.git</connection>
+        <developerConnection>git@github.com:easy30/easy-mybatis.git</developerConnection>
+        <url>https://github.com/easy30/easy-mybatis</url>
     </scm>
 
     <profiles>

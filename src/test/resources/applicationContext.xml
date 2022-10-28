@@ -20,22 +20,22 @@
     </bean>
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource" />
-        <property name="mapperLocations" value="classpath*:com/cehome/easymybatis/sqlmap/*.xml"></property>
+        <property name="mapperLocations" value="classpath*:com/github/easy30/easymybatis/sqlmap/*.xml"></property>
     </bean>
     <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
     </bean>
 
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.cehome.easymybatis"></property>
-        <property name="markerInterface" value="com.github.easymybatis.Mapper"></property>
+        <property name="basePackage" value="com.github.easy30.easymybatis"></property>
+        <property name="markerInterface" value="com.github.easy30.easymybatis.Mapper"></property>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
     </bean>
 
-    <bean   class="com.github.easymybatis.MapperFactory" >
+    <bean   class="com.github.easy30.easymybatis.MapperFactory" >
         <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
     </bean>
 
-    <bean class="com.github.easymybatis.generation.UUIDGeneration" ></bean>
+    <bean class="com.github.easy30.easymybatis.generation.UUIDGeneration" ></bean>
 
 </beans>
