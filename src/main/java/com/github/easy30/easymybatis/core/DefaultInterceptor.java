@@ -2,6 +2,7 @@ package com.github.easy30.easymybatis.core;
 
 import com.github.easy30.easymybatis.ListPage;
 import com.github.easy30.easymybatis.Page;
+import com.github.easy30.easymybatis.PageContext;
 import com.github.easy30.easymybatis.annotation.LimitOne;
 import com.github.easy30.easymybatis.dialect.Dialect;
 import com.github.easy30.easymybatis.Const;
@@ -72,10 +73,11 @@ public class DefaultInterceptor implements Interceptor {
         if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
 
             Page page = getPage(args[1]);
-            boolean returnFirst= isReturnFirst(statement);
+            Page contextPage=PageContext.get();
+            boolean limitOne= isLimitOne(statement);
 
             //-- do with page  or  limit 1
-            if (page != null || returnFirst) {
+            if (page != null || contextPage!=null || limitOne) {
                 try {
                     // -- avoid recursively invoke :executor.query
                     inPage.set(true);
@@ -93,10 +95,15 @@ public class DefaultInterceptor implements Interceptor {
                     // fix "mybatis Expected one result (or null) to be returned by selectOne()"
                     // If method getByParams() ,getValueByParams() has more than one records , return the first one.
                     //@see org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne(java.lang.String, java.lang.Object)
-                    if(returnFirst && page==null){
-                        page=new Page(1,1);
+                    if(page==null){
+                        if(contextPage!=null){
+                            page=contextPage;
+                        }else { //limitOne
+                            page=new Page(1,1);
+                        }
                         pageBoundSql.setAdditionalParameter(Const.PAGE,page);
                     }
+
 
                     copyAdditionalParameter(boundSql,pageBoundSql);
                     CacheKey cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, pageBoundSql);
@@ -114,7 +121,7 @@ public class DefaultInterceptor implements Interceptor {
                         page.setPageCount(total == 0 ? 0 : (total - 1) / page.getPageSize() + 1);
                     }
 
-                    if(returnFirst && list != null && list.size() > 1 ){
+                    if(limitOne && list != null && list.size() > 1 ){
                         list= list.subList(0, 1);
                     }
                     ListPage result=new ListPage(page.getPageIndex(),page.getPageSize());
@@ -125,6 +132,7 @@ public class DefaultInterceptor implements Interceptor {
                     return result;
 
                 } finally {
+                    if(contextPage!=null) PageContext.remove();
                     inPage.remove();
                 }
             }else{
@@ -202,7 +210,7 @@ public class DefaultInterceptor implements Interceptor {
         return page;
     }
 
-    private boolean isReturnFirst(MappedStatement statement) {
+    private boolean isLimitOne(MappedStatement statement) {
         Method m = getMethod(statement.getId());
         LimitOne limitOne = m.getAnnotation(LimitOne.class);
         return limitOne != null;
