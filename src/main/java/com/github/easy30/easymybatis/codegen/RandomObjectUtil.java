@@ -146,7 +146,7 @@ public class RandomObjectUtil {
                 }
             }
             //如果是List类型
-            else if (fields[i].getType().isAssignableFrom(List.class)) {
+            else if (List.class.isAssignableFrom(fields[i].getType())) {
                 //获取泛型
                 Type type = fields[i].getGenericType();
                 //如果不是泛型，不做处理
@@ -179,7 +179,7 @@ public class RandomObjectUtil {
                 }
             }
             //如果是Map类型
-            else if(fields[i].getType().isAssignableFrom(Map.class)){
+            else if(Map.class.isAssignableFrom(fields[i].getType())){
                 //获取泛型
                 Type types = fields[i].getGenericType();
                 //如果不是泛型的话则不处理

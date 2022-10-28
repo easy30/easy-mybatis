@@ -33,7 +33,7 @@ public class Page<E> implements Serializable {
     private int pageCount;
 
 
-    private List<E> data;
+    protected List<E> data;
 
     private boolean queryCount=true;
 

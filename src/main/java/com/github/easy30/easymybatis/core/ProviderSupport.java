@@ -6,7 +6,7 @@ import com.github.easy30.easymybatis.MapperException;
 import com.github.easy30.easymybatis.UpdateOption;
 import com.github.easy30.easymybatis.annotation.Query;
 import com.github.easy30.easymybatis.annotation.QueryColumn;
-import com.github.easy30.easymybatis.annotation.QueryItem;
+import com.github.easy30.easymybatis.annotation.QueryExp;
 import com.github.easy30.easymybatis.dialect.Dialect;
 import com.github.easy30.easymybatis.enums.RelatedOperator;
 import com.github.easy30.easymybatis.utils.*;
@@ -23,7 +23,7 @@ import java.util.*;
 public class ProviderSupport {
     private static Logger logger = LoggerFactory.getLogger(ProviderSupport.class);
     //public static String SQL_SELECT_KEY = "<selectKey keyProperty='{}' resultType='{}' order='{}'>{}</selectKey>";
-    public static String sqlSetValues(Object entity, EntityAnnotation entityAnnotation, String prefix, UpdateOption[] updateOptions) {
+    public static String sqlSetValues(Object entity, EntityAnnotation entityAnnotation, String prefix, UpdateOption updateOptions) {
         LineBuilder lb = new LineBuilder();
         if (prefix == null) prefix = "";
         if (prefix.length() > 0) prefix += ".";
@@ -249,7 +249,7 @@ public class ProviderSupport {
     }
 
 
-    public static String sqlComplete(String sql, EntityAnnotation entityAnnotation,MapperOption[] options) {
+    public static String sqlComplete(String sql, EntityAnnotation entityAnnotation,MapperOption options) {
         if (sql == null) sql = "";
         String sql2 = sql.length() == 0 ? "" : sql.trim().toLowerCase();
         if (Utils.startWithTokens(sql2,"select")) {
@@ -297,7 +297,7 @@ public class ProviderSupport {
     }
 
     public static QueryDefine parseParams(EntityAnnotation entityAnnotation, Object params, String[] paramNames, int sqlType,
-                                          String columns, String orderBy, String prefix,MapperOption[] mapperOptions) {
+                                          String columns, String orderBy, String prefix,MapperOption mapperOptions) {
 
         Dialect dialect=entityAnnotation.getDialect();
         QueryDefine queryDefine=new QueryDefine(sqlType);
@@ -375,17 +375,17 @@ public class ProviderSupport {
                     } else { // object params
                         String condition = "";
 
-                        QueryItem queryItem = ObjectSupport.getAnnotation(QueryItem.class, params.getClass(), prop);
+                        QueryExp queryExp = ObjectSupport.getAnnotation(QueryExp.class, params.getClass(), prop);
                         //-- use queryItem
-                        if (queryItem != null) {
-                            if(queryItem.ignore()) {
+                        if (queryExp != null) {
+                            if(queryExp.ignore()) {
                                 continue;
                             }
-                            String queryItemValue=Utils.toString(queryItem.value(), System.lineSeparator(), null);
+                            String queryItemValue=Utils.toString(queryExp.value(), System.lineSeparator(), null);
                             if(StringUtils.isBlank(queryItemValue)){
                                 condition =doColumnDefault( entityAnnotation, prop, fullProp, value);
                             }else{
-                                condition = sqlConvert(Utils.toString(queryItem.value(), System.lineSeparator(), null), entityAnnotation,tables);
+                                condition = sqlConvert(Utils.toString(queryExp.value(), System.lineSeparator(), null), entityAnnotation,tables);
                             }
 
 
@@ -471,7 +471,7 @@ public class ProviderSupport {
     }
 
 
-    public static String sqlByParams(EntityAnnotation entityAnnotation, Object params, String[] paramNames,int sqlType, String columns, String orderBy, String prefix,MapperOption[] mapperOptions) {
+    public static String sqlByParams(EntityAnnotation entityAnnotation, Object params, String[] paramNames,int sqlType, String columns, String orderBy, String prefix,MapperOption mapperOptions) {
 
         QueryDefine define = parseParams(entityAnnotation, params,paramNames, sqlType, columns, orderBy, prefix,mapperOptions);
         String sql= define.toSQL();

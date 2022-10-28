@@ -116,7 +116,7 @@ public class MapperTest {
         user.setName(name);
         user.setAge(age);
         user.setRealName(realName);
-        userMapper.insert(user);
+        userMapper.insert(user,null);
         return user;
     }
 
@@ -135,14 +135,14 @@ public class MapperTest {
         user.setAge(20);
         user.setRealName("mike");
         user.setId(100L);
-        userMapper.insert(user);
+        userMapper.insert(user,null);
         Long id = user.getId(); //return 100
 
         //-- update user set real_name='michael' where id=100
         user = new User();
         user.setRealName("michael");
         user.setId(100L);
-        userMapper.update(user);
+        userMapper.update(user,null);
 
         //-- update user set real_name='tom where id=100 and age=20
         user = new User();
@@ -150,30 +150,30 @@ public class MapperTest {
         User params = new User();
         params.setId(100L);
         params.setAge(20);
-        userMapper.updateByParams(user, params,"id,age");
+        userMapper.updateByParams(user, params,"id,age",null);
 
         //-- delete from user where id=100
-        userMapper.deleteById(100L);
+        userMapper.deleteById(100L,null);
 
 
         //-- select one: select * from user where id=100
-        user= userMapper.getById(id,null);
+        user= userMapper.get(id,null,null);
 
         //-- select one: select * from user where real_name='tom'
         params=new User();
         params.setRealName("tom");
-        user= userMapper.getByParams(params,null,null);
+        user= userMapper.getByParams(params,null,null,null);
 
         //-- list: select name,real_name from user where age=20
         params=new User();
         params.setAge(20);
-        List<UserDto> list= userMapper.listByParams(params,null,"name,realName");
+        List<UserDto> list= userMapper.listByParams(params,null,"name,realName",null);
 
         //-- page: select name,real_name from user where age=20 order by name asc limit 0,20
         params=new User();
         params.setAge(20);
         Page<User> page=new Page(1,20);
-        userMapper.pageByParams(params,page,"name asc","name,realName");
+        userMapper.pageByParams(params,page,"name asc","name,realName",null);
         System.out.println(page.getData());
 
     }
@@ -183,7 +183,7 @@ public class MapperTest {
         user.setName("updateById");
         user.setId(id);
         //user.setValue("createTime","now()");
-        Assert.assertEquals(1, userMapper.update(user));
+        Assert.assertEquals(1, userMapper.update(user,null));
     }
 
     @Test
@@ -193,28 +193,28 @@ public class MapperTest {
 
         user.setRealName("tom");
         user.setName("mike");
-        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age"));
-        User user2=userMapper.getById(params.getId(),null);
+        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age",null));
+        User user2=userMapper.get(params.getId(),null,null);
         Assert.assertEquals("tom",user2.getRealName());
         Assert.assertEquals("mike",user2.getName());
 
         logger.info("ignore realName");
         user.setRealName("tom2");
         user.setName("mike2");
-        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age", UpdateOption.builder().ignoreColumns("realName").build()));
-        user2=userMapper.getById(params.getId(),null);
+        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age", UpdateOption.create().ignoreColumns("realName")));
+        user2=userMapper.get(params.getId(),null,null);
         Assert.assertEquals("tom",user2.getRealName());
         Assert.assertEquals("mike2",user2.getName());
 
         logger.info("extra fields");
         user.setRealName("tom3");
         user.setName("mike3");
-        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age", UpdateOption.builder().addColumnValues("realName","'tom4'").build()));
-        user2=userMapper.getById(params.getId(),null);
+        Assert.assertEquals(1,  userMapper.updateByParams(user, params,"id,age", UpdateOption.create().columnAndValues("realName","'tom4'")));
+        user2=userMapper.get(params.getId(),null,null);
         Assert.assertEquals("tom4",user2.getRealName());
         Assert.assertEquals("mike3",user2.getName());
 
-        Assert.assertEquals(1,  userMapper.deleteByParams(params,"id,age"));
+        Assert.assertEquals(1,  userMapper.deleteByParams(params,"id,age",null));
 
     }
 
@@ -230,7 +230,7 @@ public class MapperTest {
         map.put("id",id);
         map.put("realName",realName);
 
-        int row= userMapper.updateByCondition(user,where,map);
+        int row= userMapper.updateByCondition(user,where,map,null);
         System.out.println(row);
 
     }
@@ -242,7 +242,7 @@ public class MapperTest {
 
     }
     private void deleteById(Long id)   {
-        Assert.assertEquals(1, userMapper.deleteById(id));
+        Assert.assertEquals(1, userMapper.deleteById(id,null));
 
     }
 
@@ -255,7 +255,7 @@ public class MapperTest {
         map.put("name",name);
         map.put("realName",realName);
 
-        int row= userMapper.deleteByCondition(where,map);
+        int row= userMapper.deleteByCondition(where,map,null);
         Assert.assertEquals(1,row);
 
     }
@@ -263,11 +263,11 @@ public class MapperTest {
     @Test
     public void deleteByParams(){
         User params=doInsert();
-        Assert.assertEquals(1,userMapper.deleteByParams( params,"id,age"));
+        Assert.assertEquals(1,userMapper.deleteByParams( params,"id,age",null));
     }
 
     private void setId(){
-        id = userMapper.getValueByCondition( null, null,"max(id)");
+        id = userMapper.getValueByCondition( null, null,"max(id)",null);
     }
 
 
@@ -283,7 +283,7 @@ public class MapperTest {
     public void getByParams()   {
         User params=new User();
         params.setId(id);
-        User user= userMapper.getByParams(params,"id desc",null);
+        User user= userMapper.getByParams(params,"id desc",null,null);
         verify(user,id);
 
     }
@@ -294,13 +294,13 @@ public class MapperTest {
         User user2=doInsert();
         User params=new User();
         params.setAge(age);
-        User user= userMapper.getByParams(params,"id desc",null);
+        User user= userMapper.getByParams(params,"id desc",null,null);
         verify(user,user2.getId());
-        userMapper.deleteById(user1.getId());
-        userMapper.deleteById(user2.getId());
+        userMapper.deleteById(user1.getId(),null);
+        userMapper.deleteById(user2.getId(),null);
 
         params.setAge(1024);
-        user= userMapper.getByParams(params,"id desc",null);
+        user= userMapper.getByParams(params,"id desc",null,null);
         Assert.assertNull(user);
 
 
@@ -317,7 +317,7 @@ public class MapperTest {
     public void getById()   {
         //System.out.println(dataSource.getConnection().getMetaData().getURL());
 
-        User user= userMapper.getById(id,null);
+        User user= userMapper.get(id,null,null);
         verify(user,id);
     }
 
@@ -327,7 +327,7 @@ public class MapperTest {
     public void getValueByParams()   {
         User params=new User();
         params.setId(id);
-        Object value= userMapper.getValueByParams(params,null,null);//"name");
+        Object value= userMapper.getValueByParams(params,null,null,null);//"name");
         System.out.println(JSON.toJSONString(value));
         Assert.assertNotNull(value);
 
@@ -338,22 +338,22 @@ public class MapperTest {
 
         User params = new User();
         params.setId(id);
-        Object value = userMapper.getValueByCondition("{id}=#{id}", params, "name");
+        Object value = userMapper.getValueByCondition("{id}=#{id}", params, "name",null);
         System.out.println(JSON.toJSONString(value));
         Assert.assertNotNull(value);
 
-        value = userMapper.getValueByCondition("where {id}=#{id}", params, "name");
+        value = userMapper.getValueByCondition("where {id}=#{id}", params, "name",null);
         System.out.println(JSON.toJSONString(value));
         Assert.assertNotNull(value);
-        value = userMapper.getValueByCondition("order by id desc", null, "name");
+        value = userMapper.getValueByCondition("order by id desc", null, "name",null);
         Assert.assertNotNull(value);
-        value = userMapper.getValueByCondition("ORDER by id desc", null, "name");
+        value = userMapper.getValueByCondition("ORDER by id desc", null, "name",null);
         Assert.assertNotNull(value);
-        value = userMapper.getValueByCondition("group by id order by id desc", null, "name");
+        value = userMapper.getValueByCondition("group by id order by id desc", null, "name",null);
         Assert.assertNotNull(value);
-        value = userMapper.getValueByCondition(null, null, "name");
+        value = userMapper.getValueByCondition(null, null, "name",null);
         Assert.assertNotNull(value);
-        value = userMapper.getValueByCondition("", null, "name");
+        value = userMapper.getValueByCondition("", null, "name",null);
         Assert.assertNotNull(value);
 
     }
@@ -362,7 +362,7 @@ public class MapperTest {
     public void listByParams()   {
         User params=new User();
         params.setAge(age);
-        List<UserDto> list= userMapper.listByParams(params," name asc, createTime desc","age,createTime");
+        List<UserDto> list= userMapper.listByParams(params," name asc, createTime desc","age,createTime",null);
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
 
@@ -373,8 +373,8 @@ public class MapperTest {
 
         Page<User> page=new Page(1,3);
         List<UserDto> list=null;
-        list= userMapper.pageByParams(null,page," name asc, createTime desc","age,createTime");
-        list= userMapper.pageByParams(new User(),page," name asc, createTime desc","age,createTime");
+        list= userMapper.pageByParams(null,page," name asc, createTime desc","age,createTime",null);
+        list= userMapper.pageByParams(new User(),page," name asc, createTime desc","age,createTime",null);
 
     }
 
@@ -384,7 +384,7 @@ public class MapperTest {
         User params=new User();
         params.setAge(age);
         Page<User> page=new Page(1,3);
-        List<UserDto> list= userMapper.pageByParams(params,page," name asc, createTime desc","age,createTime");
+        List<UserDto> list= userMapper.pageByParams(params,page," name asc, createTime desc","age,createTime",null);
         System.out.println(page.getData().size()+"\r\n"+JSON.toJSONString(page));
         Assert.assertTrue(page.getData().size()>0);
 
@@ -400,7 +400,7 @@ public class MapperTest {
         UserParams2 params=new UserParams2();
         params.setIds(ids.toArray(new Long[0]));
         Page page=new Page(1,2);
-        userMapper.pageByParams(params,page,"id",null);
+        userMapper.pageByParams(params,page,"id",null,null);
         Assert.assertEquals(2,page.getData().size());
 
     }
@@ -441,7 +441,7 @@ public class MapperTest {
     public void listByParams2()   {
         UserParams params=new UserParams();
         params.setAge(age);
-        List<UserDto> list= userMapper.listByParams(params," name asc, createTime desc","age,createTime");
+        List<UserDto> list= userMapper.listByParams(params," name asc, createTime desc","age,createTime",null);
         System.out.println(list.size()+"\r\n"+JSON.toJSONString(list));
         Assert.assertTrue(list.size()>0);
 
@@ -451,21 +451,21 @@ public class MapperTest {
     public void queryItem(){
         insert();
         try {
-            User user = userMapper.getById(id, null);
+            User user = userMapper.get(id, null,null);
             System.out.println(id+","+user.getCreateTime());
             UserParams2 params = new UserParams2();
             params.setId(id);
             params.setCreateTimeStart(user.getCreateTime());
-            User user1 = userMapper.getByParams(params, "id desc", null);
+            User user1 = userMapper.getByParams(params, "id desc", null,null);
             Assert.assertEquals(id,user1.getId());
 
             params = new UserParams2();
             params.setCreateTimeStart2(user.getCreateTime());
-            Assert.assertNull(userMapper.getByParams(params, null, null));
+            Assert.assertNull(userMapper.getByParams(params, null, null,null));
 
             params = new UserParams2();
             params.setCreateTimeEnd(user.getCreateTime());
-            User user2 = userMapper.getByParams(params, "id desc", null);
+            User user2 = userMapper.getByParams(params, "id desc", null,null);
             Assert.assertEquals(id,user2.getId());
 
         }finally {
@@ -485,10 +485,10 @@ public class MapperTest {
         UserParams2 params=new UserParams2();
         params.setIds(ids.toArray(new Long[0]));
         Page page=new Page(1,2);
-        userMapper.pageByParams(params,page,"id",null);
+        userMapper.pageByParams(params,page,"id",null,null);
         Assert.assertEquals(2,page.getData().size());
 
-        List<UserDto> list= userMapper.listByParams(params,"id",null);
+        List<UserDto> list= userMapper.listByParams(params,"id",null,null);
         Assert.assertEquals(2,list.size());
         Assert.assertEquals(list.get(0).getId(),ids.get(0));
         Assert.assertEquals(list.get(1).getId(),ids.get(1));
@@ -496,7 +496,7 @@ public class MapperTest {
         params=new UserParams2();
         params.setIdBetween(ids.toArray(new Long[0]));
         params.setNameNull(false);
-        list= userMapper.listByParams(params,"id",null);
+        list= userMapper.listByParams(params,"id",null,null);
         Assert.assertEquals(2,list.size());
         Assert.assertEquals(list.get(0).getId(),ids.get(0));
         Assert.assertEquals(list.get(1).getId(),ids.get(1));
@@ -508,22 +508,22 @@ public class MapperTest {
     public void queryColumnRange(){
         User user1=createUser();
         user1.setAge(80);
-        userMapper.insert(user1);
+        userMapper.insert(user1,null);
 
         User user2=createUser();
         user2.setAge(90);
-        userMapper.insert(user2);
+        userMapper.insert(user2,null);
         try {
             UserParams2 userParams2 = new UserParams2();
             Range range = Range.inRange(70, 95, true, true);
             userParams2.setAgeRange(range);
 
-            long count = userMapper.getValueByParams(userParams2, null, "count(*)");
+            long count = userMapper.getValueByParams(userParams2, null, "count(*)",null);
             Assert.assertEquals(2,count);
 
         }finally {
-            userMapper.deleteById(user1.getId());
-            userMapper.deleteById(user2.getId());
+            userMapper.deleteById(user1.getId(),null);
+            userMapper.deleteById(user2.getId(),null);
         }
 
 
@@ -537,7 +537,7 @@ public class MapperTest {
         //params.setAge(20);
         params.setNameSuffix("%mer");
         Page<User> page=new Page(1,3);
-        List<UserDto> list= userMapper.pageByParams(params,page," name asc, createTime desc","age,createTime");
+        List<UserDto> list= userMapper.pageByParams(params,page," name asc, createTime desc","age,createTime",null);
         System.out.println(page.getData().size()+"\r\n"+JSON.toJSONString(page));
         Assert.assertTrue(page.getData().size()>0);
 
@@ -547,11 +547,11 @@ public class MapperTest {
     public void listWithXml()   {
         User user1=createUser();
         user1.setName("ma"+System.currentTimeMillis());
-        userMapper.insert(user1);
+        userMapper.insert(user1,null);
         List<User> list=userMapper.listWithXml(age,user1.getName());
         Assert.assertEquals(1,list.size());
         Assert.assertEquals(user1.getName(),list.get(0).getName());
-        userMapper.deleteById(user1.getId());
+        userMapper.deleteById(user1.getId(),null);
 
     }
     @Test
@@ -559,12 +559,12 @@ public class MapperTest {
         userMapper.inserts();
     }
 
-    @Test
+   /* @Test
     public void listsql(){
         Map map=new HashMap();
         map.put("@@sql"," select * from ${u}");
         map.put("u","user");
         System.out.println( JSON.toJSONString( userMapper.list(map),true));
-    }
+    }*/
 
 }

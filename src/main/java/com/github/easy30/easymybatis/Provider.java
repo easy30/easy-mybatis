@@ -20,7 +20,7 @@ import java.util.Set;
  **/
 public class Provider<E> {
     private static Logger logger = LoggerFactory.getLogger(Provider.class);
-    public String insert(ProviderContext context,@Param(Const.ENTITY) E entity,@Param(Const.OPTIONS) UpdateOption... options) {
+    public String insert(ProviderContext context,@Param(Const.ENTITY) E entity,@Param(Const.OPTIONS) UpdateOption option) {
         //Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         Dialect dialect=entityAnnotation.getDialect();
@@ -37,9 +37,9 @@ public class Provider<E> {
         StringBuilder valueBuilder = new StringBuilder();
         Map<String, ColumnAnnotation> columnMap = entityAnnotation.getPropertyColumnMap();
 
-        Set ignoreColumnSet= MapperOptionSupport.getIgnoreColumnSet(options);
-        Map<String,String> extraColVals= MapperOptionSupport.getExtraColVals(options);
-        String table= MapperOptionSupport.getTable(entityAnnotation,options);
+        Set ignoreColumnSet= MapperOptionSupport.getIgnoreColumnSet(option);
+        Map<String,String> extraColVals= MapperOptionSupport.getExtraColVals(option);
+        String table= MapperOptionSupport.getTable(entityAnnotation,option);
 
         for (Map.Entry<String, ColumnAnnotation> e : columnMap.entrySet()) {
 
@@ -129,12 +129,12 @@ public class Provider<E> {
         return result;
     }
 
-    public String update(ProviderContext context,@Param(Const.ENTITY)E entity,@Param(Const.OPTIONS) UpdateOption... options) {
+    public String update(ProviderContext context,@Param(Const.ENTITY)E entity,@Param(Const.OPTIONS) UpdateOption option) {
         if (entity == null) throw new RuntimeException("entity can not be null");
         //Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-        String table= MapperOptionSupport.getTable(entityAnnotation,options);
-        String set = ProviderSupport.sqlSetValues(entity, entityAnnotation,Const.ENTITY,options);
+        String table= MapperOptionSupport.getTable(entityAnnotation,option);
+        String set = ProviderSupport.sqlSetValues(entity, entityAnnotation,Const.ENTITY,option);
         String where= ProviderSupport.sqlWhereById(entity, entityAnnotation,Const.ENTITY);
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_UPDATE);
         queryDefine.setWhere(where);
@@ -151,7 +151,7 @@ public class Provider<E> {
     }*/
 
     public String updateByParams(ProviderContext context,@Param(Const.ENTITY) E entity, @Param(Const.PARAMS) Object params,
-                                 @Param(Const.PARAM_NAEMS) String paramNames,@Param(Const.OPTIONS) UpdateOption... options) {
+                                 @Param(Const.PARAM_NAEMS) String paramNames,@Param(Const.OPTIONS) UpdateOption option) {
         if(StringUtils.isBlank(paramNames)) throw new MapperException("paramNames can not be empty");
         //Class entityClass = entity.getClass();
         if (entity == null || params == null) throw new RuntimeException("entity or params can not be null");
@@ -159,10 +159,10 @@ public class Provider<E> {
 
         //String sql = ProviderSupport.SQL_UPDATE;
 
-        String set = ProviderSupport.sqlSetValues(entity, entityAnnotation,Const.ENTITY,options);
+        String set = ProviderSupport.sqlSetValues(entity, entityAnnotation,Const.ENTITY,option);
 
 
-        QueryDefine result= ProviderSupport.parseParams(entityAnnotation,params, paramNames.split("[,\\s]+"),Global.SQL_TYPE_UPDATE,"",null,Const.PARAMS ,options);
+        QueryDefine result= ProviderSupport.parseParams(entityAnnotation,params, paramNames.split("[,\\s]+"),Global.SQL_TYPE_UPDATE,"",null,Const.PARAMS ,option);
         result.setSet(set);
         return result.toSQL();
 
@@ -170,14 +170,14 @@ public class Provider<E> {
 
 
     public String updateByCondition(ProviderContext context,@Param(Const.ENTITY) E entity, @Param(Const.CONDITION) String condition,
-                                    @Param(Const.PARAMS) Object params,@Param(Const.OPTIONS) UpdateOption... options) {
+                                    @Param(Const.PARAMS) Object params,@Param(Const.OPTIONS) UpdateOption option) {
 
         //Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
 
         //Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
-        String set = ProviderSupport.sqlSetValues(entity,entityAnnotation, Const.ENTITY,options);
-        String table= MapperOptionSupport.getTable(entityAnnotation,options);
+        String set = ProviderSupport.sqlSetValues(entity,entityAnnotation, Const.ENTITY,option);
+        String table= MapperOptionSupport.getTable(entityAnnotation,option);
         if (StringUtils.isBlank(condition))
             throw new RuntimeException("because of safety, where condition can not be blank. (set where to * for updating all records)");
         if (condition.equals("*")) condition = "";//update all
@@ -188,15 +188,15 @@ public class Provider<E> {
         QueryDefine queryDefine=new QueryDefine(Global.SQL_TYPE_UPDATE);
         queryDefine.setCondition( entityAnnotation.getDialect().addWhereIfNeed(condition));
         queryDefine.setSet(set);
-        queryDefine.setTables(entityAnnotation.getDialect().getQuotedColumn(MapperOptionSupport.getTable(entityAnnotation,options)));
+        queryDefine.setTables(entityAnnotation.getDialect().getQuotedColumn(MapperOptionSupport.getTable(entityAnnotation,option)));
         return queryDefine.toSQL();
 
     }
 
 
-    public String getById(ProviderContext context, @Param(Const.ID) Object id, @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options) {
+    public String get(ProviderContext context, @Param(Const.ID) Object id, @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption option) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-        String table= MapperOptionSupport.getTable(entityAnnotation,options);
+        String table= MapperOptionSupport.getTable(entityAnnotation,option);
         if (StringUtils.isBlank(selectColumns)) {
             selectColumns = "*";
         } else {
@@ -207,9 +207,9 @@ public class Provider<E> {
         return ProviderSupport.sqlById(entityAnnotation, id, Global.SQL_TYPE_SELECT, selectColumns,table);
     }
 
-    public String deleteById(ProviderContext context, @Param(Const.ID)Object id,@Param(Const.OPTIONS)DeleteOption... options) {
+    public String deleteById(ProviderContext context, @Param(Const.ID)Object id,@Param(Const.OPTIONS)DeleteOption option) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-        String table= MapperOptionSupport.getTable(entityAnnotation,options);
+        String table= MapperOptionSupport.getTable(entityAnnotation,option);
         return ProviderSupport.sqlById(entityAnnotation, id, Global.SQL_TYPE_DELETE, "",table);
     }
 
@@ -226,7 +226,7 @@ public class Provider<E> {
     }*/
 
     public String getByParams(ProviderContext context,@Param(Const.PARAMS) Object params, @Param(Const.ORDER) String orderBy,
-                              @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options) {
+                              @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption option) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         /*if (StringUtils.isBlank(selectColumns)) {
             selectColumns = "*";
@@ -235,24 +235,24 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertColumns(selectColumns, entityAnnotation.getPropertyColumnMap());
 
         }*/
-        return ProviderSupport.sqlByParams(entityAnnotation,params,null, Global.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS,options);
+        return ProviderSupport.sqlByParams(entityAnnotation,params,null, Global.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS,option);
 
     }
 
     public String getValueByParams(ProviderContext context,@Param(Const.PARAMS) Object params,  @Param(Const.ORDER) String orderBy,
-                                   @Param(Const.COLUMN) String column,@Param(Const.OPTIONS) SelectOption... options) {
+                                   @Param(Const.COLUMN) String column,@Param(Const.OPTIONS) SelectOption option) {
         //Class entityClass = params.getClass();
         EntityAnnotation entityAnnotation =  EntityAnnotation.getInstanceByMapper(context.getMapperType());
         //Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
       /*  if (StringUtils.isBlank(column)) {
             column = "*";
         }*/
-        return ProviderSupport.sqlByParams(entityAnnotation,params,null, Global.SQL_TYPE_SELECT, column, orderBy, Const.PARAMS,options);
+        return ProviderSupport.sqlByParams(entityAnnotation,params,null, Global.SQL_TYPE_SELECT, column, orderBy, Const.PARAMS,option);
 
     }
 
     public String listByParams(ProviderContext context,@Param(Const.PARAMS) Object params, @Param(Const.ORDER) String orderBy,
-                               @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options) {
+                               @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption option) {
         //Class entityClass = params.getClass();
         EntityAnnotation entityAnnotation =  EntityAnnotation.getInstanceByMapper(context.getMapperType());
         //Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
@@ -262,32 +262,32 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertColumns(selectColumns, propertyColumnMap);
         }*/
 
-        return ProviderSupport.sqlByParams(entityAnnotation,params, null, Global.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS,options);
+        return ProviderSupport.sqlByParams(entityAnnotation,params, null, Global.SQL_TYPE_SELECT, selectColumns, orderBy, Const.PARAMS,option);
 
     }
 
     public String pageByParams(ProviderContext context,@Param(Const.PARAMS) Object params, @Param(Const.PAGE) Page page,
-                               @Param(Const.ORDER) String orderBy, @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options) {
-        return listByParams(context,params, orderBy, selectColumns);
+                               @Param(Const.ORDER) String orderBy, @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption option) {
+        return listByParams(context,params, orderBy, selectColumns,option);
 
     }
 
-    public String deleteByParams(ProviderContext context, @Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String paramNames,@Param(Const.OPTIONS)DeleteOption... options) {
+    public String deleteByParams(ProviderContext context, @Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String paramNames,@Param(Const.OPTIONS)DeleteOption option) {
         if(StringUtils.isBlank(paramNames)) throw new MapperException("paramNames can not be empty");
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
-        return ProviderSupport.sqlByParams(entityAnnotation,params,paramNames.split("[,\\s]+"), Global.SQL_TYPE_DELETE, "", null,  Const.PARAMS,options);
+        return ProviderSupport.sqlByParams(entityAnnotation,params,paramNames.split("[,\\s]+"), Global.SQL_TYPE_DELETE, "", null,  Const.PARAMS,option);
 
     }
 
 
     public String deleteByCondition(ProviderContext context,
-                                    @Param(Const.CONDITION) String condition, @Param(Const.PARAMS) Object params,@Param(Const.OPTIONS)DeleteOption... options) {
+                                    @Param(Const.CONDITION) String condition, @Param(Const.PARAMS) Object params,@Param(Const.OPTIONS)DeleteOption option) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
 
         if (StringUtils.isBlank(condition))
             throw new RuntimeException("For safety, WHERE condition can not be blank. (set condition to * for deleting all records)");
-        String table= MapperOptionSupport.getTable(entityAnnotation,options);
+        String table= MapperOptionSupport.getTable(entityAnnotation,option);
 
         if (condition.equals("*")) condition = "";
         if (condition != null && condition.length() > 0) {
@@ -301,11 +301,11 @@ public class Provider<E> {
     }
 
     public String getValueByCondition(ProviderContext context, @Param(Const.CONDITION) String condition, @Param(Const.PARAMS) Object params,
-                                      @Param(Const.COLUMN) String column,@Param(Const.OPTIONS)SelectOption... options) {
+                                      @Param(Const.COLUMN) String column,@Param(Const.OPTIONS)SelectOption option) {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         //String sql = ProviderSupport.SQL_SELECT;
-        String table= MapperOptionSupport.getTable(entityAnnotation,options);
+        String table= MapperOptionSupport.getTable(entityAnnotation,option);
         column = ProviderSupport.convertColumn(column, entityAnnotation);
         if(condition==null) condition="";
         if (condition.length() > 0) {
@@ -350,7 +350,7 @@ public class Provider<E> {
         return listBySQL(context, sql, params);
     }
 
-    public String  list(Map params){
+   /* public String  list(Map params){
         return params.get("@@sql").toString();
-    }
+    }*/
 }

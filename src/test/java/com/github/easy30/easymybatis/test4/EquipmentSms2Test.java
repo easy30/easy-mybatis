@@ -24,7 +24,7 @@ public class EquipmentSms2Test  {
     public void add(){
         EquipmentSms2 equipmentSms2=new EquipmentSms2();
         RandomObjectUtil.initObject(equipmentSms2,"id");
-        id=equipmentSms2Mapper.insert(equipmentSms2);
+        id=equipmentSms2Mapper.insert(equipmentSms2,null);
         System.out.println(equipmentSms2.getId());
 
     }

@@ -1,7 +1,8 @@
 package com.github.easy30.easymybatis.core;
 
+import com.github.easy30.easymybatis.ListPage;
 import com.github.easy30.easymybatis.Page;
-import com.github.easy30.easymybatis.annotation.ReturnFirst;
+import com.github.easy30.easymybatis.annotation.LimitOne;
 import com.github.easy30.easymybatis.dialect.Dialect;
 import com.github.easy30.easymybatis.Const;
 import com.github.easy30.easymybatis.utils.Utils;
@@ -66,12 +67,15 @@ public class DefaultInterceptor implements Interceptor {
         MappedStatement statement = (MappedStatement) args[0];
 
         Method m = getMethod(statement.getId());
+
         // -- do with select
         if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
 
             Page page = getPage(args[1]);
-            //-- do with page
-            if (page != null) {
+            boolean returnFirst= isReturnFirst(statement);
+
+            //-- do with page  or  limit 1
+            if (page != null || returnFirst) {
                 try {
                     // -- avoid recursively invoke :executor.query
                     inPage.set(true);
@@ -86,6 +90,14 @@ public class DefaultInterceptor implements Interceptor {
                     List<ParameterMapping> pms = dialect.getPageParameterMapping(statement.getConfiguration(), boundSql.getParameterMappings());
 
                     BoundSql pageBoundSql = new BoundSql(statement.getConfiguration(), pageSql, pms, parameterObject);
+                    // fix "mybatis Expected one result (or null) to be returned by selectOne()"
+                    // If method getByParams() ,getValueByParams() has more than one records , return the first one.
+                    //@see org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne(java.lang.String, java.lang.Object)
+                    if(returnFirst && page==null){
+                        page=new Page(1,1);
+                        pageBoundSql.setAdditionalParameter(Const.PAGE,page);
+                    }
+
                     copyAdditionalParameter(boundSql,pageBoundSql);
                     CacheKey cacheKey = executor.createCacheKey(statement, parameterObject, rowBounds, pageBoundSql);
                     //Class entityClass= EntityAnnotation.getInstanceByMapper(getMapperClass(statement.getId())).getEntityClass();
@@ -101,7 +113,16 @@ public class DefaultInterceptor implements Interceptor {
                         page.setRecordCount(total);
                         page.setPageCount(total == 0 ? 0 : (total - 1) / page.getPageSize() + 1);
                     }
-                    return list;
+
+                    if(returnFirst && list != null && list.size() > 1 ){
+                        list= list.subList(0, 1);
+                    }
+                    ListPage result=new ListPage(page.getPageIndex(),page.getPageSize());
+                    result.setData(list);
+                    result.setRecordCount(page.getRecordCount());
+                    result.setPageCount(page.getPageCount());
+                    result.setQueryCount(page.isQueryCount());
+                    return result;
 
                 } finally {
                     inPage.remove();
@@ -109,13 +130,13 @@ public class DefaultInterceptor implements Interceptor {
             }else{
                 List list = (List) invocation.proceed();
                 
-                // fix "mybatis Expected one result (or null) to be returned by selectOne()"
-                // for method getByParams ,getValueByParams ...
-                //@see org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne(java.lang.String, java.lang.Object)
-                if (isReturnFirst(statement) && list != null && list.size() > 1) {
-                    return list.subList(0, 1);
+                if(!hasPage(m)){
+                    return list;
                 }
-                return list;
+
+                Page p = createListPage(list);
+                return p;
+
             }
 
            
@@ -124,6 +145,15 @@ public class DefaultInterceptor implements Interceptor {
         }
 
 
+    }
+
+    private Page createListPage(List list) {
+        int size= list ==null?0: list.size();
+        Page p=new ListPage(1, size);
+        p.setPageCount(size==0?0:1);
+        p.setRecordCount(size);
+        p.setData(list);
+        return p;
     }
 
     /**
@@ -145,6 +175,17 @@ public class DefaultInterceptor implements Interceptor {
         }
     }
 
+    private boolean hasPage( Method m){
+        Class<?>[] parameterTypes = m.getParameterTypes();
+        if(parameterTypes!=null &&  parameterTypes.length>0){
+            for(Class c:parameterTypes){
+                if( Page.class.isAssignableFrom(c)) return true;
+            }
+        }
+        return false;
+
+    }
+
     private Page getPage(Object arg) {
         Page page = null;
         if (arg instanceof MapperMethod.ParamMap) {
@@ -163,11 +204,11 @@ public class DefaultInterceptor implements Interceptor {
 
     private boolean isReturnFirst(MappedStatement statement) {
         Method m = getMethod(statement.getId());
-        ReturnFirst returnFirst = m.getAnnotation(ReturnFirst.class);
-        return returnFirst != null;
+        LimitOne limitOne = m.getAnnotation(LimitOne.class);
+        return limitOne != null;
     }
 
-    private Page getPageLimitOne(MappedStatement statement, Object arg) {
+   /* private Page getPageLimitOne(MappedStatement statement, Object arg) {
         Page page = null;
         Method m = getMethod(statement.getId());
         ReturnFirst returnFirst = m.getAnnotation(ReturnFirst.class);
@@ -179,7 +220,7 @@ public class DefaultInterceptor implements Interceptor {
             }
         }
         return page;
-    }
+    }*/
 
 
     private Class getMapperClass(String id) {

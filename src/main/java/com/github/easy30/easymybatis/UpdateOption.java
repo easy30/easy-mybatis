@@ -1,44 +1,36 @@
 package com.github.easy30.easymybatis;
 
 import com.github.easy30.easymybatis.core.MapperOption;
+import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-
+@Data
 public class UpdateOption extends MapperOption {
 
-    public static class Builder{
-        private List<UpdateOption> options=new ArrayList();
-        public Builder addColumnValues(String... columnAndValues){
-            UpdateOption option=   new UpdateOption();
-            option.columnAndValues =columnAndValues;
-            options.add(option);
-            return this;
-        }
-        public Builder ignoreColumns(String... ignoreColumns){
-            UpdateOption option=   new UpdateOption();
-            option.ignoreColumns=ignoreColumns;
-            options.add(option);
-            return this;
-        }
-        /**
-         * change to another table
-         * @param table
-         * @return
-         */
-        public Builder table(String table){
-            UpdateOption option=   new UpdateOption();
-            option.table=table;
-            options.add(option);
-            return this;
-        }
-        public UpdateOption[] build(){
-            return options.toArray(new UpdateOption[0]);
-        }
+    private String[] columnAndValues;
+    private String[] ignoreColumns;
+
+    public static UpdateOption create(){
+        return new UpdateOption();
     }
-    public static Builder builder(){
-        return new Builder();
+
+    public UpdateOption columnAndValues(String... columnAndValues){
+        this.setColumnAndValues(columnAndValues);
+        return this;
     }
+    public UpdateOption ignoreColumns(String... ignoreColumns){
+
+        this.ignoreColumns=ignoreColumns;
+
+        return this;
+    }
+
+    public UpdateOption table(String table){
+
+        this.table=table;
+
+        return this;
+    }
+
 
 
 

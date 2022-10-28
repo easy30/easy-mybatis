@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * 自定义字段值生成器（不仅仅是主键）
- * column default value( base on custom Generation)
+ * custom column default value from java code ( base on custom Generation)
  * first, create  a spring bean implements com.cehome.easymybatis.Generation
  * then add @ColumnGeneration to Entity's field
  *

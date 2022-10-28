@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * 字段缺省值（数值或数据库函数等）
- * column default value (base on database value,function)
+ * column default value from database (base on database value,function)
  * coolma 2019/10/25
  **/
 @Target({ElementType.METHOD, ElementType.FIELD})

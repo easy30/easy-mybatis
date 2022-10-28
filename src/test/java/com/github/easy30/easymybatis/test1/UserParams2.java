@@ -2,7 +2,7 @@ package com.github.easy30.easymybatis.test1;
 
 
 import com.github.easy30.easymybatis.Range;
-import com.github.easy30.easymybatis.annotation.QueryItem;
+import com.github.easy30.easymybatis.annotation.QueryExp;
 import com.github.easy30.easymybatis.annotation.Query;
 import com.github.easy30.easymybatis.annotation.QueryColumn;
 import com.github.easy30.easymybatis.enums.ColumnOperator;
@@ -17,7 +17,7 @@ import java.util.Date;
 @Query(columns = "id,createTime", where = "1=1 and {createTime} is not null ")
 public class UserParams2 extends User {
 
-    @QueryItem("create_time>= #{createTimeStart} ")
+    @QueryExp("create_time>= #{createTimeStart} ")
     private Date createTimeStart;
 
     @QueryColumn(column ="createTime",operator = ColumnOperator.GT)
@@ -26,7 +26,7 @@ public class UserParams2 extends User {
     @QueryColumn(column ="createTime",operator = ColumnOperator.LE)
     private Date createTimeEnd;
 
-    @QueryItem("name like CONCAT('%',#{nameSuffix})")
+    @QueryExp("name like CONCAT('%',#{nameSuffix})")
     private String nameSuffix;
 
     //-- array default is IN , id in ( 1,2,3...)

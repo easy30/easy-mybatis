@@ -1,35 +1,22 @@
 package com.github.easy30.easymybatis;
 
 import com.github.easy30.easymybatis.core.MapperOption;
+import lombok.Builder;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+@Data
 
-public class SelectOption extends MapperOption {
+public class SelectOption extends MapperOption  {
 
 
-    public static class Builder{
-        private List<SelectOption> options=new ArrayList();
-        
-        /**
-         * change to another table
-         * @param table
-         * @return
-         */
-        public Builder table(String table){
-            SelectOption option=   new SelectOption();
-            option.table=table;
-            options.add(option);
-            return this;
-        }
-        public SelectOption[] build(){
-            return options.toArray(new SelectOption[0]);
-        }
+    public static SelectOption create(){
+        return new SelectOption();
     }
-    public static Builder builder(){
-        return new Builder();
+    public SelectOption table(String table){
+        this.table=table;
+        return this;
     }
-    
-
 
 }
