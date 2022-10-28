@@ -186,22 +186,21 @@ Note :
 
 ### Add easy-mybatis config
 
-Add MapperScannerConfigurer , set scan basePackage, set **markerInterface property** to **com.cehome.easymybatis.Mapper** (base Mapper interface)
+Add MapperScannerConfigurer , set scan basePackage, set **markerInterface property** to **Mapper** (base Mapper interface)
 
 Add MapperFactory(easy-mybatis core bean).
 
-
 ```xml
 
-      <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-               <property name="basePackage" value="com.cehome.easymybatis"></property>
-               <property name="markerInterface" value="com.cehome.easymybatis.Mapper"></property>
-               <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
-          </bean>
-   
-       <bean   class="com.cehome.easymybatis.MapperFactory" >
-           <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
-     </bean>
+<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    <property name="basePackage" value="com.cehome.easymybatis"></property>
+    <property name="markerInterface" value="com.github.easymybatis.Mapper"></property>
+    <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+</bean>
+
+<bean class="com.github.easymybatis.MapperFactory">
+<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+</bean>
 
 
 ```
@@ -230,7 +229,8 @@ public class User {
 ### Create User mapper
 
 ```java
-import com.cehome.easymybatis.Mapper;
+import Mapper;
+
 public interface UserMapper1 extends Mapper<User> {
 }
 ```
@@ -318,30 +318,32 @@ createTime - Record create time. @ColumnDefault(insertValue = "now()") means set
 updateTime - update this column when insert or update, So set  @ColumnDefault("now()") on the field.
 
 ```java
-    import com.cehome.easymybatis.DialectEntity;
-    import com.cehome.easymybatis.annotation.ColumnDefault;
-    import lombok.Data;
-    import javax.persistence.Id;
-    import javax.persistence.Table;
-    import java.util.Date;
-    @Data
-    @Table(name = "user")
-    public class User extends DialectEntity {
-        @Id
-        private Long id;
-        private String name;
-        private Integer age;
-        private String realName;
-        private String email;
-    
-        @ColumnDefault(insertValue = "now()") 
-        private Date createTime;
-    
-        @ColumnDefault("now()")
-        private Date updateTime;
-    
-    
-    }
+    import DialectEntity;
+import ColumnDefault;
+import lombok.Data;
+
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.util.Date;
+
+@Data
+@Table(name = "user")
+public class User extends DialectEntity {
+    @Id
+    private Long id;
+    private String name;
+    private Integer age;
+    private String realName;
+    private String email;
+
+    @ColumnDefault(insertValue = "now()")
+    private Date createTime;
+
+    @ColumnDefault("now()")
+    private Date updateTime;
+
+
+}
 ```
 
 ```java

@@ -8,7 +8,7 @@ import ${apiPackage}.${modelName}Service;
 import ${implPackage}.${modelName}ServiceImpl;
 import org.junit.Assert;
 import org.junit.Test;
-import com.cehome.easymybatis.codegen.RandomObjectUtil;
+import RandomObjectUtil;
 import javax.annotation.Resource;
 
 public class ${modelName}Test extends BaseTest {

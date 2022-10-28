@@ -80,7 +80,7 @@ public class ${modelName}ServiceImpl implements ${modelName}Service {
      */
     @Override
     public Page<${modelName}Dto> page(@RequestBody ${modelName}ReqDto ${modelVar}ReqDto,int pageIndex,int pageSize) {
-        com.cehome.easymybatis.Page<${modelName}Dto> page=new com.cehome.easymybatis.Page(pageIndex,pageSize);
+        Page<${modelName}Dto> page=new Page(pageIndex,pageSize);
         ${modelVar}Mapper.pageByParams(${modelVar}ReqDto,page,null,null);
         return PageConvert.convert(page);
     }
