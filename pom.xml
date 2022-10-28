@@ -6,7 +6,7 @@
 
     <groupId>com.github.easy-ware</groupId>
     <artifactId>easy-mybatis</artifactId>
-    <version>1.1.4-SNAPSHOT</version>
+    <version>1.1.4</version>
     <url>https://github.com/easy-ware/easy-mybatis</url>
     <description>easy mybatis</description>
     <properties>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.25</version>
+            <version>8.0.28</version>
             <optional>true</optional>
         </dependency>
         <dependency>

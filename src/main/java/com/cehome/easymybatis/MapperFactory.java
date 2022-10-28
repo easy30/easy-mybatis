@@ -24,6 +24,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.util.ResourceUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -237,6 +238,11 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
                 public StatementType statementType() {
                     return entitySelectKey.statementType();
                 }
+
+                //@Override  high version use, maybe > 3.5.6
+                public String databaseId() {
+                    return dialectName;
+                }
             };
 
 
@@ -282,4 +288,9 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
     public void setDialectName(String dialectName) {
         this.dialectName = dialectName;
     }
+
+    /*private void dd(String resourceLocation){
+        XMLMapperBuilder
+        ResourceUtils.getFile(resourceLocation)
+    }*/
 }

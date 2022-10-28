@@ -554,6 +554,17 @@ public class MapperTest {
         userMapper.deleteById(user1.getId());
 
     }
+    @Test
+    public void inserts(){
+        userMapper.inserts();
+    }
 
+    @Test
+    public void listsql(){
+        Map map=new HashMap();
+        map.put("@@sql"," select * from ${u}");
+        map.put("u","user");
+        System.out.println( JSON.toJSONString( userMapper.list(map),true));
+    }
 
 }

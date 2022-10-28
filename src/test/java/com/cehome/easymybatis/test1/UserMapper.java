@@ -28,4 +28,6 @@ public interface UserMapper extends Mapper<User,UserDto> {
     List<User> listWithXml(@Param("age") Integer age,@Param("name") String name);
 
     List<User> pageInXML(@Param("age") Integer age, @Param(Const.PAGE) Page page);
+
+    void inserts();
 }

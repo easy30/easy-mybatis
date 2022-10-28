@@ -4,6 +4,7 @@ import com.cehome.easymybatis.annotation.ReturnFirst;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * coolma 2019/10/24
@@ -208,6 +209,9 @@ public interface Mapper<E,R> {
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(this.getClass());
         entityAnnotation.removeContextTable();
     }*/
+
+    @SelectProvider(type = Provider.class, method = "list")
+    List<Map> list(Map params);
 
 }
 

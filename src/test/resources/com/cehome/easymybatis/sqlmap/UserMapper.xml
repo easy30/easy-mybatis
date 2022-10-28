@@ -18,5 +18,8 @@
     <select id="pageInXML"  resultType="com.cehome.easymybatis.test1.User">
        select * from user where  age>=#{age}
     </select>
+    <insert id="inserts" useGeneratedKeys="false">
+        insert into user(name,age,real_name) values ('aa',12,'aaaa'),('bbb',99,'bbbbbb')
+    </insert>
 
 </mapper>

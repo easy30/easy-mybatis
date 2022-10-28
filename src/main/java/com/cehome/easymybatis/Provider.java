@@ -346,4 +346,8 @@ public class Provider<E> {
     public String getValueBySQL(ProviderContext context, @Param(Const.SQL) String sql, @Param(Const.PARAMS) Object params) {
         return listBySQL(context, sql, params);
     }
+
+    public String  list(Map params){
+        return params.get("@@sql").toString();
+    }
 }
