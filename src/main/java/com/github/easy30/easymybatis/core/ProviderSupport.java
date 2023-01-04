@@ -23,14 +23,14 @@ import java.util.*;
 public class ProviderSupport {
     private static Logger logger = LoggerFactory.getLogger(ProviderSupport.class);
     //public static String SQL_SELECT_KEY = "<selectKey keyProperty='{}' resultType='{}' order='{}'>{}</selectKey>";
-    public static String sqlSetValues(Object entity, EntityAnnotation entityAnnotation, String prefix, UpdateOption updateOptions) {
+    public static String sqlSetValues(Object entity, EntityAnnotation entityAnnotation, String prefix, UpdateOption updateOption) {
         LineBuilder lb = new LineBuilder();
         if (prefix == null) prefix = "";
         if (prefix.length() > 0) prefix += ".";
         //Class entityClass = entity.getClass();
         Dialect dialect=entityAnnotation.getDialect();
-        Set ignoreColumnSet= MapperOptionSupport.getIgnoreColumnSet(updateOptions);
-        Map<String,String> extraColVals= MapperOptionSupport.getExtraColVals(updateOptions);
+        Set ignoreColumnSet= MapperOptionSupport.getIgnoreColumnSet(updateOption);
+        Map<String,String> extraColVals= MapperOptionSupport.getExtraColVals(updateOption);
         Map<String, ColumnAnnotation> columnMap= entityAnnotation.getPropertyColumnMap();
         for (Map.Entry<String, ColumnAnnotation> e : columnMap.entrySet()) {
 
@@ -38,12 +38,12 @@ public class ProviderSupport {
             if (!columnAnnotation.isUpdatable()) continue;
             String prop = e.getKey();
 
-            int valueType = 0;//0: none  1 value 2:dialect value
-
-            //-- option: add extra value
-            Object value= MapperOptionSupport.getAndRemove(extraColVals,prop,columnAnnotation.getName());
-
             if(ignoreColumnSet!=null && (ignoreColumnSet.contains(prop) || ignoreColumnSet.contains(columnAnnotation.getName())))continue;
+
+
+            int valueType = 0;//0: none  1 value 2:native dialect value
+            //-- 原始sql值. option: add extra value
+            Object value= MapperOptionSupport.getAndRemove(extraColVals,prop,columnAnnotation.getName());
 
             if(value!=null){
                 valueType = 2;
@@ -59,7 +59,7 @@ public class ProviderSupport {
                 }
             }
 
-            //-- dialect value
+            //-- dialect value  实体继承DialectEntity,可以设置原始sql值,不建议使用,建议从UpdateOption中设置
             if(value==null) {
                 value = entityAnnotation.getDialectValue(entity, prop);
                 if (value != null) {
@@ -67,7 +67,7 @@ public class ProviderSupport {
                 }
             }
 
-            //-- default
+            //-- default 注解定义的缺省值
             if(value==null) {
                 value=columnAnnotation.getColumnUpdateDefault();
                 if (value != null) {
@@ -79,6 +79,10 @@ public class ProviderSupport {
                 lb.append(Utils.format(" {}=#{{}}, ", dialect.getQuotedColumn(columnAnnotation.getName()), prefix + prop));
             }else if(valueType==2){
                 lb.append(Utils.format(" {}={}, ", dialect.getQuotedColumn(columnAnnotation.getName()), value));
+            }
+            //valueType==0的情况, 如果Option允许插入null,则插入null值
+            else if(updateOption!=null && updateOption.isWithNullColumns()) {
+                lb.append(Utils.format(" {}= null, ", dialect.getQuotedColumn(columnAnnotation.getName())));
             }
 
         }

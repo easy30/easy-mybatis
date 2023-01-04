@@ -83,7 +83,7 @@ public class MapperTest {
         update();
         updateByParams();
         updateByCondition();
-
+        updateWithNull();
     }
 
     @Test
@@ -116,7 +116,7 @@ public class MapperTest {
         user.setName(name);
         user.setAge(age);
         user.setRealName(realName);
-        userMapper.insert(user,null);
+        userMapper.insert(user);
         return user;
     }
 
@@ -181,9 +181,31 @@ public class MapperTest {
     public void update()   {
         User user=new User();
         user.setName("updateById");
+        user.setRealName("realName");
         user.setId(id);
         //user.setValue("createTime","now()");
-        Assert.assertEquals(1, userMapper.update(user,null));
+        Assert.assertEquals(1, userMapper.update(user));
+    }
+
+    @Test
+    public void updateWithNull()   {
+        System.out.println("update realName");
+        User user=new User();
+        user.setRealName("realName");
+        user.setId(id);
+        Assert.assertEquals(1, userMapper.update(user));
+        user= userMapper.get(id,null);
+        Assert.assertNotNull(user.getRealName());
+
+        System.out.println("set realName=null... withNullColumns option");
+        user=new User();
+        user.setName("updateById");
+        user.setId(id);
+        Assert.assertEquals(1, userMapper.update(user,UpdateOption.create().withNullColumns(true)));
+        user= userMapper.get(id,null);
+        Assert.assertEquals(null,user.getRealName());
+
+
     }
 
     @Test

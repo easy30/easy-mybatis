@@ -17,15 +17,24 @@ public interface Mapper<E,R> {
      * @return sql result ( usual is 1)
      */
     @InsertProvider(type = Provider.class, method = "insert")
-    int insert(@Param(Const.ENTITY)E entity, @Param(Const.OPTIONS) UpdateOption option);
+    int insert(@Param(Const.ENTITY)E entity, @Param(Const.OPTIONS) UpdateOption... options);
 
     /**
-     * update entity
+     * update entity by id
      * @param entity
      * @return update result, 0 or 1
      */
     @UpdateProvider(type = Provider.class, method = "update")
-    int update(@Param(Const.ENTITY)E entity, @Param(Const.OPTIONS) UpdateOption option);
+    int update(@Param(Const.ENTITY)E entity, @Param(Const.OPTIONS) UpdateOption... options);
+
+    /**
+     * insert or update entity by id
+     * if id is null then insert, else update
+     * @param entity
+     * @return update result, 0 or 1
+     */
+    @UpdateProvider(type = Provider.class, method = "save")
+    int save(@Param(Const.ENTITY)E entity, @Param(Const.OPTIONS) UpdateOption... options);
 
 
     /**
@@ -40,7 +49,7 @@ public interface Mapper<E,R> {
     int updateByParams(@Param(Const.ENTITY) E entity,
                        @Param(Const.PARAMS) Object params,
                        @Param(Const.PARAM_NAEMS) String paramNames,
-                       @Param(Const.OPTIONS) UpdateOption option);
+                       @Param(Const.OPTIONS) UpdateOption... options);
 
 
     /**
@@ -54,7 +63,7 @@ public interface Mapper<E,R> {
     int updateByCondition(@Param(Const.ENTITY) E entity,
                           @Param(Const.CONDITION) String condition,
                           @Param(Const.PARAMS) Object params,
-                          @Param(Const.OPTIONS) UpdateOption option);
+                          @Param(Const.OPTIONS) UpdateOption... options);
 
     /**
      * delete by id
@@ -62,7 +71,7 @@ public interface Mapper<E,R> {
      * @return
      */
     @DeleteProvider(type = Provider.class, method = "deleteById")
-    int deleteById(@Param(Const.ID)Object id,@Param(Const.OPTIONS) DeleteOption option);
+    int deleteById(@Param(Const.ID)Object id,@Param(Const.OPTIONS) DeleteOption... options);
 
     /**
      * delete by entity params (with properties equals)
@@ -71,7 +80,7 @@ public interface Mapper<E,R> {
      * @return
      */
     @DeleteProvider(type = Provider.class, method = "deleteByParams")
-    int deleteByParams(@Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String paramNames,@Param(Const.OPTIONS) DeleteOption option);
+    int deleteByParams(@Param(Const.PARAMS) Object params,@Param(Const.PARAM_NAEMS) String paramNames,@Param(Const.OPTIONS) DeleteOption... options);
 
     /**
      *
@@ -81,7 +90,7 @@ public interface Mapper<E,R> {
      */
     @DeleteProvider(type = Provider.class, method = "deleteByCondition")
     int deleteByCondition(@Param(Const.CONDITION) String condition,
-                          @Param(Const.PARAMS) Object params,@Param(Const.OPTIONS) DeleteOption option);
+                          @Param(Const.PARAMS) Object params,@Param(Const.OPTIONS) DeleteOption... options);
 
 
     /**
@@ -93,7 +102,7 @@ public interface Mapper<E,R> {
     @SelectProvider(type = Provider.class, method = "get")
     R get(@Param(Const.ID) Object id,
               @Param(Const.COLUMNS) String selectColumns,
-              @Param(Const.OPTIONS) SelectOption option);
+              @Param(Const.OPTIONS) SelectOption... options);
 
     /**
      * get single entity
@@ -105,7 +114,7 @@ public interface Mapper<E,R> {
     @SelectProvider(type = Provider.class, method = "getByParams")
     R getByParams(@Param(Const.PARAMS) Object params,
                   @Param(Const.ORDER) String orderBy,
-                  @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption option);
+                  @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      * get one column
@@ -118,7 +127,7 @@ public interface Mapper<E,R> {
     @SelectProvider(type = Provider.class, method = "getValueByParams")
     <T> T getValueByParams(@Param(Const.PARAMS) Object params,
                            @Param(Const.ORDER) String orderBy,
-                           @Param(Const.COLUMN)  String column,@Param(Const.OPTIONS) SelectOption option);
+                           @Param(Const.COLUMN)  String column,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      * get one column
@@ -132,7 +141,7 @@ public interface Mapper<E,R> {
     @SelectProvider(type = Provider.class, method = "getValueByCondition")
     <T> T getValueByCondition(@Param(Const.CONDITION) String condition,
                               @Param(Const.PARAMS) Object params,
-                              @Param(Const.COLUMN) String column,@Param(Const.OPTIONS) SelectOption option);
+                              @Param(Const.COLUMN) String column,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      * get one column
@@ -156,7 +165,7 @@ public interface Mapper<E,R> {
     @SelectProvider(type = Provider.class, method = "listByParams")
     List<R> listByParams(@Param(Const.PARAMS) Object params,
                          @Param(Const.ORDER) String orderBy,
-                         @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption option);
+                         @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      *
@@ -185,7 +194,7 @@ public interface Mapper<E,R> {
     List<R> pageByParams(@Param(Const.PARAMS) Object params,
                          @Param(Const.PAGE) Page page,
                          @Param(Const.ORDER)String orderBy,
-                         @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption option);
+                         @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options);
 
     /**
      *

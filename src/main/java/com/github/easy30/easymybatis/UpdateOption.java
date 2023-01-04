@@ -8,6 +8,7 @@ public class UpdateOption extends MapperOption {
 
     private String[] columnAndValues;
     private String[] ignoreColumns;
+    private boolean  withNullColumns;
 
     public static UpdateOption create(){
         return new UpdateOption();
@@ -28,6 +29,11 @@ public class UpdateOption extends MapperOption {
 
         this.table=table;
 
+        return this;
+    }
+
+    public UpdateOption withNullColumns(boolean withNullColumns){
+        this.withNullColumns=withNullColumns;
         return this;
     }
 

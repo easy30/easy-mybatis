@@ -426,6 +426,7 @@ public class EntityAnnotation {
         return DialectEntity.class.isAssignableFrom(entity.getClass());
     }
 
+    @Deprecated
     public Object getDialectValue(Object entity, String property) {
         if (!isDialectEntity(entity)) return null;
         Class c = entity.getClass();
