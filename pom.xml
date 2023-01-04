@@ -21,7 +21,7 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
-            <version>3.5.2</version>
+            <version>3.5.11</version>
         </dependency>
         <dependency>
             <groupId>org.mybatis</groupId>
@@ -238,12 +238,12 @@
                 <repository>
                     <id>internal-releases</id>
                     <name>Local Release Repository</name>
-                    <url>http://192.168.0.12:8080/nexus/content/repositories/releases/</url>
+                    <url>http://192.168.20.191:8081/repository/maven-releases/</url>
                 </repository>
                 <snapshotRepository>
                     <id>internal-snapshots</id>
                     <name>Local Snapshot Repository</name>
-                    <url>http://192.168.0.12:8080/nexus/content/repositories/snapshots/</url>
+                    <url>http://192.168.20.191:8081/repository/maven-snapshots/</url>
                 </snapshotRepository>
             </distributionManagement>
         </profile>
