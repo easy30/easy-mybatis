@@ -56,9 +56,10 @@ public class DialectFactory {
 
                 } else {
                     Connection connection = null;
+                    String url =null;
                     try {
                         connection = configuration.getEnvironment().getDataSource().getConnection();
-                        String url = connection.getMetaData().getURL().toLowerCase();
+                        url = connection.getMetaData().getURL().toLowerCase();
                         for (String db : map.keySet()) {
                             if (url.startsWith("jdbc:" + db.toLowerCase())) {
                                 c = map.get(db);
@@ -68,13 +69,16 @@ public class DialectFactory {
                     } finally {
                         if (connection != null) connection.close();
                     }
-
-
+                    if(c==null) throw new  RuntimeException("Not Dialect found for url "+url);
                 }
 
                 Dialect dialect = (Dialect) c.newInstance();
                 return dialect;
-            } catch (Exception e) {
+            }
+            catch (RuntimeException e){
+                throw e;
+            }
+            catch (Exception e) {
                 throw new RuntimeException(e);
             }
 

@@ -22,7 +22,11 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.mapper.MapperFactoryBean;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -34,10 +38,10 @@ import java.util.*;
 /**
  * coolma 2019/10/25
  **/
-public class MapperFactory implements InitializingBean, ApplicationListener<ContextRefreshedEvent> {
+public class MapperFactory implements BeanPostProcessor, InitializingBean {//}, ApplicationListener<ContextRefreshedEvent> {
     private static Boolean loaded = false;
 
-   
+
     SqlSessionTemplate sqlSessionTemplate;
     SqlSessionFactory sqlSessionFactory;
     Configuration configuration;
@@ -74,17 +78,17 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        if(sqlSessionFactory !=null) configuration= sqlSessionFactory.getConfiguration();
-        else if(sqlSessionTemplate!=null) configuration=configuration;
+        if (sqlSessionFactory != null) configuration = sqlSessionFactory.getConfiguration();
+        else if (sqlSessionTemplate != null) configuration = configuration;
         else throw new RuntimeException("SqlSessionTemplate or SqlSessionFactory not found");
 
-        dialect= DialectFactory.createDialect(dialectName,configuration);
+        dialect = DialectFactory.createDialect(dialectName, configuration);
 
         //-- default config
         configuration.setMapUnderscoreToCamelCase(true);
         configuration.setUseGeneratedKeys(true);
 
-
+        configuration.addInterceptor(new DefaultInterceptor(dialect));
 
     }
 
@@ -114,11 +118,11 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         this.mapperInterfaces = mapperInterfaces;
     }
 
-    @Override
+    /*@Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
+        if (true) return;
 
-        configuration.addInterceptor(new DefaultInterceptor(dialect));
-        ApplicationContext context=event.getApplicationContext();
+        ApplicationContext context = event.getApplicationContext();
 
         initGenerators(context);
 
@@ -135,12 +139,12 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
 
     }
 
-    private void initGenerators( ApplicationContext context){
+    private void initGenerators(ApplicationContext context) {
         Generations generations = Generations.getInstance();
-        Map<String, Generation> beans=context.getBeansOfType(Generation.class);
+        Map<String, Generation> beans = context.getBeansOfType(Generation.class);
         generations.putAll(beans);
 
-    }
+    }*/
 
     public void add(Class mapperClass) {
         String namespace = mapperClass.getName();
@@ -155,11 +159,12 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         for (Method method : mapperClass.getMethods()) {
             //AbstractMethodBuilder methodBuilder= methodBuilderMap.get(method.getName());
             //if(methodBuilder!=null) methodBuilder.add(assistant,mapperClass,entityClass,entityAnnotation);
-            if(method.isDefault() || Object.class.equals(method.getDeclaringClass())) continue;
+            if (method.isDefault() || Object.class.equals(method.getDeclaringClass())) continue;
+            //System.out.println("=====" + namespace + "." + method.getName());
             MappedStatement ms = configuration.getMappedStatement(namespace + "." + method.getName());
             if (ms != null) {
                 if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {
-                    doKeyGenerator(mapperClass,entityClass,method,ms);
+                    doKeyGenerator(mapperClass, entityClass, method, ms);
 
                 }
 
@@ -169,23 +174,23 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
         }
     }
 
-    private void doKeyGenerator(Class mapperClass,Class entityClass,Method method,MappedStatement ms){
-        KeyGenerator keyGenerator=ms.getKeyGenerator();
+    private void doKeyGenerator(Class mapperClass, Class entityClass, Method method, MappedStatement ms) {
+        KeyGenerator keyGenerator = ms.getKeyGenerator();
         // SelectKey exists ,so do nothing
-        if(keyGenerator!=null && keyGenerator instanceof SelectKeyGenerator) return;
+        if (keyGenerator != null && keyGenerator instanceof SelectKeyGenerator) return;
 
-       final EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
-        final EntitySelectKey entitySelectKey=entityAnnotation.getEntitySelectKey();
+        final EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
+        final EntitySelectKey entitySelectKey = entityAnnotation.getEntitySelectKey();
 
-        List<String> idPropertyNames=entityAnnotation.getIdPropertyNames();
-        List<String> idColumnNames=entityAnnotation.getIdColumnNames();
-        if(idPropertyNames.size()==0) return;
+        List<String> idPropertyNames = entityAnnotation.getIdPropertyNames();
+        List<String> idColumnNames = entityAnnotation.getIdColumnNames();
+        if (idPropertyNames.size() == 0) return;
 
 
-        if (entitySelectKey !=null ) {
+        if (entitySelectKey != null) {
 
             //org.apache.ibatis.builder.annotation.MapperAnnotationBuilder.handleSelectKeyAnnotation
-            SelectKey selectKey=new SelectKey(){
+            SelectKey selectKey = new SelectKey() {
 
                 @Override
                 public Class<? extends Annotation> annotationType() {
@@ -199,28 +204,28 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
 
                 @Override
                 public String keyProperty() {
-                    if(!StringUtils.isBlank(entitySelectKey.keyProperty())) return entitySelectKey.keyProperty();
-                    if(entityAnnotation.getIdPropertyNames().size()>1 ){
+                    if (!StringUtils.isBlank(entitySelectKey.keyProperty())) return entitySelectKey.keyProperty();
+                    if (entityAnnotation.getIdPropertyNames().size() > 1) {
 
-                            throw new RuntimeException("keyProperty can not be empty for multiple columns key");
+                        throw new RuntimeException("keyProperty can not be empty for multiple columns key");
 
                     }
-                    return Utils.toString(entityAnnotation.getIdPropertyNames(),",",null);
+                    return Utils.toString(entityAnnotation.getIdPropertyNames(), ",", null);
                 }
 
                 @Override
                 public String keyColumn() {
-                    if(!StringUtils.isBlank(entitySelectKey.keyColumn()))  return entitySelectKey.keyColumn();
-                    if(!StringUtils.isBlank(entitySelectKey.keyProperty())){
-                        String kc="";
-                        Map<String, ColumnAnnotation> propertyColumnMap=entityAnnotation.getPropertyColumnMap();
-                        for(String p: entitySelectKey.keyProperty().split(",")){
-                            if(kc.length()>0) kc+=",";
-                            kc+=propertyColumnMap.get(p).getName();
+                    if (!StringUtils.isBlank(entitySelectKey.keyColumn())) return entitySelectKey.keyColumn();
+                    if (!StringUtils.isBlank(entitySelectKey.keyProperty())) {
+                        String kc = "";
+                        Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
+                        for (String p : entitySelectKey.keyProperty().split(",")) {
+                            if (kc.length() > 0) kc += ",";
+                            kc += propertyColumnMap.get(p).getName();
                         }
                         return kc;
                     }
-                    return Utils.toString(entityAnnotation.getIdColumnNames(),",",null);
+                    return Utils.toString(entityAnnotation.getIdColumnNames(), ",", null);
 
 
                 }
@@ -247,35 +252,34 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
             };
 
 
-
-            MapperAnnotationBuilder  builder=new MapperAnnotationBuilder(configuration,mapperClass);
+            MapperAnnotationBuilder builder = new MapperAnnotationBuilder(configuration, mapperClass);
 
             //invok private method : handleSelectKeyAnnotation(SelectKey selectKeyAnnotation, String baseStatementId, Class<?> parameterTypeClass, LanguageDriver languageDriver)
 
-            Method handleSelectKeyAnnotationMethod=ObjectSupport.getMethod(  MapperAnnotationBuilder.class,"handleSelectKeyAnnotation");
+            Method handleSelectKeyAnnotationMethod = ObjectSupport.getMethod(MapperAnnotationBuilder.class, "handleSelectKeyAnnotation");
 
-            Method getParameterTypeMethod=ObjectSupport.getMethod(  MapperAnnotationBuilder.class,"getParameterType");
+            Method getParameterTypeMethod = ObjectSupport.getMethod(MapperAnnotationBuilder.class, "getParameterType");
             getParameterTypeMethod.setAccessible(true);
 
             handleSelectKeyAnnotationMethod.setAccessible(true);
             try {
-                keyGenerator=(KeyGenerator)handleSelectKeyAnnotationMethod.invoke(builder,selectKey,ms.getId(),
-                        getParameterTypeMethod.invoke(builder,method),ms.getLang());
-            } catch ( Exception e) {
+                keyGenerator = (KeyGenerator) handleSelectKeyAnnotationMethod.invoke(builder, selectKey, ms.getId(),
+                        getParameterTypeMethod.invoke(builder, method), ms.getLang());
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 
 
         }
 
-        if(entitySelectKey==null) keyGenerator=Jdbc3KeyGenerator.INSTANCE;
+        if (entitySelectKey == null) keyGenerator = Jdbc3KeyGenerator.INSTANCE;
         // set private field
-        String[] keyProperties=new String[idPropertyNames.size()];
-        for(int i=0;i<idPropertyNames.size();i++){
-            keyProperties[i]="e."+idPropertyNames.get(i);
+        String[] keyProperties = new String[idPropertyNames.size()];
+        for (int i = 0; i < idPropertyNames.size(); i++) {
+            keyProperties[i] = "e." + idPropertyNames.get(i);
         }
 
-        ObjectSupport.setFieldValue(ms, "keyProperties",keyProperties);
+        ObjectSupport.setFieldValue(ms, "keyProperties", keyProperties);
         ObjectSupport.setFieldValue(ms, "keyColumns", idColumnNames.toArray(new String[0]));
         ObjectSupport.setFieldValue(ms, "keyGenerator", keyGenerator);
 
@@ -289,6 +293,29 @@ public class MapperFactory implements InitializingBean, ApplicationListener<Cont
     public void setDialectName(String dialectName) {
         this.dialectName = dialectName;
     }
+
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof Generation) {
+            Generations generations = Generations.getInstance();
+            //Map<String, Generation> beans = context.getBeansOfType(Generation.class);
+            generations.put(beanName, (Generation) bean);
+        }
+        //初始化实体类
+        if (bean instanceof MapperFactoryBean) {
+            Class mapperClass = ((MapperFactoryBean) bean).getObjectType();
+            add(mapperClass);
+        }
+
+        return bean;
+    }
+
 
     /*private void dd(String resourceLocation){
         XMLMapperBuilder
