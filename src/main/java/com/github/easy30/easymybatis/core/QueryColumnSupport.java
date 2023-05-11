@@ -4,12 +4,14 @@ import com.github.easy30.easymybatis.MapperException;
 import com.github.easy30.easymybatis.Range;
 import com.github.easy30.easymybatis.enums.ColumnOperator;
 
+import java.util.Collection;
+
 /**
  * QueryColumn parse
  */
 public class QueryColumnSupport {
     public static String doQueryColumn(EntityAnnotation entityAnnotation, String column, ColumnOperator operator, String prop, Object value) {
-        boolean array = value.getClass().isArray();
+        boolean array = value.getClass().isArray() || (value instanceof Collection);
         if (operator == null || operator.equals(ColumnOperator.DEFAULT)) {
             operator = array ? ColumnOperator.IN : ColumnOperator.EQ;
         }
