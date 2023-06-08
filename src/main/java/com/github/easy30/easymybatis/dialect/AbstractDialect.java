@@ -10,36 +10,42 @@ import java.util.List;
 /**
  * coolma 2019/11/11
  **/
-public abstract class AbstractDialect implements Dialect{
+public abstract class AbstractDialect implements Dialect {
     @Override
-    public String getCountSql(String sql)
-    {
+    public String getCountSql(String sql) {
 
-        sql=sql.trim();
-        if(sql.startsWith("(") &&sql.endsWith(")")) sql=sql.substring(1,sql.length()-1);
+        sql = sql.trim();
+        if (sql.startsWith("(") && sql.endsWith(")")) sql = sql.substring(1, sql.length() - 1);
         //sql = StringUtils.trimLeft(sql, new char[] { '(' }, true);
         //sql = StringUtils.trimRight(sql, new char[] { ')' }, true);
         int nLevel = 1;
         int nFrom = -1;
         int nOrderBy = -1;
-        boolean groupBy = false;
+        boolean all = false;
+        final String WITH = "with";
+        final String AS = "as";
+        final String FROM = "from";
+        final String GROUP = "group";
+        final String ORDER = "order";
+        final String BY = "by";
 
         String s = sql.toLowerCase();
-        for (int i = 0; i < s.length(); i++)
-        {
-            //todo: () in strings
+        if (s.matches(".*with\\s+.*as.*")) { //with as , only simple match
+            all = true;
+        }
+
+        for (int i = 0; i < s.length(); i++) {
+
+            //todo: ignore () or keyword in strings such as ' (order by) '
             if (s.charAt(i) == '(')
                 nLevel++;
             else if (s.charAt(i) == ')')
                 nLevel--;
-            else if (s.startsWith(" from ", i) && nLevel == 1)
+            else if (isToken(s, FROM, i) && nLevel == 1)
                 nFrom = i;
-            else if (s.startsWith(" group ", i) && nLevel == 1 && s.substring(i + 7).trim().startsWith("by "))
-            {
-                groupBy = true;
-            }
-            else if (s.startsWith(" order ", i) && nLevel == 1 && s.substring(i + 7).trim().startsWith("by "))
-            {
+            else if (isToken(s, GROUP, i) && nLevel == 1 && isToken(s.substring(i + GROUP.length() + 1).trim(), BY, 0)) {
+                all = true;
+            } else if (isToken(s, ORDER, i) && nLevel == 1 && isToken(s.substring(i + ORDER.length() + 1).trim(), BY, 0)) {
                 nOrderBy = i;
                 break;
             }
@@ -47,24 +53,32 @@ public abstract class AbstractDialect implements Dialect{
         }
         if (nOrderBy != -1)
             sql = sql.substring(0, nOrderBy);
-        if (!groupBy)
+        if (!all)
             return "select count(*) " + sql.substring(nFrom);
         else
             return "select count(*) from ( " + sql + " ) t_table_count ";
 
     }
 
+    private boolean isToken(String sql, String token, int offset) {
+        if (offset > 0 && sql.charAt(offset - 1) > 32) return false;
+        int end = offset + token.length();
+        if (end < sql.length() && sql.charAt(end) > 32) return false;
+        return sql.startsWith(token, offset);
+
+    }
+
     @Override
-    public String[] getColumnOperatorValue(ColumnOperator columnOperator){
+    public String[] getColumnOperatorValue(ColumnOperator columnOperator) {
         return columnOperator.getValue();
     }
 
-    public String addWhereIfNeed(String condition){
-        if (condition.length() == 0 || Utils.startWithTokens(condition,"where")|| Utils.startWithTokens(condition,"order","by")
-                ||Utils.startWithTokens(condition,"group","by")||Utils.startWithTokens(condition,"limit")) {
+    public String addWhereIfNeed(String condition) {
+        if (condition.length() == 0 || Utils.startWithTokens(condition, "where") || Utils.startWithTokens(condition, "order", "by")
+                || Utils.startWithTokens(condition, "group", "by") || Utils.startWithTokens(condition, "limit")) {
             return condition;
         } else {
-            return  " where " + condition;
+            return " where " + condition;
         }
     }
 
@@ -74,6 +88,7 @@ public abstract class AbstractDialect implements Dialect{
     }
 
     public abstract List<ParameterMapping> getPageParameterMapping(Configuration configuration, List<ParameterMapping> source);
+
     public abstract String getPageSql(String sql);
 
 
