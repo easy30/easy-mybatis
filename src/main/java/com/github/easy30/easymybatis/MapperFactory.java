@@ -28,6 +28,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
@@ -38,7 +39,7 @@ import java.util.*;
 /**
  * coolma 2019/10/25
  **/
-public class MapperFactory implements BeanPostProcessor, InitializingBean {//}, ApplicationListener<ContextRefreshedEvent> {
+public class MapperFactory implements BeanPostProcessor, InitializingBean, ApplicationContextAware {//}, ApplicationListener<ContextRefreshedEvent> {
     private static Boolean loaded = false;
 
 
@@ -54,6 +55,7 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean {//}, 
 
     private Class[] mapperInterfaces;
 
+    private boolean inited=false;
     public MapperFactory() {
 
     }
@@ -77,7 +79,7 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean {//}, 
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
+        if(inited) return;
         if (sqlSessionFactory != null) configuration = sqlSessionFactory.getConfiguration();
         else if (sqlSessionTemplate != null) configuration = configuration;
         else throw new RuntimeException("SqlSessionTemplate or SqlSessionFactory not found");
@@ -89,6 +91,7 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean {//}, 
         configuration.setUseGeneratedKeys(true);
 
         configuration.addInterceptor(new DefaultInterceptor(dialect));
+        inited=true;
 
     }
 
@@ -149,6 +152,7 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean {//}, 
     public void add(Class mapperClass) {
         String namespace = mapperClass.getName();
         Class entityClass = ObjectSupport.getGenericInterfaces(mapperClass, 0, 0);
+        if(EntityAnnotation.getInstanceOnly(entityClass)!=null) return;
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         entityAnnotation.setDialect(dialect);
         String resource = namespace.replace('.', '/') + ".java (best guess)";
@@ -314,6 +318,20 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean {//}, 
         }
 
         return bean;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        try {
+            afterPropertiesSet();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        Map<String, MapperFactoryBean> beans = applicationContext.getBeansOfType(MapperFactoryBean.class);
+        for(MapperFactoryBean bean:beans.values()){
+            Class mapperClass = ((MapperFactoryBean) bean).getObjectType();
+            add(mapperClass);
+        }
     }
 
 

@@ -74,6 +74,10 @@ public class EntityAnnotation {
         return ba;
     }
 
+    public static EntityAnnotation getInstanceOnly(Class entityClass) {
+       return   beanMap.get(entityClass);
+    }
+
     public static EntityAnnotation getInstanceByMapper(Class mapperClass) {
         return getInstance(ObjectSupport.getGenericInterfaces(mapperClass, 0, 0));
     }

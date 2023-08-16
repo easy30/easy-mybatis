@@ -30,7 +30,8 @@ public abstract class AbstractDialect implements Dialect {
         final String BY = "by";
 
         String s = sql.toLowerCase();
-        if (s.matches(".*with\\s+.*as.*")) { //with as , only simple match
+
+        if (s.matches("(?s).*with\\s+.*as.*")) { //with as , only simple match
             all = true;
         }
 
