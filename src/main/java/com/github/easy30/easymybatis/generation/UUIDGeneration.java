@@ -6,6 +6,7 @@ import java.util.UUID;
 
 /**
  * coolma 2019/11/6
+ * you need to create a spring bean.
  **/
 public class UUIDGeneration implements Generation {
 
