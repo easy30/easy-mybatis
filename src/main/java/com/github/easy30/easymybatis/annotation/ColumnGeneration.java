@@ -15,12 +15,12 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ColumnGeneration {
-    // com.cehome.easymybatis.Generation bean name for insert
+    //  Generation bean name for insert
     String insertGeneration()default "";
     // the arg param in Generation.generate(.. ,arg) method
     String insertArg() default "";
 
-    // com.cehome.easymybatis.Generation bean name for update
+    //  Generation bean name for update
     String updateGeneration()default "";
     // the arg param in Generation.generate(.. ,arg) method
     String updateArg() default "";

@@ -1,6 +1,7 @@
 package com.github.easy30.easymybatis.generation;
 
 import com.github.easy30.easymybatis.Generation;
+import com.github.easy30.easymybatis.GenerationContext;
 
 import java.util.UUID;
 
@@ -11,7 +12,8 @@ import java.util.UUID;
 public class UUIDGeneration implements Generation {
 
     @Override
-    public Object generate(Object entity, String table, String property,String arg) {
+    public Object generate(GenerationContext context) {
         return  UUID.randomUUID().toString();
     }
+
 }

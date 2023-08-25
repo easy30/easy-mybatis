@@ -26,10 +26,11 @@ public class ColumnAnnotation
 	private String columnInsertDefault;
 	private String columnUpdateDefault;
 
-	private Generation generation;
-	private String generatorArg;
+	private Generation insertGeneration;
+	private String insertGeneratorArg;
 
-
+	private Generation updateGeneration;
+	private String updateGeneratorArg;
 	
 	
 	private int length=255;
@@ -173,20 +174,36 @@ public class ColumnAnnotation
 		this.columnUpdateDefault = columnUpdateDefault;
 	}
 
-	public Generation getGeneration() {
-		return generation;
+	public Generation getInsertGeneration() {
+		return insertGeneration;
 	}
 
-	public void setGeneration(Generation generation) {
-		this.generation = generation;
+	public void setInsertGeneration(Generation insertGeneration) {
+		this.insertGeneration = insertGeneration;
 	}
 
-	public String getGeneratorArg() {
-		return generatorArg;
+	public String getInsertGeneratorArg() {
+		return insertGeneratorArg;
 	}
 
-	public void setGeneratorArg(String generatorArg) {
-		this.generatorArg = generatorArg;
+	public void setInsertGeneratorArg(String insertGeneratorArg) {
+		this.insertGeneratorArg = insertGeneratorArg;
+	}
+
+	public Generation getUpdateGeneration() {
+		return updateGeneration;
+	}
+
+	public void setUpdateGeneration(Generation updateGeneration) {
+		this.updateGeneration = updateGeneration;
+	}
+
+	public String getUpdateGeneratorArg() {
+		return updateGeneratorArg;
+	}
+
+	public void setUpdateGeneratorArg(String updateGeneratorArg) {
+		this.updateGeneratorArg = updateGeneratorArg;
 	}
 
 	public String getPropName() {

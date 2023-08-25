@@ -317,18 +317,30 @@ public class EntityAnnotation {
     private void doWithColumnGenerator(Field field, Method method, ColumnAnnotation ca) {
         ColumnGeneration columnGeneration = getAnnotation(ColumnGeneration.class, field, method);
         if (columnGeneration != null) {
-            String generatorName = columnGeneration.insertGeneration();
-            String generatorArg = columnGeneration.insertArg();
+
             Generations generations = Generations.getInstance();
 
-
-            Generation generation = generations.get(generatorName);
-            if (generation == null) {
-                throw new RuntimeException("Generator bean '" + generatorName + "' not found for class " + entityClass);
+            String generatorName = columnGeneration.insertGeneration();
+            if(StringUtils.isNotBlank(generatorName)) {
+                String generatorArg = columnGeneration.insertArg();
+                Generation generation = generations.get(generatorName);
+                if (generation == null) {
+                    throw new RuntimeException("Generator bean '" + generatorName + "' not found for entity class " + entityClass);
+                }
+                ca.setInsertGeneration(generation);
+                ca.setInsertGeneratorArg(generatorArg);
             }
-            ca.setGeneration(generation);
 
-            ca.setGeneratorArg(generatorArg);
+            generatorName = columnGeneration.updateGeneration();
+            if(StringUtils.isNotBlank(generatorName)) {
+                String generatorArg = columnGeneration.updateArg();
+                Generation generation = generations.get(generatorName);
+                if (generation == null) {
+                    throw new RuntimeException("Generator bean '" + generatorName + "' not found for entity class " + entityClass);
+                }
+                ca.setUpdateGeneration(generation);
+                ca.setUpdateGeneratorArg(generatorArg);
+            }
 
         }
     }

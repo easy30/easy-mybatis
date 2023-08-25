@@ -1,9 +1,6 @@
 package com.github.easy30.easymybatis.core;
 
-import com.github.easy30.easymybatis.Const;
-import com.github.easy30.easymybatis.DialectEntity;
-import com.github.easy30.easymybatis.MapperException;
-import com.github.easy30.easymybatis.UpdateOption;
+import com.github.easy30.easymybatis.*;
 import com.github.easy30.easymybatis.annotation.Query;
 import com.github.easy30.easymybatis.annotation.QueryColumn;
 import com.github.easy30.easymybatis.annotation.QueryExp;
@@ -23,7 +20,7 @@ import java.util.*;
 public class ProviderSupport {
     private static Logger logger = LoggerFactory.getLogger(ProviderSupport.class);
     //public static String SQL_SELECT_KEY = "<selectKey keyProperty='{}' resultType='{}' order='{}'>{}</selectKey>";
-    public static String sqlSetValues(Object entity, EntityAnnotation entityAnnotation, String prefix, UpdateOption updateOption) {
+    public static String sqlSetValues(String table, Object entity, EntityAnnotation entityAnnotation, String prefix, UpdateOption updateOption) {
         LineBuilder lb = new LineBuilder();
         if (prefix == null) prefix = "";
         if (prefix.length() > 0) prefix += ".";
@@ -64,6 +61,22 @@ public class ProviderSupport {
                 value = entityAnnotation.getDialectValue(entity, prop);
                 if (value != null) {
                     valueType=2;
+                }
+            }
+
+            // generator value
+            if (value == null) {
+
+                Generation generation = columnAnnotation.getInsertGeneration();
+                if (generation != null) {
+                    value = generation.generate(new GenerationContext( table,entity, prop,
+                            columnAnnotation.getInsertGeneratorArg()));
+                    if (value != null) {
+
+                        entityAnnotation.setProperty(entity, prop, value);
+                        valueType = 1;
+
+                    }
                 }
             }
 
