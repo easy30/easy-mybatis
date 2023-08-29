@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * coolma 2019/10/30
@@ -207,15 +208,21 @@ public class ProviderSupport {
 
     /**
      * convert prop to column name ,such as:  {aF} desc , bF asc, cF  ==>  a_f desc , b_f asc , c_f
-     *
+     * 1.select columns
+     * 2.order by columns
      * @param columns
      * @param entityAnnotation
      * @return
      */
     public static String convertPropsToColumns(String columns, EntityAnnotation entityAnnotation,String table) {
         String result = "";
-        if (columns != null && columns.length() > 0) {
 
+        if (columns != null && columns.length() > 0) {
+            Set<String> excludes=null;
+            if(columns.startsWith("!")){ // select columns excludes
+                excludes=new HashSet<>();
+                columns=columns.substring(1);
+            }
             // for complex columns such as "substring(prop1,1,3),prop2", it's hard to parse.
             // so must use {} , that is "substring({prop1},1,3),{prop2}", and use convertSqlColumns() to parse easily
             if (columns.indexOf('(') >= 0) {
@@ -235,15 +242,28 @@ public class ProviderSupport {
                 if (ca == null) {
                     logger.debug("can't find prop {} in entity ", prop);
                 }
-                String column = ca != null ? entityAnnotation.getDialect().getQuotedColumn(ca.getName()) : prop;
-                if (n == -1)
-                    result += column + " ";
-                else
-                    result += column + s.substring(n);
+                String column = ca != null ? ca.getName() : prop;
+                if(excludes==null) {
+                    column=entityAnnotation.getDialect().getQuotedColumn(column);
+                    if (n == -1)
+                        result += column + " ";
+                    else
+                        result += column + s.substring(n);
+                }else excludes.add(column);
+
+            }
+            //exclude columns
+            if(excludes!=null){
+                 Set<String> excludes2=excludes;
+                result= entityAnnotation.getColumnMap().keySet().stream().filter(e-> !excludes2.contains(e))
+                        .map(e->entityAnnotation.getDialect().getQuotedColumn(e))
+                        .collect(Collectors.joining(","));
 
             }
 
         }
+
+
         return result;
     }
 
