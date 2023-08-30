@@ -532,7 +532,7 @@ public class ProviderSupport {
         if (props.size() == 0) throw new MapperException("primary key not found");
         if (props.size() > 1) throw new MapperException("multi primary keys not supported for GetById");
 
-        String where =entityAnnotation.getDialect().getQuotedColumn( columns.get(0) )+ " = #{" + props.get(0) + "}";
+        String where =entityAnnotation.getDialect().getQuotedColumn( columns.get(0) )+ " = #{" +Const.ID + "}";
 
          QueryDefine queryDefine=new QueryDefine(sqlType);
         queryDefine.setColumns(select);
