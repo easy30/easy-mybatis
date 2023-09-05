@@ -30,6 +30,9 @@ public class ProviderSupport {
         Set ignoreColumnSet= MapperOptionSupport.getIgnoreColumnSet(updateOption);
         Map<String,String> extraColVals= MapperOptionSupport.getExtraColVals(updateOption);
         Map<String, ColumnAnnotation> columnMap= entityAnnotation.getPropertyColumnMap();
+        //cglib proxy objects
+        Set<String> changedProperties = EntityProxyFactory.getChangedProperties(entity);
+
         for (Map.Entry<String, ColumnAnnotation> e : columnMap.entrySet()) {
 
             ColumnAnnotation columnAnnotation = e.getValue();
@@ -50,7 +53,10 @@ public class ProviderSupport {
 
             //-- entity value
             if(value==null) {
-                value = entityAnnotation.getProperty(entity, prop);
+
+                if(changedProperties==null || changedProperties.contains(prop)) {
+                    value = entityAnnotation.getProperty(entity, prop);
+                }
                 if (value != null) {
                     valueType =1;
 

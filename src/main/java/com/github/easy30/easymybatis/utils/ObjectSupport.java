@@ -1,6 +1,8 @@
 package com.github.easy30.easymybatis.utils;
 
 
+import org.springframework.cglib.proxy.Enhancer;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
