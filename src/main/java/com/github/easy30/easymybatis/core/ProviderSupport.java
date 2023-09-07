@@ -504,7 +504,7 @@ public class ProviderSupport {
     }
     private static String doColumnDefault(EntityAnnotation entityAnnotation, String prop, String fullProp, Object value){
         String column=entityAnnotation.getColumnName(prop);
-        if(StringUtils.isBlank(column)) throw  new MapperException("can not find column name for property "+prop+". You can use @QueryColumn on property");
+        if(StringUtils.isBlank(column)) throw  new MapperException("can not find the column name for property '"+prop+"'. You can use @QueryColumn set a column name.");
         return QueryColumnSupport.doQueryColumn(entityAnnotation, entityAnnotation.getDialect().getQuotedColumn(entityAnnotation.getColumnName(prop)), null, fullProp, value);
 
     }
