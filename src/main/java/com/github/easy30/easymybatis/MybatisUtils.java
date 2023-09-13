@@ -2,7 +2,7 @@ package com.github.easy30.easymybatis;
 
 import com.github.easy30.easymybatis.utils.EntityProxyFactory;
 
-public class CommonUtils {
+public class MybatisUtils {
     /**
      * create cglib proxy ,for dynamic update entity
      * @param targetObject
