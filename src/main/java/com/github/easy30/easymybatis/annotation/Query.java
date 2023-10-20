@@ -13,10 +13,18 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Query {
+
+    String tableAlias() default "";
+
     // col1,col2,... for select
     String columns() default "";
-    // table1 t1,table2 t2 on t1.id=t2.id ...
-    String tables() default "";
+
+    /**
+     *
+     * tables expression: table1 t1 inner join table2 t2 on t1.id=t2.id ...
+     * @return
+     */
+    String[] tables() default "";
     // t1.name='test' . where conditions.
     String[] where() default "";
 

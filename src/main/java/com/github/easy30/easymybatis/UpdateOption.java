@@ -2,8 +2,9 @@ package com.github.easy30.easymybatis;
 
 import com.github.easy30.easymybatis.core.MapperOption;
 import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class UpdateOption extends MapperOption {
 
     private String[] columnAndValues;
@@ -15,7 +16,7 @@ public class UpdateOption extends MapperOption {
     }
 
     public UpdateOption columnAndValues(String... columnAndValues){
-        this.setColumnAndValues(columnAndValues);
+        this.columnAndValues=columnAndValues;
         return this;
     }
     public UpdateOption ignoreColumns(String... ignoreColumns){
@@ -37,7 +38,10 @@ public class UpdateOption extends MapperOption {
         return this;
     }
 
-
+    public UpdateOption ignoreQueryAnnotation(boolean ignoreQueryAnnotation){
+        this.ignoreQueryAnnotation=ignoreQueryAnnotation;
+        return this;
+    }
 
 
 

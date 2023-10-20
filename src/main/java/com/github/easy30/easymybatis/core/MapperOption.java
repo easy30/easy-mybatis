@@ -1,9 +1,11 @@
 package com.github.easy30.easymybatis.core;
 
 import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class MapperOption {
     protected String table;
+    protected boolean  ignoreQueryAnnotation;
 
 }

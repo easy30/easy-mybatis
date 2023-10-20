@@ -228,7 +228,7 @@ public class Provider<E> {
         if (StringUtils.isBlank(selectColumns)) {
             selectColumns = "*";
         } else {
-            selectColumns = ProviderSupport.convertPropsToColumns(selectColumns, entityAnnotation,table);
+            selectColumns = ProviderSupport.convertPropsToColumns(selectColumns, entityAnnotation,table,null);
         }
         return ProviderSupport.sqlById(entityAnnotation, id, Global.SQL_TYPE_SELECT, selectColumns,table);
     }

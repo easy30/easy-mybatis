@@ -25,4 +25,10 @@ public @interface QueryColumn {
      * @return
      */
     ColumnOperator operator() default ColumnOperator.DEFAULT;
+
+    /**
+     * for more than one tables;
+     * @return
+     */
+    String table() default "";
 }
