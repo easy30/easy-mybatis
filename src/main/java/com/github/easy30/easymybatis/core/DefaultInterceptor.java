@@ -184,10 +184,12 @@ public class DefaultInterceptor implements Interceptor {
     }
 
     private boolean hasPage( Method m){
-        Class<?>[] parameterTypes = m.getParameterTypes();
-        if(parameterTypes!=null &&  parameterTypes.length>0){
-            for(Class c:parameterTypes){
-                if( Page.class.isAssignableFrom(c)) return true;
+        if(m!=null) {
+            Class<?>[] parameterTypes = m.getParameterTypes();
+            if (parameterTypes != null && parameterTypes.length > 0) {
+                for (Class c : parameterTypes) {
+                    if (Page.class.isAssignableFrom(c)) return true;
+                }
             }
         }
         return false;
@@ -212,6 +214,7 @@ public class DefaultInterceptor implements Interceptor {
 
     private boolean isLimitOne(MappedStatement statement) {
         Method m = getMethod(statement.getId());
+        if(m==null) return false;
         LimitOne limitOne = m.getAnnotation(LimitOne.class);
         return limitOne != null;
     }

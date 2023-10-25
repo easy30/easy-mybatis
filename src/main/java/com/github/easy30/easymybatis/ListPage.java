@@ -1,5 +1,10 @@
 package com.github.easy30.easymybatis;
 
+/*import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;*/
+
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -132,4 +137,19 @@ public class ListPage<E> extends Page<E>  implements List<E> {
     public List<E> subList(int fromIndex, int toIndex) {
         return data.subList(fromIndex,toIndex);
     }
+
+    /*
+       预留对ListPage序列化处理
+       public static class ListSerializer extends JsonSerializer<ListPage> {
+        @Override
+        public void serialize(ListPage listPage, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+            // 在这里处理ListPage对象的序列化，只处理属性而不处理元素
+            jsonGenerator.writeStartObject();
+            // 处理属性
+            jsonGenerator.writeObjectField("pageSize", listPage.getPageSize());
+            jsonGenerator.writeObjectField("data", listPage.getData() );
+            // ...
+            jsonGenerator.writeEndObject();
+        }
+    }*/
 }
