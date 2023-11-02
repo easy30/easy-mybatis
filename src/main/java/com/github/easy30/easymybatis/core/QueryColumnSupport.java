@@ -26,7 +26,11 @@ public class QueryColumnSupport {
 
         //-- is null  / not is null
         if(ColumnOperator.NULL.equals(operator)){
-            return doWithNull( column, value,operatorValue);
+            return doWithNull( column, operatorValue,value);
+        }
+        //equal or like
+        if(ColumnOperator.EQ_LIKE.equals(operator)){
+            return doWithEqLike(column,operatorValue,prop,value);
         }
 
         String item = column + " " + operatorValue[0] + " ";
@@ -75,11 +79,16 @@ public class QueryColumnSupport {
         }
         return item.length()>0?" ( "+item+" ) ":item;
     }
-    private static String doWithNull(String column,Object value,String[] operatorValue){
+    private static String doWithNull(String column,String[] operatorValue,Object value){
         if(! (value instanceof Boolean)){
             throw new MapperException(" boolean value need for ColumnOperator.NULL ");
         }
         boolean b=(Boolean) value;
         return  column + " " + (b?operatorValue[0]:operatorValue[1]) + " ";
+    }
+    private static String doWithEqLike(String column, String[] operatorValue,String prop,Object value){
+        String  s=value.toString();
+        boolean eq=s.indexOf('%')==-1 && s.indexOf('_')==-1;
+        return  column + " " + (eq?operatorValue[0]:operatorValue[1]) + " #{" + prop + "} ";
     }
 }

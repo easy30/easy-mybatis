@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +51,15 @@ public class DefaultInterceptor implements Interceptor {
     private Map<String, MappedStatement> countMap = new ConcurrentHashMap();
     private Dialect dialect;
     private static ThreadLocal<Boolean> inPage = new ThreadLocal<>();
+    private Map<String,ValueContainer<Method>> statementMethodMap=new ConcurrentHashMap<>();
 
+    class ValueContainer<T> {
+        T value;
+        public ValueContainer(T value){
+            this.value=value;
+        }
+
+    }
     public DefaultInterceptor(Dialect dialect) {
         this.dialect = dialect;
     }
@@ -67,7 +76,7 @@ public class DefaultInterceptor implements Interceptor {
 
         MappedStatement statement = (MappedStatement) args[0];
 
-        Method m = getMethod(statement.getId());
+
 
         // -- do with select
         if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
@@ -137,7 +146,7 @@ public class DefaultInterceptor implements Interceptor {
                 }
             }else{
                 List list = (List) invocation.proceed();
-                
+                Method m = getMethod(statement.getId());
                 if(!hasPage(m)){
                     return list;
                 }
@@ -246,7 +255,11 @@ public class DefaultInterceptor implements Interceptor {
         }
     }
 
+
     private Method getMethod(String id) {
+        ValueContainer<Method> container = statementMethodMap.get(id);
+        if(container!=null) return container.value;
+
         int n = id.lastIndexOf('.');
         String className = id.substring(0, n);
         String methodName = id.substring(n + 1);
@@ -254,12 +267,20 @@ public class DefaultInterceptor implements Interceptor {
         try {
             c = Class.forName(className);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            logger.warn(""+e);
         }
-        for (Method m : c.getMethods()) {
-            if (m.getName().equals(methodName)) return m;
+        Method method=null;
+        if(c!=null) {
+            for (Method m : c.getMethods()) {
+                if (m.getName().equals(methodName)) {
+                    method=m;
+                    break;
+                }
+            }
         }
-        return null;
+
+        statementMethodMap.put(id,new ValueContainer<>(method));
+        return method;
     }
 
     private MappedStatement createMappedStatement(final MappedStatement statement, final Class resultTypeClass) {

@@ -21,16 +21,13 @@ import org.apache.ibatis.mapping.StatementType;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.mybatis.spring.mapper.MapperFactoryBean;
+import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -149,7 +146,7 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
 
     }*/
 
-    public void add(Class mapperClass) {
+    public void setupMapper(Class mapperClass) {
         String namespace = mapperClass.getName();
         Class entityClass = ObjectSupport.getGenericInterfaces(mapperClass, 0, 0);
         if(EntityAnnotation.getInstanceOnly(entityClass)!=null) return;
@@ -312,9 +309,8 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
             generations.put(beanName, (Generation) bean);
         }
         //初始化实体类
-        if (bean instanceof MapperFactoryBean) {
-            Class mapperClass = ((MapperFactoryBean) bean).getObjectType();
-            add(mapperClass);
+        if (bean instanceof SqlSessionDaoSupport) {
+            setupMapperBean((SqlSessionDaoSupport)bean);
         }
 
         return bean;
@@ -327,10 +323,24 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Map<String, MapperFactoryBean> beans = applicationContext.getBeansOfType(MapperFactoryBean.class);
-        for(MapperFactoryBean bean:beans.values()){
-            Class mapperClass = ((MapperFactoryBean) bean).getObjectType();
-            add(mapperClass);
+        Map<String, SqlSessionDaoSupport> beans = applicationContext.getBeansOfType(SqlSessionDaoSupport.class);
+        for(SqlSessionDaoSupport bean:beans.values()){
+            setupMapperBean(bean);
+
+        }
+    }
+
+    /**
+     * 缺省是org.mybatis.spring.mapper.MapperFactoryBean , 但如果存在其它第三方框架可能有自己
+     * @param bean
+     */
+    private void setupMapperBean(SqlSessionDaoSupport bean){
+        if(bean instanceof FactoryBean  ) {
+                Class mapperClass = ((FactoryBean) bean).getObjectType();
+                if(Mapper.class.isAssignableFrom(mapperClass)) {
+                    setupMapper(mapperClass);
+                }
+
         }
     }
 
