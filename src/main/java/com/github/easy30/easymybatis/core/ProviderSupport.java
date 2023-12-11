@@ -48,9 +48,8 @@ public class ProviderSupport {
 
 
             int valueType = 0;//0: none  1 value 2:native dialect value
-            //-- 原始sql值. option: add extra value
+            //-- option优先级比较高(原始sql赋值)
             Object value = MapperOptionSupport.getAndRemove(extraColVals, prop, columnAnnotation.getName());
-
             if (value != null) {
                 valueType = 2;
             }

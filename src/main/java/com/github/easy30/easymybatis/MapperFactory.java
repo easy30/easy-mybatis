@@ -306,9 +306,9 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof Generation) {
+        /*if (bean instanceof Generation) {
             generations.put(beanName, (Generation) bean);
-        }
+        }*/
         //初始化实体类
         if (bean instanceof SqlSessionDaoSupport) {
             setupMapperBean((SqlSessionDaoSupport)bean);

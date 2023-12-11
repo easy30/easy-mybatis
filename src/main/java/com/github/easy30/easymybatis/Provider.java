@@ -187,7 +187,7 @@ public class Provider<E> {
         UpdateOption option=merge(options);
         String table= MapperOptionSupport.getTable(entityAnnotation,option);
         //String sql = ProviderSupport.SQL_UPDATE;
-        String set = ProviderSupport.sqlSetValues(table,entity, entityAnnotation,Const.ENTITY,merge(options));
+        String set = ProviderSupport.sqlSetValues(table,entity, entityAnnotation,Const.ENTITY,option);
         QueryDefine result= ProviderSupport.parseParams(entityAnnotation,params, paramNames.split("[,\\s]+"),Global.SQL_TYPE_UPDATE,"",null,Const.PARAMS ,merge(options));
         result.setSet(set);
         return result.toSQL();
