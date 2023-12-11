@@ -1,17 +1,21 @@
 package com.github.easy30.easymybatis;
 
 
+import com.github.easy30.easymybatis.annotation.ColumnGeneration;
 import com.github.easy30.easymybatis.core.*;
 import com.github.easy30.easymybatis.dialect.Dialect;
 import com.github.easy30.easymybatis.utils.LineBuilder;
+import com.github.easy30.easymybatis.utils.ObjectSupport;
 import com.github.easy30.easymybatis.utils.Utils;
 
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.builder.annotation.ProviderContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +25,8 @@ import java.util.Set;
  **/
 public class Provider<E> {
     private static Logger logger = LoggerFactory.getLogger(Provider.class);
-    public String insert(ProviderContext context,@Param(Const.ENTITY) E entity,@Param(Const.OPTIONS) UpdateOption... options) {
+    @SneakyThrows
+    public String insert(ProviderContext context, @Param(Const.ENTITY) E entity, @Param(Const.OPTIONS) UpdateOption... options) {
         //Class entityClass = entity.getClass();
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
         Dialect dialect=entityAnnotation.getDialect();
@@ -82,11 +87,9 @@ public class Provider<E> {
 
             // generator value
             if (value == null) {
-
-                Generation generation = columnAnnotation.getInsertGeneration();
-                if (generation != null) {
-                    value = generation.generate(new GenerationContext( table,entity, prop,
-                            columnAnnotation.getInsertGeneratorArg()));
+                ColumnGenerationHandler columnGenerationHandler = columnAnnotation.getColumnGenerationHandler();
+                if (columnGenerationHandler != null) {
+                    value=columnGenerationHandler.getInsertValue(table, entity, prop);
                     if (value != null) {
                         entityAnnotation.setProperty(entity, prop, value);
                         valueType = 1;

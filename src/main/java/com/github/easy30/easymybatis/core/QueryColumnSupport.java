@@ -28,11 +28,6 @@ public class QueryColumnSupport {
         if(ColumnOperator.NULL.equals(operator)){
             return doWithNull( column, operatorValue,value);
         }
-        //equal or like
-        if(ColumnOperator.EQ_LIKE.equals(operator)){
-            return doWithEqLike(column,operatorValue,prop,value);
-        }
-
         String item = column + " " + operatorValue[0] + " ";
         //-- in,not in
         if (ColumnOperator.IN.equals(operator) || ColumnOperator.NOT_IN.equals(operator)) {
@@ -50,7 +45,10 @@ public class QueryColumnSupport {
             } else {
                 throw new MapperException("array property need for operator " + operatorValue);
             }
-        } else {
+        } else if(ColumnOperator.CONTAIN.equals(operator) || ColumnOperator.NOT_CONTAIN.equals(operator)){
+            item += " '%${" + prop + "}%' ";
+        }
+        else {
             item += " #{" + prop + "} ";
         }
         return item;
@@ -86,9 +84,9 @@ public class QueryColumnSupport {
         boolean b=(Boolean) value;
         return  column + " " + (b?operatorValue[0]:operatorValue[1]) + " ";
     }
-    private static String doWithEqLike(String column, String[] operatorValue,String prop,Object value){
+   /* private static String doWithEqLike(String column, String[] operatorValue,String prop,Object value){
         String  s=value.toString();
         boolean eq=s.indexOf('%')==-1 && s.indexOf('_')==-1;
         return  column + " " + (eq?operatorValue[0]:operatorValue[1]) + " #{" + prop + "} ";
-    }
+    }*/
 }

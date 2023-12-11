@@ -133,6 +133,13 @@ public class ObjectSupport {
 		return null;
 	}
 
+	public static Method getMethod(Class clazz,String methodName, Class<?>... parameterTypes){
+		try {
+			return clazz.getMethod(methodName,parameterTypes);
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	public static  <T extends Annotation> T getAnnotation(Class<T> annotationClass, Field field, Method method){
 		T  t=null;

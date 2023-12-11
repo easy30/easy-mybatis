@@ -3,6 +3,7 @@ package com.github.easy30.easymybatis.core;
 
 import com.github.easy30.easymybatis.DialectEntity;
 import com.github.easy30.easymybatis.Generation;
+import com.github.easy30.easymybatis.MapperFactory;
 import com.github.easy30.easymybatis.annotation.ColumnDefault;
 import com.github.easy30.easymybatis.annotation.ColumnGeneration;
 import com.github.easy30.easymybatis.annotation.EntitySelectKey;
@@ -53,6 +54,7 @@ public class EntityAnnotation {
     //private boolean dialectEntity;
     private EntitySelectKey entitySelectKey;
     private Dialect dialect;
+    private MapperFactory mapperFactory;
 
     public static EntityAnnotation getInstance(Class entityClass) {
         // cblib child class to parent class
@@ -317,33 +319,10 @@ public class EntityAnnotation {
     private void doWithColumnGenerator(Field field, Method method, ColumnAnnotation ca) {
         ColumnGeneration columnGeneration = getAnnotation(ColumnGeneration.class, field, method);
         if (columnGeneration != null) {
-
-            Generations generations = Generations.getInstance();
-
-            String generatorName = columnGeneration.insertGeneration();
-            if(StringUtils.isNotBlank(generatorName)) {
-                String generatorArg = columnGeneration.insertArg();
-                Generation generation = generations.get(generatorName);
-                if (generation == null) {
-                    throw new RuntimeException("Generator bean '" + generatorName + "' not found for entity class " + entityClass);
-                }
-                ca.setInsertGeneration(generation);
-                ca.setInsertGeneratorArg(generatorArg);
-            }
-
-            generatorName = columnGeneration.updateGeneration();
-            if(StringUtils.isNotBlank(generatorName)) {
-                String generatorArg = columnGeneration.updateArg();
-                Generation generation = generations.get(generatorName);
-                if (generation == null) {
-                    throw new RuntimeException("Generator bean '" + generatorName + "' not found for entity class " + entityClass);
-                }
-                ca.setUpdateGeneration(generation);
-                ca.setUpdateGeneratorArg(generatorArg);
-            }
-
+            ca.setColumnGenerationHandler(new ColumnGenerationHandler(columnGeneration,this));
         }
     }
+
 
     private <T extends Annotation> T getAnnotation(Class<T> annotationClass, Field field, Method method) {
         return ObjectSupport.getAnnotation(annotationClass, field, method);
@@ -489,5 +468,13 @@ public class EntityAnnotation {
 
     public void setDialect(Dialect dialect) {
         this.dialect = dialect;
+    }
+
+    public MapperFactory getMapperFactory() {
+        return mapperFactory;
+    }
+
+    public void setMapperFactory(MapperFactory mapperFactory) {
+        this.mapperFactory = mapperFactory;
     }
 }

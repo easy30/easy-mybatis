@@ -1,17 +1,20 @@
 package com.github.easy30.easymybatis.core;
 
 import com.github.easy30.easymybatis.*;
+import com.github.easy30.easymybatis.annotation.ColumnGeneration;
 import com.github.easy30.easymybatis.annotation.Query;
 import com.github.easy30.easymybatis.annotation.QueryColumn;
 import com.github.easy30.easymybatis.annotation.QueryExp;
 import com.github.easy30.easymybatis.dialect.Dialect;
 import com.github.easy30.easymybatis.enums.RelatedOperator;
 import com.github.easy30.easymybatis.utils.*;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,7 @@ public class ProviderSupport {
     private static Logger logger = LoggerFactory.getLogger(ProviderSupport.class);
 
     //public static String SQL_SELECT_KEY = "<selectKey keyProperty='{}' resultType='{}' order='{}'>{}</selectKey>";
+    @SneakyThrows
     public static String sqlSetValues(String table, Object entity, EntityAnnotation entityAnnotation, String prefix, UpdateOption updateOption) {
         LineBuilder lb = new LineBuilder();
         if (prefix == null) prefix = "";
@@ -75,12 +79,10 @@ public class ProviderSupport {
             // generator value
             if (value == null) {
 
-                Generation generation = columnAnnotation.getInsertGeneration();
-                if (generation != null) {
-                    value = generation.generate(new GenerationContext(table, entity, prop,
-                            columnAnnotation.getInsertGeneratorArg()));
+                ColumnGenerationHandler columnGenerationHandler = columnAnnotation.getColumnGenerationHandler();
+                if (columnGenerationHandler != null) {
+                    value=columnGenerationHandler.getUpdateValue(table, entity, prop);
                     if (value != null) {
-
                         entityAnnotation.setProperty(entity, prop, value);
                         valueType = 1;
 
@@ -329,7 +331,8 @@ public class ProviderSupport {
     }
 
     public static String convertSqlAddParamPrefix(String sql, String prefix) {
-        return Utils.regularReplace(sql, "[#\\$]\\{(\\w+)\\}", "#'{'" + prefix + ".{1}'}'");
+         sql=  Utils.regularReplace(sql,  "#\\{(\\w+)\\}", "#'{'" + prefix + ".{1}'}'");
+        return Utils.regularReplace(sql,"\\$\\{(\\w+)\\}", "$'{'" + prefix + ".{1}'}'");
     }
 
 
@@ -454,7 +457,7 @@ public class ProviderSupport {
                             if (StringUtils.isBlank(queryItemValue)) {
                                 condition = doColumnDefault(entityAnnotation, tableAlias, prop, fullProp, value);
                             } else {
-                                condition = sqlConvert(Utils.toString(queryExp.value(), System.lineSeparator(), null), entityAnnotation, defaultTable);
+                                condition = sqlConvert(queryItemValue, entityAnnotation, defaultTable);
                             }
 
 

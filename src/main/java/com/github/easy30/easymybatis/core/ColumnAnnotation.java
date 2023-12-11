@@ -1,6 +1,11 @@
 package com.github.easy30.easymybatis.core;
 
 import com.github.easy30.easymybatis.Generation;
+import com.github.easy30.easymybatis.annotation.ColumnGeneration;
+import org.apache.commons.lang3.StringUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * column annotations
@@ -26,12 +31,8 @@ public class ColumnAnnotation
 	private String columnInsertDefault;
 	private String columnUpdateDefault;
 
-	private Generation insertGeneration;
-	private String insertGeneratorArg;
+	private ColumnGenerationHandler columnGenerationHandler;
 
-	private Generation updateGeneration;
-	private String updateGeneratorArg;
-	
 	
 	private int length=255;
 	private int precision=0;
@@ -174,36 +175,12 @@ public class ColumnAnnotation
 		this.columnUpdateDefault = columnUpdateDefault;
 	}
 
-	public Generation getInsertGeneration() {
-		return insertGeneration;
+	public ColumnGenerationHandler getColumnGenerationHandler() {
+		return columnGenerationHandler;
 	}
 
-	public void setInsertGeneration(Generation insertGeneration) {
-		this.insertGeneration = insertGeneration;
-	}
-
-	public String getInsertGeneratorArg() {
-		return insertGeneratorArg;
-	}
-
-	public void setInsertGeneratorArg(String insertGeneratorArg) {
-		this.insertGeneratorArg = insertGeneratorArg;
-	}
-
-	public Generation getUpdateGeneration() {
-		return updateGeneration;
-	}
-
-	public void setUpdateGeneration(Generation updateGeneration) {
-		this.updateGeneration = updateGeneration;
-	}
-
-	public String getUpdateGeneratorArg() {
-		return updateGeneratorArg;
-	}
-
-	public void setUpdateGeneratorArg(String updateGeneratorArg) {
-		this.updateGeneratorArg = updateGeneratorArg;
+	public void setColumnGenerationHandler(ColumnGenerationHandler columnGenerationHandler) {
+		this.columnGenerationHandler = columnGenerationHandler;
 	}
 
 	public String getPropName() {
@@ -213,4 +190,6 @@ public class ColumnAnnotation
 	public void setPropName(String propName) {
 		this.propName = propName;
 	}
+
+
 }

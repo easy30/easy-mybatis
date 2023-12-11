@@ -16,13 +16,22 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ColumnGeneration {
     //  Generation bean name for insert
-    String insertGeneration()default "";
+    String insertGeneration() default "";
+    String insertMethod() default "generate";
     // the arg param in Generation.generate(.. ,arg) method
     String insertArg() default "";
 
     //  Generation bean name for update
-    String updateGeneration()default "";
+    String updateGeneration() default "";
+    String updateMethod() default "generate";
     // the arg param in Generation.generate(.. ,arg) method
     String updateArg() default "";
+
+
+    //  Generation bean name for insert or update
+    String generation() default "";
+    String method() default "generate";
+    // the arg param in Generation.generate(.. ,arg) method
+    String arg() default "";
 
 }

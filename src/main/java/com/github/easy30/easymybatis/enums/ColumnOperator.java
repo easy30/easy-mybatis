@@ -10,7 +10,10 @@ public enum ColumnOperator{
         EQ("="),NOT_EQ(Global.OPER_NOT_EQ),
          GT(">"),GE(">="),LT(Global.OPER_LESS_THAN),LE(Global.OPER_LESS_EQUAL),
         BETWEEN("BETWEEN"),  NOT_BETWEEN("NOT BETWEEN"),
-        LIKE("LIKE"),  NOT_LIKE("NOT LIKE"),  EQ_LIKE("=","LIKE"),// 如果value有 % _ 则like, 否则eq
+        //CONTAIN change value  : hello =>  %hello%
+        CONTAIN("LIKE"),  NOT_CONTAIN("NOT LIKE"),
+        //LIKE not change value  : %hello => %hello
+        LIKE("LIKE"),  NOT_LIKE("NOT LIKE"),
         IN("IN"),NOT_IN("NOT IN"),
         //must be Boolean value ,true means IS NULL , false means IS NOT NULL;
         NULL("IS NULL","IS NOT NULL"),

@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationContextAware;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * coolma 2019/10/25
@@ -51,6 +52,7 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
 
 
     private Class[] mapperInterfaces;
+    private Map<String,Generation> generations=new ConcurrentHashMap<>();
 
     private boolean inited=false;
     public MapperFactory() {
@@ -152,6 +154,7 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
         if(EntityAnnotation.getInstanceOnly(entityClass)!=null) return;
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         entityAnnotation.setDialect(dialect);
+        entityAnnotation.setMapperFactory(this);
         String resource = namespace.replace('.', '/') + ".java (best guess)";
         MapperBuilderAssistant assistant =
                 new MapperBuilderAssistant(configuration, resource);
@@ -304,8 +307,6 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof Generation) {
-            Generations generations = Generations.getInstance();
-            //Map<String, Generation> beans = context.getBeansOfType(Generation.class);
             generations.put(beanName, (Generation) bean);
         }
         //初始化实体类
@@ -344,8 +345,19 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
         }
     }
 
+    public Map<String, Generation> getGenerations() {
+        return generations;
+    }
 
-    /*private void dd(String resourceLocation){
+    /**
+     * put generations
+     * @param generations
+     */
+    public void setGenerations(Map<String, Generation> generations) {
+        this.generations.putAll(generations);
+    }
+
+/*private void dd(String resourceLocation){
         XMLMapperBuilder
         ResourceUtils.getFile(resourceLocation)
     }*/
