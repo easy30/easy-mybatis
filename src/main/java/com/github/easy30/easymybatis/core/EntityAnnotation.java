@@ -1,15 +1,12 @@
 package com.github.easy30.easymybatis.core;
 
 
-import com.github.easy30.easymybatis.DialectEntity;
-import com.github.easy30.easymybatis.Generation;
-import com.github.easy30.easymybatis.MapperFactory;
+import com.github.easy30.easymybatis.*;
 import com.github.easy30.easymybatis.annotation.ColumnDefault;
 import com.github.easy30.easymybatis.annotation.ColumnGeneration;
 import com.github.easy30.easymybatis.annotation.EntitySelectKey;
 import com.github.easy30.easymybatis.dialect.Dialect;
 import com.github.easy30.easymybatis.utils.ObjectSupport;
-import com.github.easy30.easymybatis.Const;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +52,7 @@ public class EntityAnnotation {
     private EntitySelectKey entitySelectKey;
     private Dialect dialect;
     private MapperFactory mapperFactory;
+    private EasyConfiguration easyConfiguration;
 
     public static EntityAnnotation getInstance(Class entityClass) {
         // cblib child class to parent class
@@ -463,6 +461,7 @@ public class EntityAnnotation {
     }
 
     public Dialect getDialect() {
+        if(dialect==null) throw new MapperException("dialect is null");
         return dialect;
     }
 
@@ -476,5 +475,13 @@ public class EntityAnnotation {
 
     public void setMapperFactory(MapperFactory mapperFactory) {
         this.mapperFactory = mapperFactory;
+    }
+
+    public EasyConfiguration getEasyConfiguration() {
+        return easyConfiguration;
+    }
+
+    public void setEasyConfiguration(EasyConfiguration easyConfiguration) {
+        this.easyConfiguration = easyConfiguration;
     }
 }

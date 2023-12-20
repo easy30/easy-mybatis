@@ -59,6 +59,13 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
 
     }
 
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     public SqlSessionTemplate getSqlSessionTemplate() {
         return sqlSessionTemplate;
@@ -80,7 +87,7 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
     public void afterPropertiesSet() throws Exception {
         if(inited) return;
         if (sqlSessionFactory != null) configuration = sqlSessionFactory.getConfiguration();
-        else if (sqlSessionTemplate != null) configuration = configuration;
+        else if (sqlSessionTemplate != null) configuration =sqlSessionTemplate.getConfiguration();
         else throw new RuntimeException("SqlSessionTemplate or SqlSessionFactory not found");
 
         dialect = DialectFactory.createDialect(dialectName, configuration);
@@ -155,10 +162,10 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
         entityAnnotation.setDialect(dialect);
         entityAnnotation.setMapperFactory(this);
-        String resource = namespace.replace('.', '/') + ".java (best guess)";
+        /*String resource = namespace.replace('.', '/') + ".java (best guess)";
         MapperBuilderAssistant assistant =
                 new MapperBuilderAssistant(configuration, resource);
-        assistant.setCurrentNamespace(namespace);
+        assistant.setCurrentNamespace(namespace);*/
 
         for (Method method : mapperClass.getMethods()) {
             //AbstractMethodBuilder methodBuilder= methodBuilderMap.get(method.getName());

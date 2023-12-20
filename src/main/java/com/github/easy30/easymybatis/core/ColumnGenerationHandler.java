@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ColumnGenerationHandler {
@@ -90,8 +91,9 @@ public class ColumnGenerationHandler {
         if(init) return;
         if (columnGeneration != null) {
 
-            Map<String, Generation> generations =entityAnnotation.getMapperFactory().getGenerations();
-
+            Map<String, Generation> generations =entityAnnotation.getEasyConfiguration()!=null?
+                    entityAnnotation.getEasyConfiguration().getGenerations():
+                    entityAnnotation.getMapperFactory().getGenerations();
             String generatorName = columnGeneration.generation();
             if(StringUtils.isNotBlank(generatorName)) {
                 Generation generation = generations.get(generatorName);
