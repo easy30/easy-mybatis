@@ -90,7 +90,7 @@ public class EasyConfiguration extends Configuration {
                 //会包含 org.apache.ibatis.session.Configuration.StrictMap.Ambiguity 类型的!!!
                 if(! (o instanceof MappedStatement)) continue;
                 MappedStatement ms=(MappedStatement)o;
-                System.out.println(ms.getId());
+                //System.out.println(ms.getId());
                 if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {
                     String id=ms.getId();
                     int lastPeriod = ms.getId().lastIndexOf('.');
