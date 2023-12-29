@@ -8,6 +8,7 @@ import com.github.easy30.easymybatis.dialect.Dialect;
 import com.github.easy30.easymybatis.utils.ObjectSupport;
 import com.github.easy30.easymybatis.utils.Utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.SelectKey;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
@@ -37,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * coolma 2019/10/25
  **/
+@Slf4j
 public class MapperFactory implements BeanPostProcessor, InitializingBean, ApplicationContextAware {//}, ApplicationListener<ContextRefreshedEvent> {
     private static Boolean loaded = false;
 
@@ -186,6 +188,7 @@ public class MapperFactory implements BeanPostProcessor, InitializingBean, Appli
     }
 
     private void doKeyGenerator(Class mapperClass, Class entityClass, Method method, MappedStatement ms) {
+        log.debug("------ mapper:{},entity:{},method:{}",mapperClass,entityClass,method);
         KeyGenerator keyGenerator = ms.getKeyGenerator();
         // SelectKey exists ,so do nothing
         if (keyGenerator != null && keyGenerator instanceof SelectKeyGenerator) return;

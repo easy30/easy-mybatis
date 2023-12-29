@@ -9,6 +9,7 @@ import com.github.easy30.easymybatis.dialect.Dialect;
 import com.github.easy30.easymybatis.utils.ObjectSupport;
 import com.github.easy30.easymybatis.utils.Utils;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.SelectKey;
 import org.apache.ibatis.builder.annotation.MapperAnnotationBuilder;
@@ -19,28 +20,29 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.mapping.StatementType;
 import org.apache.ibatis.session.Configuration;
-import org.springframework.util.CollectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class EasyConfiguration extends Configuration {
     private Dialect dialect;
     private String dialectName;
-    private Map<String,Generation> generations=new ConcurrentHashMap<>();
-    private boolean init=false;
-    public EasyConfiguration(){
+    private Map<String, Generation> generations = new ConcurrentHashMap<>();
+    private boolean init = false;
+
+    public EasyConfiguration() {
         //-- default config
         setMapUnderscoreToCamelCase(true);
         setUseGeneratedKeys(true);
 
 
     }
+
     public String getDialectName() {
         return dialectName;
     }
@@ -48,66 +50,59 @@ public class EasyConfiguration extends Configuration {
     public void setDialectName(String dialectName) {
         this.dialectName = dialectName;
     }
+
     public Map<String, Generation> getGenerations() {
         return generations;
     }
 
     /**
      * put generations
+     *
      * @param generations
      */
     public void setGenerations(Map<String, Generation> generations) {
         this.generations.putAll(generations);
     }
+
+
     @Override
-    public <T> void addMapper(Class<T> type) {
-        super.addMapper(type);
-        Class entityClass = ObjectSupport.getGenericInterfaces(type, 0, 0);
-        if(EntityAnnotation.getInstanceOnly(entityClass)!=null) return;
-        EntityAnnotation entityAnnotation = EntityAnnotation.getInstance(entityClass);
-        if(dialect==null){
-            dialect = DialectFactory.createDialect(dialectName, this);
-            addInterceptor(new DefaultInterceptor(dialect));
-        }
-        entityAnnotation.setDialect(dialect);
-
-        //entityAnnotation.setMapperFactory(this);
+    public void addMappedStatement(MappedStatement ms) {
+        initMappedStatement(ms);
+        super.addMappedStatement(ms);
     }
 
-    public MappedStatement getMappedStatement(String id) {
-        if(!init){
-            init();
-            init=true;
-        }
-        return super.getMappedStatement(id);
-    }
 
     @SneakyThrows
-    protected void init(){
-        Collection mappedStatements = this.getMappedStatements();
-        if(!CollectionUtils.isEmpty(mappedStatements)){
-            for(Object o:mappedStatements) {
-                //会包含 org.apache.ibatis.session.Configuration.StrictMap.Ambiguity 类型的!!!
-                if(! (o instanceof MappedStatement)) continue;
-                MappedStatement ms=(MappedStatement)o;
-                //System.out.println(ms.getId());
-                if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {
-                    String id=ms.getId();
-                    int lastPeriod = ms.getId().lastIndexOf('.');
-                    String mapperClassName =  id.substring(0, lastPeriod);
-                    String mapperMethodName=id.substring(lastPeriod+1);
-                    Class<?> mapperClass = Class.forName(mapperClassName);
-                    Method mapperMethod=  Arrays.stream(mapperClass.getMethods()).filter(m->m.getName().equals(mapperMethodName)).findFirst().orElse(null);
-                    Class entityClass=  EntityAnnotation.getInstanceByMapper(mapperClass).getEntityClass();
-                    doKeyGenerator(mapperClass, entityClass, mapperMethod, ms);
-                }
-            }
-        }
+    protected void initMappedStatement(MappedStatement ms) {
 
+        if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {
+            //get mapper class and method
+            String id = ms.getId();
+            int lastPeriod = ms.getId().lastIndexOf('.');
+            String mapperClassName = id.substring(0, lastPeriod);
+            String mapperMethodName = id.substring(lastPeriod + 1);
+            Class<?> mapperClass = Class.forName(mapperClassName);
+            Method mapperMethod = Arrays.stream(mapperClass.getMethods()).filter(m -> m.getName().equals(mapperMethodName)).findFirst().orElse(null);
+
+            //-- init  dialect
+            if (dialect == null) {
+                dialect = DialectFactory.createDialect(dialectName, this);
+                addInterceptor(new DefaultInterceptor(dialect));
+            }
+
+            //-- set dialect
+            EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(mapperClass);
+            entityAnnotation.setDialect(dialect);
+
+            //-- set auto-key-return
+            Class entityClass = entityAnnotation.getEntityClass();
+            doKeyGenerator(mapperClass, entityClass, mapperMethod, ms);
+        }
 
     }
 
     private void doKeyGenerator(Class mapperClass, Class entityClass, Method method, MappedStatement ms) {
+        log.debug("------ mapper:{},entity:{},method:{}", mapperClass, entityClass, method);
         KeyGenerator keyGenerator = ms.getKeyGenerator();
         // SelectKey exists ,so do nothing
         if (keyGenerator != null && keyGenerator instanceof SelectKeyGenerator) return;
