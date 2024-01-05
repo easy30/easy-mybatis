@@ -74,7 +74,11 @@ public class EasyConfiguration extends Configuration {
 
     @SneakyThrows
     protected void initMappedStatement(MappedStatement ms) {
-
+        //-- init  dialect
+        if (dialect == null) {
+            dialect = DialectFactory.createDialect(dialectName, this);
+            addInterceptor(new DefaultInterceptor(dialect));
+        }
         if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {
             //get mapper class and method
             String id = ms.getId();
@@ -83,12 +87,6 @@ public class EasyConfiguration extends Configuration {
             String mapperMethodName = id.substring(lastPeriod + 1);
             Class<?> mapperClass = Class.forName(mapperClassName);
             Method mapperMethod = Arrays.stream(mapperClass.getMethods()).filter(m -> m.getName().equals(mapperMethodName)).findFirst().orElse(null);
-
-            //-- init  dialect
-            if (dialect == null) {
-                dialect = DialectFactory.createDialect(dialectName, this);
-                addInterceptor(new DefaultInterceptor(dialect));
-            }
 
             //-- set dialect
             EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(mapperClass);
