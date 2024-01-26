@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 @Getter
 public class SelectOption extends MapperOption  {
-    protected boolean ignoreForeignColumn;
+    protected Integer foreignColumnThreshold;
     public static SelectOption create(){
         return new SelectOption();
     }
@@ -23,9 +23,9 @@ public class SelectOption extends MapperOption  {
         return this;
     }
 
-    public SelectOption ignoreForeignColumn(boolean ignoreForeignColumn){
-        this.ignoreForeignColumn=ignoreForeignColumn;
-       return this;
+    public SelectOption ignoreForeignColumn(Integer foreignColumnThreshold){
+        this.foreignColumnThreshold=foreignColumnThreshold;
+        return this;
     }
 
 }

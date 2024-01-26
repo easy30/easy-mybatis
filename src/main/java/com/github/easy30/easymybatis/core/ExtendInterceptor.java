@@ -54,6 +54,16 @@ public class ExtendInterceptor implements Interceptor {
     private static Logger logger = LoggerFactory.getLogger(ExtendInterceptor.class);
     private SqlSession sqlSession;
     private Set<Class> ignoreForeignClassSet=Collections.synchronizedSet(new HashSet<>());
+    //当查询记录数不大于阈值才运行执行外键查询操作
+    private int foreignColumnThreshold=1000;
+
+    public int getForeignColumnThreshold() {
+        return foreignColumnThreshold;
+    }
+
+    public void setForeignColumnThreshold(int foreignColumnThreshold) {
+        this.foreignColumnThreshold = foreignColumnThreshold;
+    }
 
     public ExtendInterceptor(SqlSession sqlSession) {
         this.sqlSession = sqlSession;
@@ -79,29 +89,7 @@ public class ExtendInterceptor implements Interceptor {
         return null;
     }
 
-    public static void main(String[] args) throws Exception {
-        PropertyDescriptor[] propertyDescriptors = BeanUtils.getPropertyDescriptors(HashMap.class);
 
-        Object os = Array.newInstance(Integer.TYPE, 3);
-        Array.set(os, 0, 11);
-        //Object[] os=(Object[]) o;
-
-        System.out.println(Array.get(os, 0));
-       /* //Class clazz=A.class;
-        A[] aa=new A[3];
-        aa[0]=new A();
-        aa[0].setA(2);
-        aa[1]=new A();
-        aa[2]=new A();
-        Method method = ExtendInterceptor.class.getMethod("test", A.class);
-
-        method.invoke(null,aa[0]);
-        method = ExtendInterceptor.class.getMethod("test2" ,String[].class );
-        System.out.println(aa.getClass().equals(A[].class));
-        method.invoke(null,new String[2]);*/
-        //ExtendInterceptor.class.getMethod("test", Class[].class).invoke(null,aa);
-
-    }
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -111,7 +99,9 @@ public class ExtendInterceptor implements Interceptor {
         if (statement.getSqlCommandType() == SqlCommandType.SELECT) {
             List list = (List) invocation.proceed();
             SelectOption selectOption = getOption(args, 1);
-            if (selectOption == null || !selectOption.isIgnoreForeignColumn()) {
+            int threshold=(selectOption == null || selectOption.getForeignColumnThreshold()==null)?
+                    foreignColumnThreshold : selectOption.getForeignColumnThreshold();
+            if ( list!=null && (threshold==-1 || threshold<=list.size())) {
                 setForeignColumns(list);
             }
             return list;
