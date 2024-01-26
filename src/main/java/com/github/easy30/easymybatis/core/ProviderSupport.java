@@ -582,4 +582,20 @@ public class ProviderSupport {
 
     }
 
+    public static String sqlByIds(EntityAnnotation entityAnnotation, Object[] ids, int sqlType, String select, String table) {
+        List<String> props = entityAnnotation.getIdPropertyNames();
+        List<String> columns = entityAnnotation.getIdColumnNames();
+        if (props.size() == 0) throw new MapperException("primary key not found");
+        if (props.size() > 1) throw new MapperException("multi primary keys not supported for GetById");
+
+        String where = entityAnnotation.getDialect().getQuotedColumn(columns.get(0)) + " in ";
+        where+= "<foreach collection=\"" +  Const.IDS + "\" separator=\",\" item=\"item\" open=\" (\" close=\") \">#{item}</foreach>";
+        QueryDefine queryDefine = new QueryDefine(sqlType);
+        queryDefine.setColumns(select);
+        queryDefine.setTables(entityAnnotation.getDialect().getQuotedColumn(table));
+        queryDefine.setWhere(where);
+        return queryDefine.toSQL();
+
+    }
+
 }

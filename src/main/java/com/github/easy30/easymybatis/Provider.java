@@ -194,8 +194,7 @@ public class Provider<E> {
 
     }
     private <T>T merge(T... options){
-        if(options==null || options.length==0) return null;
-        return options[0];
+        return MapperOptionSupport.merge(options);
     }
 
 
@@ -234,6 +233,18 @@ public class Provider<E> {
             selectColumns = ProviderSupport.convertPropsToColumns(selectColumns, entityAnnotation,table,null);
         }
         return ProviderSupport.sqlById(entityAnnotation, id, Global.SQL_TYPE_SELECT, selectColumns,table);
+    }
+
+    public String listByIds(ProviderContext context, @Param(Const.IDS) Object[] ids, @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options) {
+        EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(context.getMapperType());
+        SelectOption option=merge(options);
+        String table= MapperOptionSupport.getTable(entityAnnotation,option);
+        if (StringUtils.isBlank(selectColumns)) {
+            selectColumns = "*";
+        } else {
+            selectColumns = ProviderSupport.convertPropsToColumns(selectColumns, entityAnnotation,table,null);
+        }
+        return ProviderSupport.sqlByIds(entityAnnotation, ids, Global.SQL_TYPE_SELECT, selectColumns,table);
     }
 
     public String deleteById(ProviderContext context, @Param(Const.ID)Object id,@Param(Const.OPTIONS)DeleteOption... options) {

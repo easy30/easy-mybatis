@@ -14,6 +14,7 @@ public interface Const {
     String PAGE="page";
     String SQL = "s";
     String ID = "id";
+    String IDS = "ids";
     String ORDER="order";
     String VALUE_MAP="valueMap";
     String PARAM_MAP="paramMap";

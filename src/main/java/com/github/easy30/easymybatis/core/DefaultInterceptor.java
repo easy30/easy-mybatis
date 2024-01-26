@@ -1,12 +1,12 @@
 package com.github.easy30.easymybatis.core;
 
-import com.github.easy30.easymybatis.ListPage;
-import com.github.easy30.easymybatis.Page;
-import com.github.easy30.easymybatis.PageContext;
+import com.github.easy30.easymybatis.*;
+import com.github.easy30.easymybatis.annotation.ForeignColumn;
 import com.github.easy30.easymybatis.annotation.LimitOne;
 import com.github.easy30.easymybatis.dialect.Dialect;
-import com.github.easy30.easymybatis.Const;
+import com.github.easy30.easymybatis.utils.ObjectSupport;
 import com.github.easy30.easymybatis.utils.Utils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
@@ -15,17 +15,22 @@ import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * coolma 2019/11/1
@@ -52,7 +57,6 @@ public class DefaultInterceptor implements Interceptor {
     private Dialect dialect;
     private static ThreadLocal<Boolean> inPage = new ThreadLocal<>();
     private Map<String,ValueContainer<Method>> statementMethodMap=new ConcurrentHashMap<>();
-
     class ValueContainer<T> {
         T value;
         public ValueContainer(T value){
@@ -156,7 +160,7 @@ public class DefaultInterceptor implements Interceptor {
 
             }
 
-           
+
         } else { //update
             return invocation.proceed();
         }
@@ -207,11 +211,11 @@ public class DefaultInterceptor implements Interceptor {
 
     private Page getPage(Object arg) {
         Page page = null;
-        if (arg instanceof MapperMethod.ParamMap) {
-            MapperMethod.ParamMap parameterObject = (MapperMethod.ParamMap) arg;
+        if (arg!=null && arg instanceof  Map) {
+            Map parameterObject = (Map) arg;
 
             for (Object value : parameterObject.values()) {
-                if (value instanceof Page) {
+                if (value!=null && value instanceof Page) {
                     page = (Page) value;
                     break;
                 }
@@ -312,4 +316,6 @@ public class DefaultInterceptor implements Interceptor {
         countMap.put(id, result);
         return result;
     }
+
+
 }

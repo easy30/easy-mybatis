@@ -79,21 +79,24 @@ public class EasyConfiguration extends Configuration {
             dialect = DialectFactory.createDialect(dialectName, this);
             addInterceptor(new DefaultInterceptor(dialect));
         }
-        if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {
-            //get mapper class and method
-            String id = ms.getId();
-            int lastPeriod = ms.getId().lastIndexOf('.');
-            String mapperClassName = id.substring(0, lastPeriod);
-            String mapperMethodName = id.substring(lastPeriod + 1);
-            Class<?> mapperClass = Class.forName(mapperClassName);
-            Method mapperMethod = Arrays.stream(mapperClass.getMethods()).filter(m -> m.getName().equals(mapperMethodName)).findFirst().orElse(null);
-
-            //-- set dialect
-            EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(mapperClass);
+        //get mapper class
+        String id = ms.getId();
+        int lastPeriod = ms.getId().lastIndexOf('.');
+        String mapperClassName = id.substring(0, lastPeriod);
+        Class<?> mapperClass = Class.forName(mapperClassName);
+        //-- set dialect
+        EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(mapperClass);
+        if(entityAnnotation.getMapperClass()==null) {
             entityAnnotation.setDialect(dialect);
+            entityAnnotation.setMapperClass(mapperClass);
+        }
 
+        if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {
             //-- set auto-key-return
             Class entityClass = entityAnnotation.getEntityClass();
+            //get mapper  method
+            String mapperMethodName = id.substring(lastPeriod + 1);
+            Method mapperMethod = Arrays.stream(mapperClass.getMethods()).filter(m -> m.getName().equals(mapperMethodName)).findFirst().orElse(null);
             doKeyGenerator(mapperClass, entityClass, mapperMethod, ms);
         }
 

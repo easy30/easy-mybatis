@@ -48,6 +48,7 @@ public class EntityAnnotation {
     //private PropertyDescriptor[] properties =null;
     private Map<String, PropertyDescriptor> propertyDescriptorMap = new HashMap<String, PropertyDescriptor>();
     private Class entityClass = null;
+    private Class<?> mapperClass;
     //private boolean dialectEntity;
     private EntitySelectKey entitySelectKey;
     private Dialect dialect;
@@ -373,6 +374,13 @@ public class EntityAnnotation {
         return entityClass;
     }
 
+    public Class<?> getMapperClass() {
+        return mapperClass;
+    }
+
+    public void setMapperClass(Class<?> mapperClass) {
+        this.mapperClass = mapperClass;
+    }
 
     private PropertyDescriptor[] propertyDescriptors(Class c) {
         // Introspector caches BeanInfo classes for better performance

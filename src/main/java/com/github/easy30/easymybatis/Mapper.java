@@ -104,6 +104,7 @@ public interface Mapper<E,R> {
               @Param(Const.COLUMNS) String selectColumns,
               @Param(Const.OPTIONS) SelectOption... options);
 
+
     /**
      * get single entity
      * @param params E(entity or same props Object), Map
@@ -166,6 +167,18 @@ public interface Mapper<E,R> {
     List<R> listByParams(@Param(Const.PARAMS) Object params,
                          @Param(Const.ORDER) String orderBy,
                          @Param(Const.COLUMNS) String selectColumns,@Param(Const.OPTIONS) SelectOption... options);
+
+    /**
+     * select entity list by ids
+     * @param ids id array,  integer,long,string ...
+     * @param selectColumns
+     * @return
+     */
+    @SelectProvider(type = Provider.class, method = "listByIds")
+    List<R> listByIds(@Param(Const.IDS) Object[] ids,
+                 @Param(Const.COLUMNS) String selectColumns,
+                 @Param(Const.OPTIONS) SelectOption... options);
+
 
     /**
      *

@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * coolma 2019/10/25
  **/
 @Slf4j
+@Deprecated
 public class MapperFactory implements BeanPostProcessor, InitializingBean, ApplicationContextAware {//}, ApplicationListener<ContextRefreshedEvent> {
     private static Boolean loaded = false;
 

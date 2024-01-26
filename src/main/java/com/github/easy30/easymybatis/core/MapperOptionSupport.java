@@ -7,6 +7,16 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 
 public class MapperOptionSupport {
+    /**
+     * only return frist
+     * @param options
+     * @param <T>
+     * @return
+     */
+    public static <T>T merge(T... options){
+        if(options==null || options.length==0) return null;
+        return options[0];
+    }
     public static Set<String> getIgnoreColumnSet(UpdateOption option) {
 
         if (option != null && ArrayUtils.isNotEmpty(option.getIgnoreColumns())) {

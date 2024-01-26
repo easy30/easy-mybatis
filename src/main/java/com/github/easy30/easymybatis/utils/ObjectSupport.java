@@ -8,10 +8,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 
 
 public class ObjectSupport {
@@ -178,5 +175,45 @@ public class ObjectSupport {
 			}
 		}
 		return t;
+	}
+	public static  <T extends Annotation> T getAnnotation(Class<T> annotationClass,Class clazz, PropertyDescriptor pd){
+		Field field = ObjectSupport.getField(clazz, pd.getName());
+		T  t=null;
+		if(field!=null) {
+			t = field.getAnnotation(annotationClass);
+		}
+		if(t==null) {
+
+			Method method=pd.getReadMethod();
+			if(method!=null) {
+				t = method.getAnnotation(annotationClass);
+			}
+		}
+		return t;
+	}
+
+	public static Object getProperty(Object bean, String name){
+		if (bean == null) {
+			throw new IllegalArgumentException("Bean is null");
+		}
+		if (name == null || name.length() == 0) {
+			throw new IllegalArgumentException("Property name is null or empty");
+		}
+		// 获取bean的class
+		Class<?> clazz = bean.getClass();
+		BeanInfo beanInfo = null;
+		try {
+			beanInfo = Introspector.getBeanInfo(clazz);
+			for(PropertyDescriptor pd:  beanInfo.getPropertyDescriptors()){
+				if (pd.getName().equals(name)) {
+				   return  pd.getReadMethod().invoke(bean);
+				}
+
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		throw new RuntimeException("can not find property: "+name);
+
 	}
 }
