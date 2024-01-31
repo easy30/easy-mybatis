@@ -80,7 +80,7 @@ public class ProviderSupport {
 
                 ColumnGenerationHandler columnGenerationHandler = columnAnnotation.getColumnGenerationHandler();
                 if (columnGenerationHandler != null) {
-                    value=columnGenerationHandler.getUpdateValue(table, entity, prop);
+                    value=columnGenerationHandler.getUpdateValue(table, entity, prop,columnAnnotation.getPropType());
                     if (value != null) {
                         entityAnnotation.setProperty(entity, prop, value);
                         valueType = 1;

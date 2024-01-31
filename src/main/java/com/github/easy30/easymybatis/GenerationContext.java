@@ -4,11 +4,13 @@ public class GenerationContext {
     private String table;
     private Object entity;
     private String property;
+    private Class propertyType;
     private String arg;
-    public GenerationContext(String table, Object entity, String property, String arg) {
+    public GenerationContext(String table, Object entity, String property,Class propertyType, String arg) {
         this.table = table;
         this.entity = entity;
         this.property = property;
+        this.propertyType=propertyType;
         this.arg = arg;
     }
 
@@ -42,5 +44,13 @@ public class GenerationContext {
 
     public void setArg(String arg) {
         this.arg = arg;
+    }
+
+    public Class getPropertyType() {
+        return propertyType;
+    }
+
+    public void setPropertyType(Class propertyType) {
+        this.propertyType = propertyType;
     }
 }

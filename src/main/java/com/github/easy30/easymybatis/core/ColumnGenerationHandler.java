@@ -48,19 +48,19 @@ public class ColumnGenerationHandler {
     }
 
     @SneakyThrows
-    public Object getInsertValue(String table, Object entity, String property){
+    public Object getInsertValue(String table, Object entity, String property,Class propertyType){
         if(!init)doInit();
         if (columnGeneration != null) {
             Generation generation = getInsertGeneration();
             if (generation != null) {
                 Method method = ObjectSupport.getMethod(generation.getClass(), columnGeneration.insertMethod(), GenerationContext.class);
-                return method.invoke(generation, new GenerationContext(table, entity, property,  columnGeneration.insertArg()));
+                return method.invoke(generation, new GenerationContext(table, entity, property, propertyType, columnGeneration.insertArg()));
 
             } else {
                 generation = getGeneration();
                 if (generation != null) {
                     Method method = ObjectSupport.getMethod(generation.getClass(), columnGeneration.method(), GenerationContext.class);
-                    return method.invoke(generation, new GenerationContext(table, entity, property,  columnGeneration.arg()));
+                    return method.invoke(generation, new GenerationContext(table, entity, property, propertyType, columnGeneration.arg()));
 
                 }
             }
@@ -69,17 +69,17 @@ public class ColumnGenerationHandler {
     }
 
     @SneakyThrows
-    public Object getUpdateValue(String table, Object entity, String property){
+    public Object getUpdateValue(String table, Object entity, String property,Class propertyType){
         if(!init)doInit();
         Generation generation =  getUpdateGeneration();
         if(generation!=null) {
             Method method = ObjectSupport.getMethod(generation.getClass(), columnGeneration.updateMethod(), GenerationContext.class);
-           return method.invoke(generation,new GenerationContext(table, entity, property,  columnGeneration.updateArg()));
+           return method.invoke(generation,new GenerationContext(table, entity, property,propertyType,  columnGeneration.updateArg()));
         }else {
             generation = getGeneration();
             if(generation!=null){
                 Method method = ObjectSupport.getMethod(generation.getClass(), columnGeneration.method(), GenerationContext.class);
-               return method.invoke(generation,new GenerationContext(table, entity, property,  columnGeneration.arg()));
+               return method.invoke(generation,new GenerationContext(table, entity, property, propertyType, columnGeneration.arg()));
             }
         }
 

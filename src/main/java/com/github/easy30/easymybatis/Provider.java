@@ -89,7 +89,7 @@ public class Provider<E> {
             if (value == null) {
                 ColumnGenerationHandler columnGenerationHandler = columnAnnotation.getColumnGenerationHandler();
                 if (columnGenerationHandler != null) {
-                    value=columnGenerationHandler.getInsertValue(table, entity, prop);
+                    value=columnGenerationHandler.getInsertValue(table, entity, prop,columnAnnotation.getPropType());
                     if (value != null) {
                         entityAnnotation.setProperty(entity, prop, value);
                         valueType = 1;

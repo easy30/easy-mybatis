@@ -17,6 +17,7 @@ public class ColumnAnnotation
 
 	private String name;//column name
 	private String propName;//property Name;
+	private Class propType;
 	private boolean insertable=true;
 	private boolean updatable=true;
 	private boolean transient_=false;
@@ -191,5 +192,11 @@ public class ColumnAnnotation
 		this.propName = propName;
 	}
 
+	public Class getPropType() {
+		return propType;
+	}
 
+	public void setPropType(Class propType) {
+		this.propType = propType;
+	}
 }

@@ -205,6 +205,7 @@ public class EntityAnnotation {
                 //--@Column
                 ColumnAnnotation ca = new ColumnAnnotation();
                 ca.setPropName(prop);
+                ca.setPropType(pd.getPropertyType());
                 propertyColumnMap.put(pd.getName(), ca);
 
 
