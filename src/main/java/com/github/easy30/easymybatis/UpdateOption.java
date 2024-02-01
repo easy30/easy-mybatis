@@ -1,8 +1,12 @@
 package com.github.easy30.easymybatis;
 
+import com.alibaba.fastjson.JSON;
 import com.github.easy30.easymybatis.core.MapperOption;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
+
+import static com.alibaba.fastjson.parser.Feature.SupportNonPublicField;
 
 @Getter
 public class UpdateOption extends MapperOption {
@@ -44,6 +48,18 @@ public class UpdateOption extends MapperOption {
     }
 
 
+    public static UpdateOption parse(String s){
+        return JSON.parseObject(s,UpdateOption.class,SupportNonPublicField); //private field;
+    }
+
+    /*public static void main(String[] args) {
+        UpdateOption option=new UpdateOption();
+        option.table("table1");
+        option.ignoreColumns("c1","c2");
+        System.out.println(option.toString());
+        String t=option.toString();
+        System.out.println(JSON.parseObject(t,UpdateOption.class,SupportNonPublicField).getTable());
+    }*/
 
 
 }
