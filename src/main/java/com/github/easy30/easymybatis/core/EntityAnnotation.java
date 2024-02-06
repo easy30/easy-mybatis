@@ -113,10 +113,9 @@ public class EntityAnnotation {
         return table;
     }
 
-/*	public void setTable(String table)
-	{
+	public void setTable(String table) {
 		this.table = table;
-	}*/
+	}
 
     /**
      * prop,ColumnAnnotation  map
@@ -185,9 +184,6 @@ public class EntityAnnotation {
             if (prop.equals("class")) continue;
             try {
 
-                if(prop.equalsIgnoreCase("showBargain")){
-                    System.out.println("DDD");
-                }
                 Method method = pd.getReadMethod();
                 Field field = ObjectSupport.getField(clazz, prop);
                 if(method==null && field==null){

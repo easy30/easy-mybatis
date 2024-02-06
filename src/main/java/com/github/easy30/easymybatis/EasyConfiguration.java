@@ -33,6 +33,7 @@ public class EasyConfiguration extends Configuration {
     private Dialect dialect;
     private String dialectName;
     private Map<String, Generation> generations = new ConcurrentHashMap<>();
+    private Map<Class,String> entityClassTableMap;//custom entity table;
     private boolean init = false;
 
     public EasyConfiguration() {
@@ -65,6 +66,14 @@ public class EasyConfiguration extends Configuration {
     }
 
 
+    public Map<Class, String> getEntityClassTableMap() {
+        return entityClassTableMap;
+    }
+
+    public void setEntityClassTableMap(Map<Class, String> entityClassTableMap) {
+        this.entityClassTableMap = entityClassTableMap;
+    }
+
     @Override
     public void addMappedStatement(MappedStatement ms) {
         initMappedStatement(ms);
@@ -84,11 +93,15 @@ public class EasyConfiguration extends Configuration {
         int lastPeriod = ms.getId().lastIndexOf('.');
         String mapperClassName = id.substring(0, lastPeriod);
         Class<?> mapperClass = Class.forName(mapperClassName);
-        //-- set dialect
+        //-- set dialect/mapper/custom table
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(mapperClass);
         if(entityAnnotation.getMapperClass()==null) {
             entityAnnotation.setDialect(dialect);
             entityAnnotation.setMapperClass(mapperClass);
+            if(entityClassTableMap!=null){
+                String table = entityClassTableMap.get(entityAnnotation.getEntityClass());
+                if(table!=null) entityAnnotation.setTable(table);
+            }
         }
 
         if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {

@@ -198,6 +198,16 @@ public class ProviderSupport {
             if ("TABLE".equalsIgnoreCase(prop)) {
                 rr.replace(entityAnnotation.getDialect().getQuotedColumn(table));
                 continue;
+            }else if (prop.startsWith("TABLE:")){
+                String className=prop.substring("TABLE:".length()).trim();
+                String entityTable= null;
+                try {
+                    entityTable = EntityAnnotation.getInstance(Class.forName(className)).getTable();
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException("not entity class found: "+className+"("+prop+")");
+                }
+                rr.replace(entityAnnotation.getDialect().getQuotedColumn(entityTable));
+                continue;
             }
             ColumnAnnotation ca = propertyColumnMap.get(prop);
             String column = null;
@@ -511,7 +521,8 @@ public class ProviderSupport {
 
 
         orderBy = convertPropsToColumns(orderBy, entityAnnotation, defaultTable,tableAlias);
-
+        //convert {TABLE} {TABLE:com.xx.User}
+        tables = convertSqlPropsToColumns(tables, entityAnnotation, defaultTable);
 
         queryDefine.setColumns(columns);
         queryDefine.setTables(tables);
