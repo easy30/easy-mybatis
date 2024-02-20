@@ -52,6 +52,7 @@ public class Provider<E> {
             ColumnAnnotation columnAnnotation = e.getValue();
 
             if (!columnAnnotation.isInsertable()) continue;
+            if(columnAnnotation.isTransient()) continue;
             String prop = e.getKey();
 
 

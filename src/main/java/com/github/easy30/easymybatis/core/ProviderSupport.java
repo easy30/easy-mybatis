@@ -42,6 +42,7 @@ public class ProviderSupport {
 
             ColumnAnnotation columnAnnotation = e.getValue();
             if (!columnAnnotation.isUpdatable()) continue;
+            if(columnAnnotation.isTransient()) continue;
             String prop = e.getKey();
 
             if (ignoreColumnSet != null && (ignoreColumnSet.contains(prop) || ignoreColumnSet.contains(columnAnnotation.getName()))) continue;
