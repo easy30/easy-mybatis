@@ -62,7 +62,10 @@ public class EasyConfiguration extends Configuration {
      * @param generations
      */
     public void setGenerations(Map<String, Generation> generations) {
-        this.generations.putAll(generations);
+        this.generations=generations;
+    }
+    public void addGeneration(String name, Generation generation){
+        this.generations.put(name,generation);
     }
 
 
@@ -98,6 +101,7 @@ public class EasyConfiguration extends Configuration {
         if(entityAnnotation.getMapperClass()==null) {
             entityAnnotation.setDialect(dialect);
             entityAnnotation.setMapperClass(mapperClass);
+            entityAnnotation.setEasyConfiguration(this);
             if(entityClassTableMap!=null){
                 String table = entityClassTableMap.get(entityAnnotation.getEntityClass());
                 if(table!=null) entityAnnotation.setTable(table);
