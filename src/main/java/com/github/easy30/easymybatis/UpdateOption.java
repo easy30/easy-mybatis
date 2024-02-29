@@ -19,6 +19,12 @@ public class UpdateOption extends MapperOption {
         return new UpdateOption();
     }
 
+    /**
+     * column1/property1 , sql value1, column1/property2 , sql value2, ...
+     * example: create_time , now(), user_name ,null (means set create_time=now(), user_name =null );
+     * @param columnAndValues
+     * @return
+     */
     public UpdateOption columnAndValues(String... columnAndValues){
         this.columnAndValues=columnAndValues;
         return this;
@@ -37,6 +43,11 @@ public class UpdateOption extends MapperOption {
         return this;
     }
 
+    /**
+     * update all columns include null columns (set column =null)
+     * @param withNullColumns
+     * @return
+     */
     public UpdateOption withNullColumns(boolean withNullColumns){
         this.withNullColumns=withNullColumns;
         return this;
