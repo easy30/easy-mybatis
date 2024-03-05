@@ -183,7 +183,7 @@ public class ProviderSupport {
     }
 
     /**
-     * convert
+     * convert  prop "{myField}" to  column "my_field"
      *
      * @param sql
      * @param entityAnnotation
@@ -234,27 +234,44 @@ public class ProviderSupport {
      * @param entityAnnotation
      * @return
      */
+    private static String[] selectKeyWords={"ALL","DISTINCT","DISTINCTROW","HIGH_PRIORITY"};
+    private static Set<String> selectKeyWordSet=new HashSet(Arrays.asList(selectKeyWords));
     public static String convertPropsToColumns(String columns, EntityAnnotation entityAnnotation, String table,String tableAlias) {
         if (StringUtils.isBlank(columns) || columns.trim().equals("*")) return columns;
         //StringBuilder result = new StringBuilder("");
         StringJoiner columnJoiner = new StringJoiner(" , ");
 
+        String keyword="";//distinct
         Set<String> excludeColumns = columns.startsWith("!") ? new HashSet<>() : null;
+        // exclude columns  (only support simple column/prop such as column1,column2,  not max(column1) )
         if (columns.startsWith("!")) {
             columns = columns.substring(1);
         }
-        // for complex columns such as "substring(prop1,1,3),prop2", it's hard to parse.
-        // so must use {} , that is "substring({prop1},1,3),{prop2}", and use convertSqlColumns() to parse easily
-        if (columns.indexOf('(') >= 0) {
-            return convertSqlPropsToColumns(columns, entityAnnotation, table);
+        // include columns
+        else {
+            // for complex columns such as "substring(prop1,1,3),prop2", it's hard to parse.
+            // so must use {} , that is "substring({prop1},1,3),{prop2}", and use convertSqlColumns() to parse easily
+            if (columns.indexOf('(') >= 0) {
+                return convertSqlPropsToColumns(columns, entityAnnotation, table);
+            }
+            // remove "distinct"...  , such as select "distinct aaa as bbb" from table1,
+            int n = indexOfWhitespace(columns);
+            if(n>=0 && selectKeyWordSet.contains(columns.substring(0,n).toUpperCase())){
+                keyword=columns.substring(0,n)+" ";
+                columns=columns.substring(n).trim();
+                if (StringUtils.isBlank(columns) || columns.trim().equals("*")) return columns;
+
+            }
         }
+
         Map<String, ColumnAnnotation> propertyColumnMap = entityAnnotation.getPropertyColumnMap();
         String[] items = columns.split(",");
         for (String s : items) {
             s = s.trim();
             //if (result.length() > 0) result.append( " , ");
+
             int n = indexOfWhitespace(s);
-            // t.f1 desc ,   t.f1 as fff
+            //example:  t.f1 desc ,   t.f1 as fff
             String prefix = ""; //t
             String prop = ""; //f1
             String suffix = ""; //desc
@@ -294,7 +311,7 @@ public class ProviderSupport {
         }
 
         if (excludeColumns == null) {
-            return columnJoiner.toString();
+            return keyword+columnJoiner.toString();
         }
         //exclude columns
         else {
