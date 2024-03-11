@@ -84,7 +84,7 @@ public class EasyConfiguration extends Configuration {
     }
 
 
-    @SneakyThrows
+    //@SneakyThrows
     protected void initMappedStatement(MappedStatement ms) {
         //-- init  dialect
         if (dialect == null) {
@@ -95,7 +95,13 @@ public class EasyConfiguration extends Configuration {
         String id = ms.getId();
         int lastPeriod = ms.getId().lastIndexOf('.');
         String mapperClassName = id.substring(0, lastPeriod);
-        Class<?> mapperClass = Class.forName(mapperClassName);
+        Class<?> mapperClass = null;
+        //if maybe from XML , not a  Class
+        try {
+            mapperClass = Class.forName(mapperClassName);
+        } catch (ClassNotFoundException e) {
+            return;
+        }
         //-- set dialect/mapper/custom table
         EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceByMapper(mapperClass);
         if(entityAnnotation.getMapperClass()==null) {
