@@ -139,7 +139,7 @@ public class ExtendInterceptor implements Interceptor {
         if (clazz == null || clazz.isAssignableFrom(Map.class) || clazz.isAssignableFrom(Collection.class)) return;
         if(ignoreForeignClassSet.contains(clazz)) return;
         PropertyDescriptor[] propertyDescriptors = BeanUtils.getPropertyDescriptors(clazz);
-        Map<Class, Map> foreignMaps = new HashMap<>();
+        Map<String, Map> foreignMaps = new HashMap<>();
         boolean find=false;
         for (PropertyDescriptor pd : propertyDescriptors) {
 
@@ -149,14 +149,15 @@ public class ExtendInterceptor implements Interceptor {
                     || foreignColumn.foreignClass() == null || StringUtils.isBlank(foreignColumn.foreignExp())) continue;
             find=true;
 
+            String keyProp = foreignColumn.keyProp();
             Class foreignClass = foreignColumn.foreignClass();
             String exp = foreignColumn.foreignExp();
-            //<id,foreignObject>
-            Map foreignMap = foreignMaps.get(foreignClass);
+            //<key,foreignObject> cache for get foreignName1 foreignName2
+            Map foreignMap = foreignMaps.get(keyProp+":"+foreignClass);
 
             if (foreignMap == null) {
                 //获取非空的外部ids for sql: in( 1,2...)
-                List<Object> ids = list.stream().map(e -> ObjectSupport.getProperty(e, foreignColumn.keyProp()))
+                List<Object> ids = list.stream().map(e -> ObjectSupport.getProperty(e, keyProp))
                         .filter(id -> id != null).collect(Collectors.toList());
 
                 if (CollectionUtils.isEmpty(ids)) {
@@ -179,7 +180,7 @@ public class ExtendInterceptor implements Interceptor {
                     }
                 }
 
-                foreignMaps.put(foreignClass, foreignMap);
+                foreignMaps.put(keyProp+":"+foreignClass, foreignMap);
 
             }
             if (foreignMap.isEmpty()) continue;
