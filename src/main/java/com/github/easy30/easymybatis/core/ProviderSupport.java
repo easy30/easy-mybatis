@@ -476,8 +476,8 @@ public class ProviderSupport {
             for (String prop : props) {
                 prop = prop.trim();
                 Object value = sp.getValue(prop);
-
-                if (value != null) {
+                boolean hasValue= hasValue(value,mapperOption);
+                if (hasValue) {
                     String fullProp = prefix == null || prefix.length() == 0 ? prop : prefix + "." + prop;
                     // map params
                     if (paramsIsMap) {
@@ -530,7 +530,7 @@ public class ProviderSupport {
                         addCondition(propertyConditions, innerOperator, Utils.format(Global.SQL_EQ_DIALECT, dialect.getQuotedColumn(entityAnnotation.getColumnName(prop)), value));
                     }
                 }
-                if (needValue && value == null) throw new MapperException("property " + prop + " of params can not be null");
+                if (needValue && !hasValue) throw new MapperException("property " + prop + " of params is need");
             }
 
         }
@@ -565,6 +565,17 @@ public class ProviderSupport {
         //SQL_SELECT="<script>\r\n select {} from {} <propertyConditions>{}</propertyConditions>\r\n</script>";
         //return Utils.format(sqlFormat,columns,tables,propertyConditions);
 
+    }
+
+    private static boolean hasValue(Object value ,MapperOption option){
+        if(value==null) return false;
+        if((value instanceof String) && ((String)value).isEmpty()){
+            boolean queryEmpty= (option!=null && option.getQueryEmptyStringParam() !=null)?option.getQueryEmptyStringParam()
+                :ConfigurationContext.getEasyConfiguration().getQueryEmptyStringParam();
+            if(!queryEmpty) return false;
+
+        }
+        return true;
     }
 
     private static void addCondition(LineBuilder lineBuilder, RelatedOperator oper, String condition) {

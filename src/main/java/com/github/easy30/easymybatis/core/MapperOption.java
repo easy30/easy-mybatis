@@ -8,6 +8,7 @@ import lombok.Getter;
 public class MapperOption {
     protected String table;
     protected boolean  ignoreQueryAnnotation;
+    protected Boolean queryEmptyStringParam;
 
     @Override
     public String toString(){

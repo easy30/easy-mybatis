@@ -77,6 +77,11 @@ public class UpdateOption extends MapperOption {
         return this;
     }
 
+    public UpdateOption queryEmptyStringParam(Boolean queryEmptyStringParam){
+        this.queryEmptyStringParam=queryEmptyStringParam;
+        return this;
+    }
+
 
     public static UpdateOption parse(String s){
         return JSON.parseObject(s,UpdateOption.class,SupportNonPublicField); //private field;

@@ -482,3 +482,15 @@ public class MapperTest {
 }
 ```
 
+## Q&A
+- About queryEmptyStringParam  
+  by default, queryEmptyStringParam is false. If you want to query empty string "", set queryEmptyStringParam to true.
+  
+```java
+    //global
+   EasyConfiguration.setQueryEmptyStringParam(true);
+   //local, params:{name:""} means select * from t where name=''
+   mapper.listByParams(params,null,null, SelectOption.create().queryEmptyStringParam(true));
+```
+
+

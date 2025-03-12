@@ -27,6 +27,11 @@ public class SelectOption extends MapperOption  {
         return this;
     }
 
+    public SelectOption queryEmptyStringParam(Boolean queryEmptyStringParam){
+        this.queryEmptyStringParam=queryEmptyStringParam;
+        return this;
+    }
+
     /**
      * set -1 means no limit.
      * @param foreignColumnThreshold

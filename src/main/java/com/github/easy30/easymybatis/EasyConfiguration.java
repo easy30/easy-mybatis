@@ -5,6 +5,8 @@ import com.github.easy30.easymybatis.core.*;
 import com.github.easy30.easymybatis.dialect.Dialect;
 import com.github.easy30.easymybatis.utils.ObjectSupport;
 import com.github.easy30.easymybatis.utils.Utils;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.SelectKey;
@@ -33,6 +35,9 @@ public class EasyConfiguration extends Configuration {
     private Dialect dialect;
     private String dialectName;
     private Map<String, Generation> generations = new ConcurrentHashMap<>();
+    @Getter
+    @Setter
+    private Boolean queryEmptyStringParam;
     private Map<Class,String> entityClassTableMap;//custom entity table;
     private Map<String,Class> tableEntityClassMap;
     private boolean init = false;
@@ -42,7 +47,7 @@ public class EasyConfiguration extends Configuration {
         //-- default config
         setMapUnderscoreToCamelCase(true);
         setUseGeneratedKeys(true);
-
+        this.setQueryEmptyStringParam(false);
 
     }
 
