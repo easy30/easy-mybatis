@@ -99,6 +99,24 @@ public class MapperTest {
     public void insert()   {
         User user=doInsert();
         id=user.getId();
+        System.out.println(id);
+    }
+
+    @Test
+    public void insertList()   {
+        List<User> users = new ArrayList<>();
+        for(int i=0;i<3;i++){
+            User user = new User();
+            user.setName(name+i);
+            user.setAge(age+i);
+            user.setRealName(realName+i);
+            users.add(user);
+        }
+       int count = userMapper.insertList(users);
+       Assert.assertEquals(3,count);
+        System.out.println(JSON.toJSONString(users,true));
+
+
     }
 
     private User createUser(){

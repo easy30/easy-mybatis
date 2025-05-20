@@ -5,6 +5,7 @@ package com.github.easy30.easymybatis;
  **/
 public interface Const {
     String ENTITY = "e";
+    String ENTITY_LIST = "es";
     String PARAMS = "params";
     String PARAM_NAMES = "paramNames";
     String WHERE = "w";

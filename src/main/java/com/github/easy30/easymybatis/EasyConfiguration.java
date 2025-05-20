@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectKey;
 import org.apache.ibatis.builder.annotation.MapperAnnotationBuilder;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
@@ -26,6 +27,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -38,11 +40,12 @@ public class EasyConfiguration extends Configuration {
     @Getter
     @Setter
     private Boolean queryEmptyStringParam;
-    private Map<Class,String> entityClassTableMap;//custom entity table;
-    private Map<String,Class> tableEntityClassMap;
+    private Map<Class, String> entityClassTableMap;//custom entity table;
+    private Map<String, Class> tableEntityClassMap;
     private boolean init = false;
-    private Map<Class,ResultMap> changeResultMapMap =Collections.synchronizedMap(new HashMap());
-    private  EntityTypeHandler entityTypeHandler;
+    private Map<Class, ResultMap> changeResultMapMap = Collections.synchronizedMap(new HashMap());
+    private EntityTypeHandler entityTypeHandler;
+
     public EasyConfiguration() {
         //-- default config
         setMapUnderscoreToCamelCase(true);
@@ -52,11 +55,11 @@ public class EasyConfiguration extends Configuration {
     }
 
     public void setEnvironment(Environment environment) {
-         super.setEnvironment(environment);
+        super.setEnvironment(environment);
         //-- init  dialect
         if (dialect == null) {
-            dialect =StringUtils.isNotBlank(dialectName)? DialectFactory.createDialect(dialectName)
-                    :DialectFactory.createDialect( this.getEnvironment().getDataSource());
+            dialect = StringUtils.isNotBlank(dialectName) ? DialectFactory.createDialect(dialectName)
+                    : DialectFactory.createDialect(this.getEnvironment().getDataSource());
         }
         addInterceptor(new DefaultInterceptor(dialect));
 
@@ -64,23 +67,24 @@ public class EasyConfiguration extends Configuration {
 
     /**
      * in order to keep DefaultInterceptor run first ( Provider need getDialect()),  move it to last always.
-     * @see  org.apache.ibatis.plugin.InterceptorChain#pluginAll , return the last one, then invoke the last one first.
+     *
      * @param interceptor
+     * @see org.apache.ibatis.plugin.InterceptorChain#pluginAll , return the last one, then invoke the last one first.
      */
     @Override
     public void addInterceptor(Interceptor interceptor) {
-        List<Interceptor> interceptors = ObjectSupport.getFieldValue(InterceptorChain.class, interceptorChain,"interceptors");
+        List<Interceptor> interceptors = ObjectSupport.getFieldValue(InterceptorChain.class, interceptorChain, "interceptors");
         //move DefaultInterceptor to last,
-        DefaultInterceptor defaultInterceptor=null;
-        for(int i=interceptors.size()-1;i>=0;i--){
-            if(interceptors.get(i) instanceof DefaultInterceptor){
-                defaultInterceptor=(DefaultInterceptor)interceptors.get(i);
+        DefaultInterceptor defaultInterceptor = null;
+        for (int i = interceptors.size() - 1; i >= 0; i--) {
+            if (interceptors.get(i) instanceof DefaultInterceptor) {
+                defaultInterceptor = (DefaultInterceptor) interceptors.get(i);
                 interceptors.remove(i);
                 break;
             }
         }
         interceptors.add(interceptor);
-        if(defaultInterceptor!=null) interceptors.add(defaultInterceptor);
+        if (defaultInterceptor != null) interceptors.add(defaultInterceptor);
 
 
     }
@@ -108,10 +112,11 @@ public class EasyConfiguration extends Configuration {
      * @param generations
      */
     public void setGenerations(Map<String, Generation> generations) {
-        this.generations=generations;
+        this.generations = generations;
     }
-    public void addGeneration(String name, Generation generation){
-        this.generations.put(name,generation);
+
+    public void addGeneration(String name, Generation generation) {
+        this.generations.put(name, generation);
     }
 
 
@@ -119,15 +124,15 @@ public class EasyConfiguration extends Configuration {
         return entityClassTableMap;
     }
 
-    public Map<String,Class> getTableEntityClassMap() {
+    public Map<String, Class> getTableEntityClassMap() {
         return tableEntityClassMap;
     }
 
     public void setEntityClassTableMap(Map<Class, String> entityClassTableMap) {
         this.entityClassTableMap = entityClassTableMap;
-        if(entityClassTableMap==null) tableEntityClassMap=null;
+        if (entityClassTableMap == null) tableEntityClassMap = null;
         else {
-            entityClassTableMap.forEach((k,v)->tableEntityClassMap.put(v,k));
+            entityClassTableMap.forEach((k, v) -> tableEntityClassMap.put(v, k));
         }
 
     }
@@ -148,7 +153,7 @@ public class EasyConfiguration extends Configuration {
 
 
     //@SneakyThrows
-    protected void initMappedStatement(MappedStatement ms)  {
+    protected void initMappedStatement(MappedStatement ms) {
         //get mapper class
         String id = ms.getId();
         int lastPeriod = ms.getId().lastIndexOf('.');
@@ -160,7 +165,7 @@ public class EasyConfiguration extends Configuration {
         } catch (ClassNotFoundException e) {
             return;
         }
-        if(Mapper.class.isAssignableFrom(mapperClass)) {
+        if (Mapper.class.isAssignableFrom(mapperClass)) {
             //-- set dialect/mapper/custom table
             Class entityClass = ObjectSupport.getGenericInterfaces(mapperClass, 0, 0);
             EntityAnnotation entityAnnotation = EntityAnnotation.getInstanceOnly(entityClass);
@@ -187,7 +192,7 @@ public class EasyConfiguration extends Configuration {
             } else if (ms.getSqlCommandType().equals(SqlCommandType.SELECT)) {
                 changeResultMaps(ms);
             }
-        }else if(CommonMapperImpl.class.isAssignableFrom(mapperClass)){
+        } else if (CommonMapperImpl.class.isAssignableFrom(mapperClass)) {
             if (ms.getSqlCommandType().equals(SqlCommandType.INSERT)) {
                 ObjectSupport.setFieldValue(ms, "keyGenerator", CommonMapperKeyGenerator.INSTANCE);
 
@@ -198,6 +203,7 @@ public class EasyConfiguration extends Configuration {
 
     /**
      * find @Column(name="ccc"), build prop and column name mapping;
+     *
      * @param ms
      */
     private void changeResultMaps(MappedStatement ms) {
@@ -216,7 +222,7 @@ public class EasyConfiguration extends Configuration {
                     if (resultMap.getResultMappings() != null) {
                         Set<String> propSet = newResultMappings.stream().map(ResultMapping::getProperty).collect(Collectors.toSet());
                         for (ResultMapping oldResultMapping : resultMap.getResultMappings()) {
-                            if(!propSet.contains(oldResultMapping.getProperty())){
+                            if (!propSet.contains(oldResultMapping.getProperty())) {
                                 newResultMappings.add(oldResultMapping);
                             }
                         }
@@ -358,10 +364,11 @@ public class EasyConfiguration extends Configuration {
         }
 
         if (entitySelectKey == null) keyGenerator = Jdbc3KeyGenerator.INSTANCE;
+        String entityParamName = getParamName(method);
         // set private field
         String[] keyProperties = new String[idPropertyNames.size()];
         for (int i = 0; i < idPropertyNames.size(); i++) {
-            keyProperties[i] = "e." + idPropertyNames.get(i);
+            keyProperties[i] = (entityParamName==null?"":entityParamName+".") + idPropertyNames.get(i);
         }
 
         ObjectSupport.setFieldValue(ms, "keyProperties", keyProperties);
@@ -369,6 +376,17 @@ public class EasyConfiguration extends Configuration {
         ObjectSupport.setFieldValue(ms, "keyGenerator", keyGenerator);
 
 
+    }
+
+    private String getParamName(Method method) {
+        for (Parameter p : method.getParameters()) {
+            Param annotation = p.getAnnotation(Param.class);
+            if (annotation != null) {
+                if (Const.ENTITY.equals(annotation.value()) || Const.ENTITY_LIST.equals(annotation.value()))
+                    return annotation.value();
+            }
+        }
+        return null;
     }
 
 

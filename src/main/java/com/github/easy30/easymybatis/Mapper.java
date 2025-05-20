@@ -19,6 +19,9 @@ public interface Mapper<E,R> {
     @InsertProvider(type = Provider.class, method = "insert")
     int insert(@Param(Const.ENTITY)E entity, @Param(Const.OPTIONS) UpdateOption... options);
 
+    @InsertProvider(type = Provider.class, method = "insertList")
+    int insertList(@Param(Const.ENTITY_LIST) List<E> entityList, @Param(Const.OPTIONS) UpdateOption... options);
+
     /**
      * update entity by id
      * @param entity
