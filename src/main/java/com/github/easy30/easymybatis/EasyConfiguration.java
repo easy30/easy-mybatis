@@ -132,6 +132,7 @@ public class EasyConfiguration extends Configuration {
         this.entityClassTableMap = entityClassTableMap;
         if (entityClassTableMap == null) tableEntityClassMap = null;
         else {
+            tableEntityClassMap=new ConcurrentHashMap<>();
             entityClassTableMap.forEach((k, v) -> tableEntityClassMap.put(v, k));
         }
 
