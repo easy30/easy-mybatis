@@ -52,6 +52,7 @@ public class MapperTest {
         testDelete();
         testUpdate();
         testSelect();
+
     }
     @Test
     public void testSelect()   {
@@ -84,6 +85,7 @@ public class MapperTest {
         updateByParams();
         updateByCondition();
         updateWithNull();
+
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.github.easy30.easymybatis;
 import com.github.easy30.easymybatis.annotation.LimitOne;
 import org.apache.ibatis.annotations.*;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,6 +22,36 @@ public interface Mapper<E,R> {
 
     @InsertProvider(type = Provider.class, method = "insertList")
     int insertList(@Param(Const.ENTITY_LIST) List<E> entityList, @Param(Const.OPTIONS) UpdateOption... options);
+
+    /**
+     * 批量插入或冲突更新（upsert）。
+     * <p>语义由 updateColumns 与 option.upsertIgnore() 决定：</p>
+     * <ul>
+     *   <li>updateColumns 为 null   ：全量更新（除主键、冲突列、insert-only 列外的全部可更新列）</li>
+     *   <li>updateColumns 为指定列   ：仅更新这些列</li>
+     *   <li>option.upsertIgnore()   ：冲突忽略（DO NOTHING / INSERT IGNORE），优先级最高</li>
+     * </ul>
+     *
+     * @param entityList    实体列表
+     * @param keyColumns    冲突判定列（属性名或列名均可）。MySQL/H2 可为 null（靠任意唯一键）；
+     *                      PostgreSQL/SQLite/Oracle/SQLServer 必须指定，否则抛异常
+     * @param updateColumns 冲突时更新的列（属性名或列名均可）。null=全量更新
+     * @return sql 执行结果
+     */
+    @InsertProvider(type = Provider.class, method = "upsertList")
+    int upsertList(@Param(Const.ENTITY_LIST) List<E> entityList,
+                   @Param(Const.KEY_COLUMNS) String[] keyColumns,
+                   @Param(Const.UPDATE_COLUMNS) String[] updateColumns,
+                   @Param(Const.OPTIONS) UpdateOption... options);
+
+    default int upsert( E entity ,
+                    String[] keyColumns,
+                   String[] updateColumns,
+                   UpdateOption... options){
+        return upsertList(Collections.singletonList(entity), keyColumns, updateColumns, options);
+
+    }
+
 
     /**
      * update entity by id

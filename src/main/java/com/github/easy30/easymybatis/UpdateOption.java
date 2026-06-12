@@ -15,6 +15,7 @@ public class UpdateOption extends MapperOption {
     private String[] columnAndValues;
     private String[] ignoreColumns;
     private boolean  withNullColumns;
+    private boolean  upsertIgnore;
     private Map params;
 
     public static UpdateOption create(){
@@ -69,6 +70,16 @@ public class UpdateOption extends MapperOption {
      */
     public UpdateOption withNullColumns(boolean withNullColumns){
         this.withNullColumns=withNullColumns;
+        return this;
+    }
+
+    /**
+     * upsertList 时冲突则忽略（不更新已存在的行）。
+     * 设置后优先级最高，无论 updateColumns 传什么都走 DO NOTHING / INSERT IGNORE。
+     * @return
+     */
+    public UpdateOption upsertIgnore(){
+        this.upsertIgnore=true;
         return this;
     }
 

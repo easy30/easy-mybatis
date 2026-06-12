@@ -4,6 +4,7 @@ import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.session.Configuration;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -27,5 +28,17 @@ public class SqlserverDialect extends AbstractDialect {
         sb.append(" OFFSET ? ");
         sb.append(" ROWS FETCH NEXT ? ROWS ONLY ");
         return sb.toString();
+    }
+
+    /**
+     * SQLServer 2016+：MERGE ... USING (VALUES (..),(..)) src (cols) ON (..)
+     * WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...; （语句须以分号结尾）
+     * keyColumns 必需。
+     */
+    @Override
+    public String getUpsertSql(String table, List<String> insertColumns, List<List<String>> valueRows,
+                               List<String> keyColumns, LinkedHashMap<String, String> updateColumns, boolean ignore) {
+        return buildMergeSql(table, insertColumns, valueRows, keyColumns, updateColumns,
+                ignore, true, null, true);
     }
 }

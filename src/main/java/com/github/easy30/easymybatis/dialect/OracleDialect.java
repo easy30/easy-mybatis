@@ -4,6 +4,7 @@ import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.session.Configuration;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -34,6 +35,18 @@ public class OracleDialect extends AbstractDialect {
     public String getQuotedColumn(String column) {
         if(column!=null && column.indexOf('"')>=0) return column;
         return "\""+column.toUpperCase()+"\"";
+    }
+
+    /**
+     * Oracle：MERGE INTO ... USING (SELECT v1 c1,.. FROM dual UNION ALL ..) src ON (..)
+     * WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...
+     * keyColumns 必需。
+     */
+    @Override
+    public String getUpsertSql(String table, List<String> insertColumns, List<List<String>> valueRows,
+                               List<String> keyColumns, LinkedHashMap<String, String> updateColumns, boolean ignore) {
+        return buildMergeSql(table, insertColumns, valueRows, keyColumns, updateColumns,
+                ignore, false, "dual", false);
     }
 
 

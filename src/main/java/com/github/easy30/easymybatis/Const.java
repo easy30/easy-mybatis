@@ -21,6 +21,8 @@ public interface Const {
     String PARAM_MAP="paramMap";
     String OPTIONS ="options";
     String OPTIONS_PARAMS=OPTIONS+"[0].params";
+    String KEY_COLUMNS = "keyColumns";
+    String UPDATE_COLUMNS = "updateColumns";
 
 
 }
