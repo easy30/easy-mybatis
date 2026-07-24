@@ -43,6 +43,7 @@ userMapper.deleteById(id);             // delete from user where id = ?
 - **Parameter-object queries** — build `where` clauses from a POJO; non-null properties become conditions. Customize with `@QueryColumn` / `@QueryExp`.
 - **Paging** — `pageByParams` / `pageBySQL` with automatic count and dialect-specific limit/offset.
 - **Column defaults & generators** — `@ColumnDefault` for SQL defaults (e.g. `now()`), `@ColumnGeneration` for UUID/custom key generation.
+- **`@Transient` support** — properties annotated with `@Transient` are excluded from INSERT, UPDATE **and** WHERE query conditions (consistent across all SQL generation).
 - **Per-call options** — `UpdateOption` / `SelectOption` / `DeleteOption` to tweak a single call (ignore columns, null handling, table override, …).
 - **Escape hatch** — drop down to MyBatis `@Select` annotations or XML whenever you want full control.
 

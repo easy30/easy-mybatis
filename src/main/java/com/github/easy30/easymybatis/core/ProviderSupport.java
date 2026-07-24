@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import javax.persistence.Transient;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -475,6 +476,11 @@ public class ProviderSupport {
             String[] props = needValue ? paramNames : sp.getProperties();
             for (String prop : props) {
                 prop = prop.trim();
+                //-- @Transient 属性不参与 WHERE 查询
+                Transient trans = ObjectSupport.getAnnotation(Transient.class, params.getClass(), prop);
+                if (trans != null) {
+                    continue;
+                }
                 Object value = sp.getValue(prop);
                 boolean hasValue= hasValue(value,mapperOption);
                 if (hasValue) {
@@ -484,6 +490,7 @@ public class ProviderSupport {
                         addCondition(propertyConditions, innerOperator, Utils.format(Global.SQL_EQ, entityAnnotation.getColumnName(prop), fullProp));
                     } else { // object params
                         String condition = "";
+
 
                         QueryExp queryExp = ObjectSupport.getAnnotation(QueryExp.class, params.getClass(), prop);
                         //-- use queryItem
